@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Sky.Core.Prelude exposing (..)
 import Sky.Core.String as String
+import Sky.Core.Task as Task
 import Std.Tui as Tui
 import Std.Cmd as Cmd
 import Std.Sub as Sub
@@ -19,13 +20,27 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( NoFile, Cmd.none )
+    let
+        userArgs = System.args () |> Task.run |> Result.withDefault []
+    in
+        case getArg userArgs of
+
+            "" ->
+                ( NoFile, Cmd.none )
+
+            arg ->
+                ( File arg, Cmd.none )
+
+
+getArg argList =
+    Maybe.withDefault "" (List.head argList)
 
 --
 -- MODEL
 --
 type Model
-    = NoFile
+    = File String
+    | NoFile
 
 --
 -- UPDATE
@@ -76,6 +91,19 @@ subscriptions model =
 --
 view : Model -> String
 view model =
-    "\r\n" ++ "  ╭──────────────────────────────────╮\r\n"
-        ++ "  │       Sky TUI Typing Tutor       │\r\n"
-        ++ "  ╰──────────────────────────────────╯\r\n"
+    let
+        displayName =
+            case model of
+
+                NoFile ->
+                    ""
+
+                File name ->
+                    name
+    in
+        "\r\n" ++ "  ╭──────────────────────────────────╮\r\n"
+            ++ "  │       Sky TUI Typing Tutor       │\r\n"
+            ++ "  ╰──────────────────────────────────╯\r\n"
+            ++ "\r\n"
+            ++ displayName
+            ++ "\r\n"
