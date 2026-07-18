@@ -1,8 +1,71 @@
 module Main exposing (main)
 
 import Sky.Core.Prelude exposing (..)
+import Sky.Core.String as String
 import Std.Log exposing (println)
+import Std.Tui as Tui
+import Std.Cmd as Cmd
+import Std.Sub as Sub
 
 
 main =
-    println "Hello from sky-typing-tutor!"
+    Tui.program
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = subscriptions
+        , onKey = onKey
+        }
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( NoFile, Cmd.none )
+
+--
+-- MODEL
+--
+type Model
+    = NoFile
+
+--
+-- UPDATE
+--
+type Msg
+    = NoOp
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    ( model, Cmd.none )
+
+--
+-- ONKEY
+--
+type alias KeyEvent =
+    { kind : String
+    , value : String
+    }
+
+
+onKey : KeyEvent -> Msg
+onKey event =
+    NoOp
+
+
+--
+-- SUBSCRIPTIONS
+--
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+
+--
+-- VIEW
+--
+view : Model -> String
+view model =
+    "\r\n" ++ "  ╭──────────────────────────────────╮\r\n"
+        ++ "  │       Sky TUI Typing Tutor       │\r\n"
+        ++ "  ╰──────────────────────────────────╯\r\n"
