@@ -2,7 +2,6 @@ module Main exposing (main)
 
 import Sky.Core.Prelude exposing (..)
 import Sky.Core.String as String
-import Std.Log exposing (println)
 import Std.Tui as Tui
 import Std.Cmd as Cmd
 import Std.Sub as Sub
@@ -32,12 +31,19 @@ type Model
 -- UPDATE
 --
 type Msg
-    = NoOp
+    = Quit
+    | NoOp
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+
+        Quit ->
+            ( model, Cmd.perform (System.exit 0) (\_ -> NoOp) )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 --
 -- ONKEY
@@ -49,8 +55,12 @@ type alias KeyEvent =
 
 
 onKey : KeyEvent -> Msg
-onKey event =
-    NoOp
+onKey keyEvent =
+    if keyEvent.kind == "char" && keyEvent.value == "q" then
+        Quit
+
+    else
+        NoOp
 
 
 --
