@@ -3,6 +3,7 @@ module Main exposing (main)
 import Sky.Core.Prelude exposing (..)
 import Sky.Core.String as String
 import Sky.Core.Task as Task
+import Sky.Core.File as File
 import Std.Tui as Tui
 import Std.Cmd as Cmd
 import Std.Sub as Sub
@@ -28,8 +29,14 @@ init _ =
             "" ->
                 ( NoFile, Cmd.none )
 
-            arg ->
-                ( File arg, Cmd.none )
+            filename ->
+                case Task.run (File.readFile filename) of
+
+                    Ok contents ->
+                        ( ExerciseText contents, Cmd.none )
+
+                    Err _ ->
+                        ( NoFile, Cmd.none )
 
 
 getArg argList =
@@ -39,7 +46,7 @@ getArg argList =
 -- MODEL
 --
 type Model
-    = File String
+    = ExerciseText String
     | NoFile
 
 --
@@ -92,18 +99,18 @@ subscriptions model =
 view : Model -> String
 view model =
     let
-        displayName =
+        exerciseContents =
             case model of
 
                 NoFile ->
                     ""
 
-                File name ->
-                    name
+                ExerciseText contents ->
+                    contents
     in
         "\r\n" ++ "  ╭──────────────────────────────────╮\r\n"
             ++ "  │       Sky TUI Typing Tutor       │\r\n"
             ++ "  ╰──────────────────────────────────╯\r\n"
             ++ "\r\n"
-            ++ displayName
+            ++ exerciseContents
             ++ "\r\n"
