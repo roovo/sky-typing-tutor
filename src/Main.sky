@@ -38,7 +38,9 @@ init _ =
                 case Task.run (File.readFile filename) of
 
                     Ok contents ->
-                        ( Exercise (PageExercise.init contents), Cmd.none )
+                        ( Exercise (PageExercise.init filename contents)
+                        , Cmd.none
+                        )
 
                     Err _ ->
                         ( NoFile, Cmd.none )

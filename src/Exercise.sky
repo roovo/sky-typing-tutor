@@ -1,0 +1,22 @@
+module Exercise exposing (Exercise, init, title)
+
+--
+-- MODEL
+--
+type alias Exercise =
+    { title : String
+    , text : String
+    }
+
+
+init : String -> String -> Exercise
+init title text =
+    { title = title, text = text }
+
+
+--
+-- INFO
+--
+title : Exercise -> String
+title exercise =
+    exercise.title

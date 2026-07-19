@@ -1,5 +1,6 @@
 module Page.Exercise exposing (Model, Msg, init, view)
 
+import Exercise exposing (Exercise)
 import Sky.Core.Prelude exposing (..)
 import Std.Ui as Ui
 import Std.Ui exposing (Element)
@@ -10,12 +11,12 @@ import Std.Ui.Font as Font
 -- MODEL
 --
 type alias Model =
-    { exercise : String }
+    { exercise : Exercise }
 
 
-init : String -> Model
-init exerciseText =
-    { exercise = exerciseText }
+init : String -> String -> Model
+init filename exerciseText =
+    { exercise = Exercise.init filename exerciseText }
 
 --
 -- UPDATE
@@ -35,8 +36,10 @@ view toMsg model =
         , Background.color (Ui.rgb 18 22 38)
         , Font.color (Ui.rgb 220 220 230)
         ]
-        [ heading ]
+        [ heading model ]
 
 
-heading =
-    Ui.el [ Font.color (Ui.rgb 142 200 168) ] (Ui.text "Typing Tutor")
+heading model =
+    Ui.el
+        [ Font.color (Ui.rgb 142 200 168) ]
+        (Ui.text <| Exercise.title model.exercise)
