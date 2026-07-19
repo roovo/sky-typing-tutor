@@ -24,7 +24,7 @@ main =
         }
 
 
-init : () -> ( Model, Cmd Msg )
+init : () -> ( AppModel, Cmd Msg )
 init _ =
     let
         userArgs = System.args () |> Task.run |> Result.withDefault []
@@ -38,7 +38,7 @@ init _ =
                 case Task.run (File.readFile filename) of
 
                     Ok contents ->
-                        ( PageExercise.init contents, Cmd.none )
+                        ( Exercise (PageExercise.init contents), Cmd.none )
 
                     Err _ ->
                         ( NoFile, Cmd.none )
@@ -50,7 +50,7 @@ getArg argList =
 --
 -- MODEL
 --
-type Model
+type AppModel
     = Exercise Page.Exercise.Model
     | NoFile
 
@@ -58,13 +58,17 @@ type Model
 -- UPDATE
 --
 type Msg
-    = Quit
+    = GotExerciseMsg PageExercise.Msg
+    | Quit
     | NoOp
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> AppModel -> ( AppModel, Cmd Msg )
 update msg model =
     case msg of
+
+        GotExerciseMsg _ ->
+            ( model, Cmd.none )
 
         Quit ->
             ( model, Cmd.perform (System.exit 0) (\_ -> NoOp) )
@@ -93,7 +97,7 @@ onKey keyEvent =
 --
 -- SUBSCRIPTIONS
 --
-subscriptions : Model -> Sub Msg
+subscriptions : AppModel -> Sub Msg
 subscriptions model =
     Sub.none
 
@@ -101,17 +105,23 @@ subscriptions model =
 --
 -- VIEW
 --
-view : Model -> Element Msg
+view : AppModel -> Element Msg
 view model =
+    case model of
+
+        Exercise subModel ->
+            PageExercise.view GotExerciseMsg subModel
+
+        NoFile ->
+            notFoundView
+
+
+notFoundView : Element Msg
+notFoundView =
     Ui.column
         [ Ui.padding 24
         , Ui.spacing 16
         , Background.color (Ui.rgb 18 22 38)
         , Font.color (Ui.rgb 220 220 230)
         ]
-        [ heading ]
-
-
-heading : Element Msg
-heading =
-    Ui.el [ Font.color (Ui.rgb 142 200 168) ] (Ui.text "Typing Tutor")
+        [ Ui.el [ Font.color (Ui.rgb 142 200 168) ] (Ui.text "File Not Found") ]

@@ -1,6 +1,10 @@
-module Page.Exercise exposing (Model, init)
+module Page.Exercise exposing (Model, Msg, init, view)
 
 import Sky.Core.Prelude exposing (..)
+import Std.Ui as Ui
+import Std.Ui exposing (Element)
+import Std.Ui.Background as Background
+import Std.Ui.Font as Font
 
 --
 -- MODEL
@@ -12,3 +16,27 @@ type alias Model =
 init : String -> Model
 init exerciseText =
     { exercise = exerciseText }
+
+--
+-- UPDATE
+--
+type Msg
+    = KeyDown Int
+
+
+--
+-- VIEW
+--
+view : (Msg -> parentMsg) -> Model -> Element parentMsg
+view toMsg model =
+    Ui.column
+        [ Ui.padding 24
+        , Ui.spacing 16
+        , Background.color (Ui.rgb 18 22 38)
+        , Font.color (Ui.rgb 220 220 230)
+        ]
+        [ heading ]
+
+
+heading =
+    Ui.el [ Font.color (Ui.rgb 142 200 168) ] (Ui.text "Typing Tutor")
