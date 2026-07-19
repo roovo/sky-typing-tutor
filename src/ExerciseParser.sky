@@ -1,0 +1,8 @@
+module ExerciseParser exposing (toSteps)
+
+import Step
+
+
+toSteps : String -> List Step
+toSteps string =
+    [ Step.initEnd ]

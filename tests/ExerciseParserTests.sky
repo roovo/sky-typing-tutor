@@ -1,0 +1,14 @@
+module ExerciseParserTests exposing (tests)
+
+import Sky.Core.Prelude exposing (..)
+import Sky.Test as Test exposing (Test)
+import ExerciseParser
+import Step
+
+
+tests : List Test
+tests =
+    [ Test.test
+          "toSteps converts an empty string to just an End Step"
+          (\_ -> "" |> ExerciseParser.toSteps |> Test.equal [ Step.initEnd ])
+    ]
