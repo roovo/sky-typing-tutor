@@ -1,0 +1,14 @@
+module Page.Exercise exposing (Model, init)
+
+import Sky.Core.Prelude exposing (..)
+
+--
+-- MODEL
+--
+type alias Model =
+    { exercise : String }
+
+
+init : String -> Model
+init exerciseText =
+    { exercise = exerciseText }
