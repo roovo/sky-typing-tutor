@@ -3,12 +3,12 @@
 set -e
 
 failed=0
-for f in tests/*Test.sky; do
-    echo "=== $f ==="
-    if ! sky test "$f"; then
-        failed=1
-    fi
-    echo
+for f in tests/*Tests.sky; do
+  echo "=== $f ==="
+  if ! sky test "$f"; then
+    failed=1
+  fi
+  echo
 done
 
 exit $failed

@@ -1,4 +1,4 @@
-module ZipperTest exposing (tests)
+module ZipperTests exposing (tests)
 
 import Sky.Core.Prelude exposing (..)
 import Sky.Core.List as List

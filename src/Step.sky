@@ -1,0 +1,41 @@
+module Step exposing (Step, init, initEnd, initSkip, isTypeable)
+
+--
+-- TYPE
+--
+type Step
+    = Typeable Char
+    | Skip String
+    | End
+
+
+--
+-- CONSTRUCTION
+--
+init : Char -> Step
+init char =
+    Typeable char
+
+
+initSkip : String -> Step
+initSkip string =
+    Skip string
+
+
+initEnd : Step
+initEnd =
+    End
+
+
+--
+-- PREDICATES
+--
+isTypeable : Step -> Bool
+isTypeable step =
+    case step of
+
+        Typeable _ ->
+            True
+
+        _ ->
+            False

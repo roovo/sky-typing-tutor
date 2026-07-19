@@ -1,0 +1,19 @@
+module StepTests exposing (tests)
+
+import Sky.Core.Prelude exposing (..)
+import Sky.Test as Test exposing (Test)
+import Step
+
+
+tests : List Test
+tests =
+    [ Test.test
+          "isTypeable returns True for a normal Step"
+          (\_ -> Step.init 'f' |> Step.isTypeable |> Test.equal True)
+    , Test.test
+          "isTypeable returns False for a Skip Step"
+          (\_ -> Step.initSkip "a" |> Step.isTypeable |> Test.equal False)
+    , Test.test
+          "isTypeable returns False for an End Step"
+          (\_ -> Step.initEnd |> Step.isTypeable |> Test.equal False)
+    ]
