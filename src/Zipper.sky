@@ -1,0 +1,81 @@
+module Zipper exposing
+    ( Zipper
+    , singleton
+    , fromList
+    , before
+    , current
+    , after
+    , first
+    , next
+    , previous
+    )
+
+import Sky.Core.Prelude exposing (..)
+import Sky.Core.List as List
+
+
+type alias Zipper a =
+    { ls : List a
+    , focus : a
+    , rs : List a
+    }
+
+
+singleton : a -> Zipper a
+singleton x =
+    { ls = [], focus = x, rs = [] }
+
+
+fromList : List a -> Maybe (Zipper a)
+fromList xs =
+    case xs of
+        [] ->
+            Nothing
+
+        y :: ys ->
+            Just { ls = [], focus = y, rs = ys }
+
+
+before : Zipper a -> List a
+before zipper =
+    List.reverse zipper.ls
+
+
+current : Zipper a -> a
+current zipper =
+    zipper.focus
+
+
+after : Zipper a -> List a
+after zipper =
+    zipper.rs
+
+
+first : Zipper a -> Zipper a
+first zipper =
+    case List.reverse zipper.ls of
+        [] ->
+            zipper
+
+        y :: ys ->
+            { ls = [], focus = y, rs = ys ++ [ zipper.focus ] ++ zipper.rs }
+
+
+next : Zipper a -> Zipper a
+next zipper =
+    case zipper.rs of
+        [] ->
+            zipper
+
+        y :: ys ->
+            { ls = zipper.focus :: zipper.ls, focus = y, rs = ys }
+
+
+previous : Zipper a -> Zipper a
+previous zipper =
+    case zipper.ls of
+        [] ->
+            zipper
+
+        y :: ys ->
+            { ls = ys, focus = y, rs = zipper.focus :: zipper.rs }
