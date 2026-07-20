@@ -8,8 +8,7 @@ toSteps : String -> List Step
 toSteps string =
     string |> String.trimEnd |> String.lines |> List.map parseLine
         |> List.concat
-        |> LE.dropWhileRight
-               (\s -> s == Typeable enterChar || s == Skip enterString)
+        |> LE.dropWhileRight (\s -> s == EnterChar || s == Skip enterString)
         |> (\steps -> steps ++ [ Step.initEnd ])
 
 
@@ -26,21 +25,16 @@ parseLine string =
                 [ Skip enterString ]
 
             ( [], typeables ) ->
-                (List.map Typeable typeables) ++ [ Typeable enterChar ]
+                (List.map Typeable typeables) ++ [ EnterChar ]
 
             ( spaces, typeables ) ->
                 [ Skip (String.fromList spaces) ] ++ List.map Typeable rest
-                    ++ [ Typeable enterChar ]
+                    ++ [ EnterChar ]
 
 
 --
 -- PRIVATE
 --
-enterChar : Char
-enterChar =
-    Char.fromCode 13
-
-
 enterString : String
 enterString =
     "<enter>"

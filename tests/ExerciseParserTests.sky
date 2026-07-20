@@ -38,7 +38,7 @@ tests =
                   |> Test.equal
                          [ Step.init 'a'
                          , Step.init 'b'
-                         , Step.init enterChar
+                         , Step.initEnterChar
                          , Step.init 'c'
                          , Step.init 'd'
                          , Step.initEnd
@@ -50,7 +50,7 @@ tests =
                   |> Test.equal
                          [ Step.init 'a'
                          , Step.init 'b'
-                         , Step.init enterChar
+                         , Step.initEnterChar
                          , Step.initSkip enterString
                          , Step.init 'c'
                          , Step.init 'd'
@@ -63,7 +63,7 @@ tests =
                   |> Test.equal
                          [ Step.init 'a'
                          , Step.init 'b'
-                         , Step.init enterChar
+                         , Step.initEnterChar
                          , Step.init 'c'
                          , Step.init 'd'
                          , Step.initEnd
@@ -75,7 +75,7 @@ tests =
                   |> Test.equal
                          [ Step.init 'a'
                          , Step.init 'b'
-                         , Step.init enterChar
+                         , Step.initEnterChar
                          , Step.initSkip enterString
                          , Step.init 'c'
                          , Step.init 'd'
@@ -88,7 +88,7 @@ tests =
                   |> Test.equal
                          [ Step.init 'a'
                          , Step.init 'b'
-                         , Step.init enterChar
+                         , Step.initEnterChar
                          , Step.init 'c'
                          , Step.init 'd'
                          , Step.initEnd
@@ -99,11 +99,6 @@ tests =
 --
 -- HELPERS
 --
-enterChar : Char
-enterChar =
-    Char.fromCode 13
-
-
 enterString : String
 enterString =
     "<enter>"
