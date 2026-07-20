@@ -7,9 +7,9 @@ import List.Extra as LE
 toSteps : String -> List Step
 toSteps string =
     let
-        chars = String.toList string
-        leadingSpaces = LE.takeWhile (\c -> c == ' ') chars
-        rest = LE.dropWhile (\c -> c == ' ') chars
+        leadingSpaces =
+            string |> String.toList |> LE.takeWhile (\c -> c == ' ')
+        rest = string |> String.trim |> String.toList
     in
         case ( leadingSpaces, rest ) of
 

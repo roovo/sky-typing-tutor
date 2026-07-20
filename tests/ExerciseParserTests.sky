@@ -26,4 +26,9 @@ tests =
                          , Step.init 'b'
                          , Step.initEnd
                          ])
+    , Test.test
+          "toSteps ignores trailing spaces and new lines"
+          (\_ ->
+              "ab  \n\n" |> ExerciseParser.toSteps
+                  |> Test.equal [ Step.init 'a', Step.init 'b', Step.initEnd ])
     ]
