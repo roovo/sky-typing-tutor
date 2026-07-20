@@ -1,4 +1,23 @@
-module List.Extra exposing (dropWhile, takeWhile)
+module List.Extra exposing (dropWhile, dropWhileRight, intersperse, takeWhile)
+
+
+{-| Places the given value between all members of the given list.
+
+    intersperse "on" ["turtles","turtles","turtles"] == ["turtles","on","turtles","on","turtles"]
+-}
+intersperse : a -> List a -> List a
+intersperse sep xs =
+    case xs of
+
+        [] ->
+            []
+
+        hd :: tl ->
+            let
+                step x rest = List.cons sep (List.cons x rest)
+                spersed = List.foldr step [] tl
+            in
+                List.cons hd spersed
 
 
 {-| Take elements in order as long as the predicate evaluates to `True`
@@ -37,3 +56,22 @@ dropWhile predicate list =
 
             else
                 list
+
+
+{-| Drop elements from the right, while predicate still holds.
+
+    dropWhileRight ((<) 5) (List.range 1 10)
+    --> [ 1, 2, 3, 4, 5 ]
+
+-}
+dropWhileRight : (a -> Bool) -> List a -> List a
+dropWhileRight p list =
+    List.foldr
+        (\x xs ->
+            if p x && List.isEmpty xs then
+                []
+
+            else
+                x :: xs)
+        []
+        list

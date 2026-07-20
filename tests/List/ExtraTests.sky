@@ -1,0 +1,97 @@
+module List.ExtraTests exposing (tests)
+
+import Sky.Core.Prelude exposing (..)
+import Sky.Test as Test exposing (Test)
+import List.Extra as LE
+
+
+tests : List Test
+tests =
+    dropWhileTests ++ dropWhileRightTests ++ intersperseTests ++ takeWhileTests
+
+
+dropWhileTests : List Test
+dropWhileTests =
+    [ Test.test
+          "dropWhile empties a list if the predicate is always True"
+          (\_ -> List.range 1 10 |> LE.dropWhile (always True) |> Test.equal [])
+    , Test.test
+          "dropWhile does nothing if the predicate is always False"
+          (\_ ->
+              List.range 1 10 |> LE.dropWhile (always False)
+                  |> Test.equal [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ])
+    , Test.test
+          "dropWhile drops from the left whilst the predicate is True"
+          (\_ ->
+              List.range 1 10 |> LE.dropWhile (\n -> n < 6)
+                  |> Test.equal [ 6, 7, 8, 9, 10 ])
+    , Test.test
+          "dropWhile stops dropping once the predicate is False"
+          (\_ ->
+              [ 1, 2, 3, 1, 2, 3 ] |> LE.dropWhile (\n -> n < 3)
+                  |> Test.equal [ 3, 1, 2, 3 ])
+    ]
+
+
+dropWhileRightTests : List Test
+dropWhileRightTests =
+    [ Test.test
+          "dropWhileRight empties a list if the predicate is always True"
+          (\_ ->
+              List.range 1 10 |> LE.dropWhileRight (always True)
+                  |> Test.equal [])
+    , Test.test
+          "dropWhileRight does nothing if the predicate is always False"
+          (\_ ->
+              List.range 1 10 |> LE.dropWhileRight (always False)
+                  |> Test.equal [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ])
+    , Test.test
+          "dropWhileRight drops from the right whilst the predicate is True"
+          (\_ ->
+              List.range 1 10 |> LE.dropWhileRight (\n -> n > 5)
+                  |> Test.equal [ 1, 2, 3, 4, 5 ])
+    , Test.test
+          "dropWhileRight stops dropping once the predicate is False"
+          (\_ ->
+              [ 1, 2, 3, 1, 2, 3 ] |> LE.dropWhileRight (\n -> n > 1)
+                  |> Test.equal [ 1, 2, 3, 1 ])
+    ]
+
+
+intersperseTests : List Test
+intersperseTests =
+    [ Test.test
+          "intersperse does nothing if the input array is empty"
+          (\_ -> LE.intersperse "." [] |> Test.equal [])
+    , Test.test
+          "intersperse does nothing if the input array is a singleton"
+          (\_ -> LE.intersperse "." [ "a" ] |> Test.equal [ "a" ])
+    , Test.test
+          "intersperse places the given value between list members"
+          (\_ ->
+              LE.intersperse "." [ "a", "b", "c" ]
+                  |> Test.equal [ "a", ".", "b", ".", "c" ])
+    ]
+
+
+takeWhileTests : List Test
+takeWhileTests =
+    [ Test.test
+          "takeWhile takes all the list entries if the predicate is always True"
+          (\_ ->
+              List.range 1 10 |> LE.takeWhile (always True)
+                  |> Test.equal [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ])
+    , Test.test
+          "takeWhile takes nothing if the predicate is always False"
+          (\_ -> List.range 1 10 |> LE.takeWhile (always False) |> Test.equal [])
+    , Test.test
+          "takeWhile takes from the left whilst the predicate is True"
+          (\_ ->
+              List.range 1 10 |> LE.takeWhile (\n -> n < 6)
+                  |> Test.equal [ 1, 2, 3, 4, 5 ])
+    , Test.test
+          "takeWhile stops taking once the predicate is False"
+          (\_ ->
+              [ 1, 2, 3, 1, 2, 3 ] |> LE.takeWhile (\n -> n < 3)
+                  |> Test.equal [ 1, 2 ])
+    ]

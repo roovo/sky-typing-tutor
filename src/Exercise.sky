@@ -1,6 +1,5 @@
 module Exercise exposing (Exercise, init, title)
 
---
 -- MODEL
 --
 type alias Exercise =

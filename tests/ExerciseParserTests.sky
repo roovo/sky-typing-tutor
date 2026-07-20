@@ -43,6 +43,19 @@ tests =
                          , Step.init 'd'
                          , Step.initEnd
                          ])
+    , Test.test
+          "toSteps converts a multi-line string with a blank line in the middle"
+          (\_ ->
+              "ab\n\ncd" |> ExerciseParser.toSteps
+                  |> Test.equal
+                         [ Step.init 'a'
+                         , Step.init 'b'
+                         , Step.init enterChar
+                         , Step.initSkip enterString
+                         , Step.init 'c'
+                         , Step.init 'd'
+                         , Step.initEnd
+                         ])
     ]
 
 
@@ -52,3 +65,8 @@ tests =
 enterChar : Char
 enterChar =
     Char.fromCode 13
+
+
+enterString : String
+enterString =
+    "\r"
