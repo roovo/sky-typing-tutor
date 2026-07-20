@@ -7,6 +7,11 @@ import Step
 
 tests : List Test
 tests =
+    isTypeableTests ++ toStringTests
+
+
+isTypeableTests : List Test
+isTypeableTests =
     [ Test.test
           "isTypeable returns True for a normal Step"
           (\_ -> Step.init 'f' |> Step.isTypeable |> Test.equal True)
@@ -16,4 +21,18 @@ tests =
     , Test.test
           "isTypeable returns False for an End Step"
           (\_ -> Step.initEnd |> Step.isTypeable |> Test.equal False)
+    ]
+
+
+toStringTests : List Test
+toStringTests =
+    [ Test.test
+          "toString returns the char in a Typeable as a string"
+          (\_ -> Step.init 'f' |> Step.toString |> Test.equal "f")
+    , Test.test
+          "toString returns the contents of a Skipable"
+          (\_ -> Step.initSkip "foo" |> Step.toString |> Test.equal "foo")
+    , Test.test
+          "toString returns the an Empty string for End"
+          (\_ -> Step.initEnd |> Step.toString |> Test.equal "")
     ]

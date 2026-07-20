@@ -1,4 +1,4 @@
-module Step exposing (Step, init, initEnd, initSkip, isTypeable)
+module Step exposing (Step, init, initEnd, initSkip, isTypeable, toString)
 
 --
 -- TYPE
@@ -39,3 +39,20 @@ isTypeable step =
 
         _ ->
             False
+
+
+--
+-- CONVERSION
+--
+toString : Step -> String
+toString step =
+    case step of
+
+        Typeable char ->
+            String.fromChar char
+
+        Skip skipString ->
+            skipString
+
+        End ->
+            ""
