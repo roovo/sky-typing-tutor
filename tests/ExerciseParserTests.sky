@@ -31,4 +31,24 @@ tests =
           (\_ ->
               "ab  \n\n" |> ExerciseParser.toSteps
                   |> Test.equal [ Step.init 'a', Step.init 'b', Step.initEnd ])
+    , Test.test
+          "toSteps converts a multi-line string of printables"
+          (\_ ->
+              "ab\ncd" |> ExerciseParser.toSteps
+                  |> Test.equal
+                         [ Step.init 'a'
+                         , Step.init 'b'
+                         , Step.init enterChar
+                         , Step.init 'c'
+                         , Step.init 'd'
+                         , Step.initEnd
+                         ])
     ]
+
+
+--
+-- HELPERS
+--
+enterChar : Char
+enterChar =
+    Char.fromCode 13

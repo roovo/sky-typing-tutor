@@ -6,6 +6,14 @@ import List.Extra as LE
 
 toSteps : String -> List Step
 toSteps string =
+    string |> String.trimEnd |> String.lines |> List.map parseLine
+        |> LE.intersperse [ Typeable enterChar ]
+        |> List.concat
+        |> (\steps -> steps ++ [ Step.initEnd ])
+
+
+parseLine : String -> List Step
+parseLine string =
     let
         leadingSpaces =
             string |> String.toList |> LE.takeWhile (\c -> c == ' ')
@@ -14,8 +22,15 @@ toSteps string =
         case ( leadingSpaces, rest ) of
 
             ( [], typeables ) ->
-                List.map Typeable typeables ++ [ Step.initEnd ]
+                List.map Typeable typeables
 
             ( spaces, typeables ) ->
                 [ Skip (String.fromList spaces) ] ++ List.map Typeable rest
-                    ++ [ Step.initEnd ]
+
+
+--
+-- PRIVATE
+--
+enterChar : Char
+enterChar =
+    Char.fromCode 13
