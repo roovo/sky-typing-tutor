@@ -106,4 +106,4 @@ enterChar =
 
 enterString : String
 enterString =
-    "\r"
+    "<enter>"
