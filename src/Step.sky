@@ -1,4 +1,4 @@
-module Step exposing (Step, init, initEnd, initEnterChar, initSkip, isTypeable)
+module Step exposing (Step(..), init, initEnd, initEnterChar, initEmptyLine, initSkip, isTypeable)
 
 --
 -- TYPE
@@ -6,6 +6,7 @@ module Step exposing (Step, init, initEnd, initEnterChar, initSkip, isTypeable)
 type Step
     = End
     | EnterChar
+    | EmptyLine
     | Skip String
     | Typeable Char
 
@@ -26,6 +27,11 @@ initEnd =
 initEnterChar : Step
 initEnterChar =
     EnterChar
+
+
+initEmptyLine : Step
+initEmptyLine =
+    EmptyLine
 
 
 initSkip : String -> Step

@@ -51,7 +51,7 @@ tests =
                          [ Step.init 'a'
                          , Step.init 'b'
                          , Step.initEnterChar
-                         , Step.initSkip enterString
+                         , Step.initEmptyLine
                          , Step.init 'c'
                          , Step.init 'd'
                          , Step.initEnd
@@ -76,7 +76,7 @@ tests =
                          [ Step.init 'a'
                          , Step.init 'b'
                          , Step.initEnterChar
-                         , Step.initSkip enterString
+                         , Step.initEmptyLine
                          , Step.init 'c'
                          , Step.init 'd'
                          , Step.initEnd
@@ -93,6 +93,11 @@ tests =
                          , Step.init 'd'
                          , Step.initEnd
                          ])
+    , Test.test
+          "toSteps ignores an empty line at the start of a multi-line string"
+          (\_ ->
+              "  \n\nab" |> ExerciseParser.toSteps
+                  |> Test.equal [ Step.init 'a', Step.init 'b', Step.initEnd ])
     ]
 
 

@@ -8,7 +8,8 @@ toSteps : String -> List Step
 toSteps string =
     string |> String.trimEnd |> String.lines |> List.map parseLine
         |> List.concat
-        |> LE.dropWhileRight (\s -> s == EnterChar || s == Skip enterString)
+        |> LE.dropWhile (\s -> s == EmptyLine)
+        |> LE.dropWhileRight (\s -> s == EnterChar || s == EmptyLine)
         |> (\steps -> steps ++ [ Step.initEnd ])
 
 
@@ -22,7 +23,7 @@ parseLine string =
         case ( leadingSpaces, rest ) of
 
             ( _, [] ) ->
-                [ Skip enterString ]
+                [ EmptyLine ]
 
             ( [], typeables ) ->
                 (List.map Typeable typeables) ++ [ EnterChar ]

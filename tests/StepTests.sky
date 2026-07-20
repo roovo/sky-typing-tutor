@@ -19,6 +19,9 @@ isTypeableTests =
           "isTypeable returns True for an EnterChar"
           (\_ -> Step.initEnterChar |> Step.isTypeable |> Test.equal True)
     , Test.test
+          "isTypeable returns False for an EmptyLine"
+          (\_ -> Step.initEmptyLine |> Step.isTypeable |> Test.equal False)
+    , Test.test
           "isTypeable returns False for a Skip Step"
           (\_ -> Step.initSkip "a" |> Step.isTypeable |> Test.equal False)
     , Test.test
