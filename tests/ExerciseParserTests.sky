@@ -56,6 +56,43 @@ tests =
                          , Step.init 'd'
                          , Step.initEnd
                          ])
+    , Test.test
+          "toSteps ignores trailing whitespace in a multi-line strings"
+          (\_ ->
+              "ab  \ncd" |> ExerciseParser.toSteps
+                  |> Test.equal
+                         [ Step.init 'a'
+                         , Step.init 'b'
+                         , Step.init enterChar
+                         , Step.init 'c'
+                         , Step.init 'd'
+                         , Step.initEnd
+                         ])
+    , Test.test
+          "toSteps ignores empty lines containing whitespace in a multi-line strings"
+          (\_ ->
+              "ab\n  \ncd" |> ExerciseParser.toSteps
+                  |> Test.equal
+                         [ Step.init 'a'
+                         , Step.init 'b'
+                         , Step.init enterChar
+                         , Step.initSkip enterString
+                         , Step.init 'c'
+                         , Step.init 'd'
+                         , Step.initEnd
+                         ])
+    , Test.test
+          "toSteps ignores an empty line at the end of a multi-line string"
+          (\_ ->
+              "ab\ncd\n  " |> ExerciseParser.toSteps
+                  |> Test.equal
+                         [ Step.init 'a'
+                         , Step.init 'b'
+                         , Step.init enterChar
+                         , Step.init 'c'
+                         , Step.init 'd'
+                         , Step.initEnd
+                         ])
     ]
 
 
