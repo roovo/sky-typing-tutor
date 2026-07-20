@@ -1,12 +1,13 @@
-module Step exposing (Step, init, initEnd, initSkip, isTypeable, toString)
+module Step exposing (Step, init, initEnd, initEnterChar, initSkip, isTypeable)
 
 --
 -- TYPE
 --
 type Step
-    = Typeable Char
+    = End
+    | EnterChar
     | Skip String
-    | End
+    | Typeable Char
 
 
 --
@@ -17,14 +18,19 @@ init char =
     Typeable char
 
 
-initSkip : String -> Step
-initSkip string =
-    Skip string
-
-
 initEnd : Step
 initEnd =
     End
+
+
+initEnterChar : Step
+initEnterChar =
+    EnterChar
+
+
+initSkip : String -> Step
+initSkip string =
+    Skip string
 
 
 --
@@ -34,25 +40,11 @@ isTypeable : Step -> Bool
 isTypeable step =
     case step of
 
+        EnterChar ->
+            True
+
         Typeable _ ->
             True
 
         _ ->
             False
-
-
---
--- CONVERSION
---
-toString : Step -> String
-toString step =
-    case step of
-
-        Typeable char ->
-            String.fromChar char
-
-        Skip skipString ->
-            skipString
-
-        End ->
-            ""
