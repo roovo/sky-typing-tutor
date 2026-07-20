@@ -1,5 +1,9 @@
 module Exercise exposing (Exercise, Printable, Style(..), init, printables, title)
 
+import ExerciseParser
+import Step
+import Zipper
+
 -- MODEL
 --
 type alias Exercise =
@@ -29,9 +33,46 @@ init title text =
 --
 printables : Exercise -> List Printable
 printables exercise =
-    []
+    steps exercise |> Zipper.first |> setStyles
 
 
 title : Exercise -> String
 title exercise =
     exercise.title
+
+
+--
+-- PRIVATE
+--
+beforeStyles : Zipper Step -> List Printable
+beforeStyles zippedSteps =
+    []
+
+
+currentStyle : Zipper Step -> List Printable
+currentStyle zippedSteps =
+    let
+        toPrintable step = { content = Step.toString step, style = Current }
+        current = Zipper.current zippedSteps
+    in
+        [ toPrintable current ]
+
+
+afterStyles : Zipper Step -> List Printable
+afterStyles zippedSteps =
+    let
+        toPrintable step = { content = Step.toString step, style = Waiting }
+    in
+        zippedSteps |> Zipper.after |> List.map toPrintable
+
+
+setStyles : Zipper Step -> List Printable
+setStyles zippedSteps =
+    beforeStyles zippedSteps ++ currentStyle zippedSteps
+        ++ afterStyles zippedSteps
+
+
+steps : Exercise -> Zipper Step
+steps exercise =
+    exercise.text |> ExerciseParser.toSteps |> Zipper.fromList
+        |> Maybe.withDefault (Zipper.singleton Step.initEnd)

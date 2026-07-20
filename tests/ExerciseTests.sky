@@ -2,7 +2,7 @@ module ExerciseTests exposing (tests)
 
 import Sky.Core.Prelude exposing (..)
 import Sky.Test as Test exposing (Test)
-import Exercise
+import Exercise exposing (Style(..))
 
 
 tests : List Test
@@ -13,8 +13,19 @@ tests =
 printablesTests : List Test
 printablesTests =
     [ Test.test
-          "printables returns an empty array if there is not text"
-          (\_ -> exerciseWithText "" |> Exercise.printables |> Test.equal [])
+          "printables returns an empty array if there is no text"
+          (\_ ->
+              exerciseWithText "" |> Exercise.printables
+                  |> Test.equal [ { content = "", style = Current } ])
+    , Test.test
+          "printables has current at the start if nothing has been typed"
+          (\_ ->
+              exerciseWithText "ab" |> Exercise.printables
+                  |> Test.equal
+                         [ { content = "a", style = Current }
+                         , { content = "b", style = Waiting }
+                         , { content = "", style = Waiting }
+                         ])
     ]
 
 
