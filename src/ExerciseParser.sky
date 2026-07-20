@@ -1,8 +1,11 @@
 module ExerciseParser exposing (toSteps)
 
-import Step
+import Step exposing (Step(..))
 
 
 toSteps : String -> List Step
 toSteps string =
-    [ Step.initEnd ]
+    let
+        typeables = String.toList string |> List.map Typeable
+    in
+        typeables ++ [ Step.initEnd ]

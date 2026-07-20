@@ -11,4 +11,9 @@ tests =
     [ Test.test
           "toSteps converts an empty string to just an End Step"
           (\_ -> "" |> ExerciseParser.toSteps |> Test.equal [ Step.initEnd ])
+    , Test.test
+          "toSteps converts a single line string of printables"
+          (\_ ->
+              "ab" |> ExerciseParser.toSteps
+                  |> Test.equal [ Step.init 'a', Step.init 'b', Step.initEnd ])
     ]
