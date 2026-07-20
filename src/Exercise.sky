@@ -1,10 +1,21 @@
-module Exercise exposing (Exercise, init, title)
+module Exercise exposing (Exercise, Printable, Style(..), init, printables, title)
 
 -- MODEL
 --
 type alias Exercise =
     { title : String
     , text : String
+    }
+
+type Style
+    = Current
+    | Error
+    | Completed
+    | Waiting
+
+type alias Printable =
+    { content : String
+    , style : Style
     }
 
 
@@ -16,6 +27,11 @@ init title text =
 --
 -- INFO
 --
+printables : Exercise -> List Printable
+printables exercise =
+    []
+
+
 title : Exercise -> String
 title exercise =
     exercise.title

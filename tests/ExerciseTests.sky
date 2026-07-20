@@ -1,0 +1,26 @@
+module ExerciseTests exposing (tests)
+
+import Sky.Core.Prelude exposing (..)
+import Sky.Test as Test exposing (Test)
+import Exercise
+
+
+tests : List Test
+tests =
+    printablesTests
+
+
+printablesTests : List Test
+printablesTests =
+    [ Test.test
+          "printables returns an empty array if there is not text"
+          (\_ -> exerciseWithText "" |> Exercise.printables |> Test.equal [])
+    ]
+
+
+--
+-- HELPERS
+--
+exerciseWithText : String -> Exercise
+exerciseWithText text =
+    Exercise.init "" text
