@@ -16,4 +16,14 @@ tests =
           (\_ ->
               "ab" |> ExerciseParser.toSteps
                   |> Test.equal [ Step.init 'a', Step.init 'b', Step.initEnd ])
+    , Test.test
+          "toSteps skips leading spaces in a single line string of printables"
+          (\_ ->
+              "  ab" |> ExerciseParser.toSteps
+                  |> Test.equal
+                         [ Step.initSkip "  "
+                         , Step.init 'a'
+                         , Step.init 'b'
+                         , Step.initEnd
+                         ])
     ]

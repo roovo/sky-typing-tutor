@@ -1,11 +1,21 @@
 module ExerciseParser exposing (toSteps)
 
 import Step exposing (Step(..))
+import List.Extra as LE
 
 
 toSteps : String -> List Step
 toSteps string =
     let
-        typeables = String.toList string |> List.map Typeable
+        chars = String.toList string
+        leadingSpaces = LE.takeWhile (\c -> c == ' ') chars
+        rest = LE.dropWhile (\c -> c == ' ') chars
     in
-        typeables ++ [ Step.initEnd ]
+        case ( leadingSpaces, rest ) of
+
+            ( [], typeables ) ->
+                List.map Typeable typeables ++ [ Step.initEnd ]
+
+            ( spaces, typeables ) ->
+                [ Skip (String.fromList spaces) ] ++ List.map Typeable rest
+                    ++ [ Step.initEnd ]
