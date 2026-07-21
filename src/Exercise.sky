@@ -1,5 +1,6 @@
-module Exercise exposing (Exercise, Printable, Style(..), init, printables, title)
+module Exercise exposing (Exercise, Printable(..), Style(..), init, printables, title)
 
+import Sky.Core.Debug as Debug
 import ExerciseParser
 import Step
 import Zipper
@@ -17,10 +18,12 @@ type Style
     | Completed
     | Waiting
 
-type alias Printable =
-    { content : String
-    , style : Style
-    }
+type Printable
+    = Styled String Style
+    | StyledEnter Style
+    | Unstyled String
+    | UnstyledEmptyLine
+    | UnstyledEnd
 
 
 init : String -> String -> Exercise
@@ -51,19 +54,16 @@ beforeStyles zippedSteps =
 
 currentStyle : Zipper Step -> List Printable
 currentStyle zippedSteps =
-    let
-        toPrintable step = { content = Step.toString step, style = Current }
-        current = Zipper.current zippedSteps
-    in
-        [ toPrintable current ]
+    [ zippedSteps |> Zipper.current |> toPrintable ]
 
 
 afterStyles : Zipper Step -> List Printable
 afterStyles zippedSteps =
-    let
-        toPrintable step = { content = Step.toString step, style = Waiting }
-    in
-        zippedSteps |> Zipper.after |> List.map toPrintable
+    []
+    -- let
+    --     toPrintable step = { content = Step.toString step, style = Waiting }
+    -- in
+    --     zippedSteps |> Zipper.after |> List.map toPrintable
 
 
 setStyles : Zipper Step -> List Printable
@@ -72,7 +72,27 @@ setStyles zippedSteps =
         ++ afterStyles zippedSteps
 
 
-steps : Exercise -> Zipper Step
+-- steps : Exercise -> Zipper Step
 steps exercise =
     exercise.text |> ExerciseParser.toSteps |> Zipper.fromList
         |> Maybe.withDefault (Zipper.singleton Step.initEnd)
+
+
+toPrintable : Step -> Printable
+toPrintable step =
+    case step of
+
+        End ->
+            UnstyledEnd
+
+        EnterChar ->
+            UnstyledEnd
+
+        EmptyLine ->
+            UnstyledEnd
+
+        Skip _ ->
+            UnstyledEnd
+
+        Typeable _ ->
+            UnstyledEnd
