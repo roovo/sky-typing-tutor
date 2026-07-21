@@ -151,6 +151,34 @@ printableLinesTests =
                            , UnstyledEnd
                            ]
                          ])
+    , Test.test
+          "printableLines handles a multi line string with line trailing whitspace"
+          (\_ ->
+              exerciseWithText "ab   \ncd" |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Styled "a" Current
+                           , Styled "b" Waiting
+                           , StyledEnter Waiting
+                           ]
+                         , [ Styled "c" Waiting
+                           , Styled "d" Waiting
+                           , UnstyledEnd
+                           ]
+                         ])
+    , Test.test
+          "printableLines handles a multi line string with blank lines at start"
+          (\_ ->
+              exerciseWithText "   \n  \n\nab\ncd" |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Styled "a" Current
+                           , Styled "b" Waiting
+                           , StyledEnter Waiting
+                           ]
+                         , [ Styled "c" Waiting
+                           , Styled "d" Waiting
+                           , UnstyledEnd
+                           ]
+                         ])
     ]
 
 
