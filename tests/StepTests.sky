@@ -7,7 +7,27 @@ import Step
 
 tests : List Test
 tests =
-    isSkipableTests ++ isTypeableTests
+    isEndTests ++ isSkipableTests ++ isTypeableTests ++ matchesTypedTests
+
+
+isEndTests : List Test
+isEndTests =
+    [ Test.test
+          "isEnd returns False for a normal Step"
+          (\_ -> Step.init 'f' |> Step.isEnd |> Test.equal False)
+    , Test.test
+          "isEnd returns False for an EnterChar"
+          (\_ -> Step.initEnterChar |> Step.isEnd |> Test.equal False)
+    , Test.test
+          "isEnd returns False for an EmptyLine"
+          (\_ -> Step.initEmptyLine |> Step.isEnd |> Test.equal False)
+    , Test.test
+          "isEnd returns False for a Skip Step"
+          (\_ -> Step.initSkip "a" |> Step.isEnd |> Test.equal False)
+    , Test.test
+          "isEnd returns True for an End Step"
+          (\_ -> Step.initEnd |> Step.isEnd |> Test.equal True)
+    ]
 
 
 isSkipableTests : List Test
@@ -47,4 +67,32 @@ isTypeableTests =
     , Test.test
           "isTypeable returns False for an End Step"
           (\_ -> Step.initEnd |> Step.isTypeable |> Test.equal False)
+    ]
+
+
+matchesTypedTests : List Test
+matchesTypedTests =
+    [ Test.test
+          "matchesTyped returns False for a normal Step when the char doesn't match"
+          (\_ -> Step.init 'f' |> Step.matchesTyped 'x' |> Test.equal False)
+    , Test.test
+          "matchesTyped returns True for a normal Step when the char matches"
+          (\_ -> Step.init 'f' |> Step.matchesTyped 'f' |> Test.equal True)
+    , Test.test
+          "matchesTyped returns False for an EnterChar when the char isn't an EnterChar"
+          (\_ -> Step.initEnterChar |> Step.matchesTyped 'x' |> Test.equal False)
+    , Test.test
+          "matchesTyped returns True for an EnterChar when the char is an EnterChar"
+          (\_ ->
+              Step.initEnterChar |> Step.matchesTyped (Char.fromCode 13)
+                  |> Test.equal True)
+    , Test.test
+          "matchesTyped returns False for an EmptyLine"
+          (\_ -> Step.initEmptyLine |> Step.matchesTyped 'x' |> Test.equal False)
+    , Test.test
+          "matchesTyped returns False for a Skip Step"
+          (\_ -> Step.initSkip "a" |> Step.matchesTyped 'x' |> Test.equal False)
+    , Test.test
+          "matchesTyped returns False for an End Step"
+          (\_ -> Step.initEnd |> Step.matchesTyped 'x' |> Test.equal False)
     ]

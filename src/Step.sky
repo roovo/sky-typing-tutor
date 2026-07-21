@@ -5,8 +5,10 @@ module Step exposing
     , initEnterChar
     , initEmptyLine
     , initSkip
+    , isEnd
     , isSkipable
     , isTypeable
+    , matchesTyped
     )
 
 --
@@ -74,6 +76,31 @@ isTypeable step =
 
         Typeable _ ->
             True
+
+        _ ->
+            False
+
+
+isEnd : Step -> Bool
+isEnd step =
+    case step of
+
+        End ->
+            True
+
+        _ ->
+            False
+
+
+matchesTyped : Char -> Step -> Bool
+matchesTyped ch step =
+    case step of
+
+        EnterChar ->
+            ch == (Char.fromCode 13)
+
+        Typeable actual ->
+            actual == ch
 
         _ ->
             False
