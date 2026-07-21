@@ -86,7 +86,7 @@ toPrintable style step =
             StyledEnter style
 
         Step.EmptyLine ->
-            UnstyledEnd
+            UnstyledEmptyLine
 
         Step.Skip _ ->
             UnstyledEnd
