@@ -25,8 +25,8 @@ isSkipableTests =
           "isSkipable returns True for a Skip Step"
           (\_ -> Step.initSkip "a" |> Step.isSkipable |> Test.equal True)
     , Test.test
-          "isSkipable returns True for an End Step"
-          (\_ -> Step.initEnd |> Step.isSkipable |> Test.equal True)
+          "isSkipable returns False for an End Step"
+          (\_ -> Step.initEnd |> Step.isSkipable |> Test.equal False)
     ]
 
 

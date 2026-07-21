@@ -61,9 +61,6 @@ isSkipable step =
         Skip _ ->
             True
 
-        End ->
-            True
-
         _ ->
             False
 
