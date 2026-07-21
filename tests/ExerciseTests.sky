@@ -52,6 +52,18 @@ printablesTests =
                          , UnstyledEnd
                          ])
     , Test.test
+          "printables handles a multi line string with blank lines at start"
+          (\_ ->
+              exerciseWithText "   \n  \n\nab\ncd" |> Exercise.printables
+                  |> Test.equal
+                         [ Styled "a" Current
+                         , Styled "b" Waiting
+                         , StyledEnter Waiting
+                         , Styled "c" Waiting
+                         , Styled "d" Waiting
+                         , UnstyledEnd
+                         ])
+    , Test.test
           "printables handles a multi line string with blank lines in middle"
           (\_ ->
               exerciseWithText "ab   \n  \n\ncd" |> Exercise.printables
