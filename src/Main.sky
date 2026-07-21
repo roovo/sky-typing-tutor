@@ -89,7 +89,10 @@ type alias KeyEvent =
 
 onKey : KeyEvent -> Msg
 onKey keyEvent =
-    if keyEvent.kind == "char" && keyEvent.value == "q" then
+    if keyEvent.kind == "escape" then
+        Quit
+
+    else if keyEvent.kind == "ctrl" && keyEvent.value == "c" then
         Quit
 
     else
