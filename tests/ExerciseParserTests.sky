@@ -98,6 +98,16 @@ tests =
           (\_ ->
               "  \n\nab" |> ExerciseParser.toSteps
                   |> Test.equal [ Step.init 'a', Step.init 'b', Step.initEnd ])
+    , Test.test
+          "toSteps includes leading whitespace on the first non-emtpy line"
+          (\_ ->
+              "  \n\n  ab" |> ExerciseParser.toSteps
+                  |> Test.equal
+                         [ Step.initSkip "  "
+                         , Step.init 'a'
+                         , Step.init 'b'
+                         , Step.initEnd
+                         ])
     ]
 
 
