@@ -224,6 +224,22 @@ printableLinesTests =
                            , UnstyledEnd
                            ]
                          ])
+    , Test.test
+          "printableLines handles a multi line string with leading whitespace on 1st line"
+          (\_ ->
+              exerciseWithText "  ab\n  cd" |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Unstyled "  "
+                           , Styled "a" Current
+                           , Styled "b" Waiting
+                           , StyledEnter Waiting
+                           ]
+                         , [ Unstyled "  "
+                           , Styled "c" Waiting
+                           , Styled "d" Waiting
+                           , UnstyledEnd
+                           ]
+                         ])
     ]
 
 
