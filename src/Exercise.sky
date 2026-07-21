@@ -88,8 +88,8 @@ toPrintable style step =
         Step.EmptyLine ->
             UnstyledEmptyLine
 
-        Step.Skip _ ->
-            UnstyledEnd
+        Step.Skip st ->
+            Unstyled st
 
         Step.Typeable ch ->
             Styled (String.fromChar ch) style
