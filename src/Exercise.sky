@@ -50,7 +50,27 @@ printables exercise =
 
 printableLines : Exercise -> List (List Printable)
 printableLines exercise =
-    [ printables exercise ]
+    splitIntoLines (printables exercise) [] []
+
+
+splitIntoLines : List Printable -> List Printable -> List (List Printable) -> List (List Printable)
+splitIntoLines printables currentLine acc =
+    case printables of
+
+        [] ->
+            List.reverse (List.reverse currentLine :: acc)
+
+        p :: rest ->
+            case p of
+
+                StyledEnter _ ->
+                    splitIntoLines
+                        rest
+                        []
+                        (List.reverse (p :: currentLine) :: acc)
+
+                _ ->
+                    splitIntoLines rest (p :: currentLine) acc
 
 
 title : Exercise -> String

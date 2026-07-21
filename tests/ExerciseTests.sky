@@ -2,7 +2,7 @@ module ExerciseTests exposing (tests)
 
 import Sky.Core.Prelude exposing (..)
 import Sky.Test as Test exposing (Test)
-import Exercise exposing (Printable(..), Style(..))
+import Exercise exposing (Exercise, Printable(..), Style(..))
 
 
 tests : List Test
@@ -134,6 +134,20 @@ printableLinesTests =
                          [ [ Styled "a" Current
                            , Styled " " Waiting
                            , Styled "b" Waiting
+                           , UnstyledEnd
+                           ]
+                         ])
+    , Test.test
+          "printableLines handles a multi line string containing just printables"
+          (\_ ->
+              exerciseWithText "ab\ncd" |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Styled "a" Current
+                           , Styled "b" Waiting
+                           , StyledEnter Waiting
+                           ]
+                         , [ Styled "c" Waiting
+                           , Styled "d" Waiting
                            , UnstyledEnd
                            ]
                          ])
