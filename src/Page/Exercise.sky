@@ -1,6 +1,6 @@
 module Page.Exercise exposing (Model, Msg, init, view)
 
-import Exercise exposing (Exercise)
+import Exercise exposing (Exercise, Style(..))
 import Sky.Core.Prelude exposing (..)
 import Std.Ui as Ui
 import Std.Ui exposing (Element)
@@ -36,16 +36,65 @@ view toMsg model =
         , Background.color (Ui.rgb 18 22 38)
         , Font.color (Ui.rgb 220 220 230)
         ]
-        [ heading model, exerciseBody model ]
+        [ viewHeading model, viewBody model ]
 
 
-heading model =
+viewHeading : Model -> Element msg
+viewHeading model =
     Ui.el
         [ Font.color (Ui.rgb 142 200 168) ]
         (Ui.text <| Exercise.title model.exercise)
 
 
-exerciseBody model =
-    Ui.el
-        [ Font.color (Ui.rgb 142 200 168) ]
-        (Ui.text <| Exercise.title model.exercise)
+viewBody : Model -> Element msg
+viewBody model =
+    let
+        lines = Exercise.printableLines model.exercise
+    in
+        Ui.column [ Ui.spacing 0 ] (List.map viewLine lines)
+
+
+viewLine : List Exercise.Printable -> Element msg
+viewLine printables =
+    Ui.row [] (List.map viewPrintable printables)
+
+
+viewPrintable : Exercise.Printable -> Element msg
+viewPrintable printable =
+    case printable of
+
+        Exercise.Styled ch style ->
+            Ui.el (styleAttrs style) (Ui.text ch)
+
+        Exercise.StyledEnter style ->
+            Ui.el (styleAttrs style) (Ui.text "↵")
+
+        Exercise.UnstyledEmptyLine ->
+            Ui.text ""
+
+        Exercise.UnstyledEnd ->
+            Ui.text ""
+
+
+styleAttrs : Exercise.Style -> List (Ui.Attribute msg)
+styleAttrs style =
+    case style of
+
+        Exercise.Current ->
+            [ Background.color (Ui.rgb 80 80 120)
+            , Font.color (Ui.rgb 255 255 255)
+            ]
+
+        Exercise.Completed ->
+            [ Font.color (Ui.rgb 100 180 100) ]
+
+        Exercise.Error ->
+            [ Background.color (Ui.rgb 180 50 50)
+            , Font.color (Ui.rgb 255 255 255)
+            ]
+
+        Exercise.Waiting ->
+            [ Font.color (Ui.rgb 120 120 140) ]
+
+        Exercise.Unstyled ->
+            []
