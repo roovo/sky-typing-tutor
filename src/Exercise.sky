@@ -1,4 +1,12 @@
-module Exercise exposing (Exercise, Printable(..), Style(..), init, printables, title)
+module Exercise exposing
+    ( Exercise
+    , Printable(..)
+    , Style(..)
+    , init
+    , printables
+    , printableLines
+    , title
+    )
 
 import Sky.Core.Debug as Debug
 import ExerciseParser
@@ -38,6 +46,11 @@ init title text =
 printables : Exercise -> List Printable
 printables exercise =
     steps exercise |> Zipper.first |> toInitialStep |> setStyles
+
+
+printableLines : Exercise -> List (List Printable)
+printableLines exercise =
+    [ printables exercise ]
 
 
 title : Exercise -> String

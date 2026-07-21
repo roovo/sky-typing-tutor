@@ -7,7 +7,7 @@ import Exercise exposing (Printable(..), Style(..))
 
 tests : List Test
 tests =
-    printablesTests
+    printablesTests ++ printableLinesTests
 
 
 printablesTests : List Test
@@ -115,6 +115,27 @@ printablesTests =
                          , Styled "c" Waiting
                          , Styled "d" Waiting
                          , UnstyledEnd
+                         ])
+    ]
+
+
+printableLinesTests : List Test
+printableLinesTests =
+    [ Test.test
+          "printableLines returns an UnstyledEnd if there is no text"
+          (\_ ->
+              exerciseWithText "" |> Exercise.printableLines
+                  |> Test.equal [ [ UnstyledEnd ] ])
+    , Test.test
+          "printableLines handles a single line string containing just printables"
+          (\_ ->
+              exerciseWithText "a b" |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Styled "a" Current
+                           , Styled " " Waiting
+                           , Styled "b" Waiting
+                           , UnstyledEnd
+                           ]
                          ])
     ]
 

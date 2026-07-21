@@ -36,10 +36,16 @@ view toMsg model =
         , Background.color (Ui.rgb 18 22 38)
         , Font.color (Ui.rgb 220 220 230)
         ]
-        [ heading model ]
+        [ heading model, exerciseBody model ]
 
 
 heading model =
+    Ui.el
+        [ Font.color (Ui.rgb 142 200 168) ]
+        (Ui.text <| Exercise.title model.exercise)
+
+
+exerciseBody model =
     Ui.el
         [ Font.color (Ui.rgb 142 200 168) ]
         (Ui.text <| Exercise.title model.exercise)
