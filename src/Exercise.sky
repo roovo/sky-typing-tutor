@@ -83,7 +83,7 @@ toPrintable style step =
             UnstyledEnd
 
         Step.EnterChar ->
-            UnstyledEnd
+            StyledEnter style
 
         Step.EmptyLine ->
             UnstyledEnd

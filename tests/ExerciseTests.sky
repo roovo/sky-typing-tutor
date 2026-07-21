@@ -27,6 +27,18 @@ printablesTests =
                          , Styled "b" Waiting
                          , UnstyledEnd
                          ])
+    , Test.test
+          "printables handles a multi line string containing just printables"
+          (\_ ->
+              exerciseWithText "ab\ncd" |> Exercise.printables
+                  |> Test.equal
+                         [ Styled "a" Current
+                         , Styled "b" Waiting
+                         , StyledEnter Waiting
+                         , Styled "c" Waiting
+                         , Styled "d" Waiting
+                         , UnstyledEnd
+                         ])
     ]
 
 
