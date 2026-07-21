@@ -37,20 +37,24 @@ init title text =
 --
 printables : Exercise -> List Printable
 printables exercise =
-    steps exercise |> Zipper.first |> setStyles
+    steps exercise |> Zipper.first |> toInitialStep |> setStyles
 
 
 title : Exercise -> String
 title exercise =
     exercise.title
 
-
 --
 -- PRIVATE
 --
+type Direction
+    = Next
+    | Previous
+
+
 beforeStyles : Zipper Step -> List Printable
 beforeStyles zippedSteps =
-    []
+    zippedSteps |> Zipper.before |> List.map (toPrintable Completed)
 
 
 currentStyle : Zipper Step -> List Printable
@@ -69,10 +73,34 @@ setStyles zippedSteps =
         ++ afterStyles zippedSteps
 
 
--- steps : Exercise -> Zipper Step
+skipOver : Direction -> Zipper Step -> Zipper Step
+skipOver direction steps1 =
+    let
+        newSteps = zipperMover direction steps1
+    in
+        if Step.isSkipable (Zipper.current newSteps) then
+            skipOver direction newSteps
+
+        else
+            newSteps
+
+
+steps : Exercise -> Zipper Step
 steps exercise =
     exercise.text |> ExerciseParser.toSteps |> Zipper.fromList
         |> Maybe.withDefault (Zipper.singleton Step.initEnd)
+
+
+toInitialStep : Zipper Step -> Zipper Step
+toInitialStep zippedSteps =
+    let
+        currentStep = Zipper.current zippedSteps
+    in
+        if Step.isSkipable currentStep then
+            skipOver Next zippedSteps
+
+        else
+            zippedSteps
 
 
 toPrintable : Style -> Step -> Printable
@@ -93,3 +121,14 @@ toPrintable style step =
 
         Step.Typeable ch ->
             Styled (String.fromChar ch) style
+
+
+zipperMover : Direction -> Zipper Step -> Zipper Step
+zipperMover direction zs =
+    case direction of
+
+        Next ->
+            Zipper.next zs
+
+        Previous ->
+            Zipper.previous zs

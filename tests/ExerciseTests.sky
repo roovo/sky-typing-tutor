@@ -102,6 +102,20 @@ printablesTests =
                          , Styled "d" Waiting
                          , UnstyledEnd
                          ])
+    , Test.test
+          "printables handles a multi line string with leading whitespace on 1st line"
+          (\_ ->
+              exerciseWithText "  ab\n  cd" |> Exercise.printables
+                  |> Test.equal
+                         [ Unstyled "  "
+                         , Styled "a" Current
+                         , Styled "b" Waiting
+                         , StyledEnter Waiting
+                         , Unstyled "  "
+                         , Styled "c" Waiting
+                         , Styled "d" Waiting
+                         , UnstyledEnd
+                         ])
     ]
 
 
