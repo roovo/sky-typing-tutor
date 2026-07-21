@@ -1,0 +1,4 @@
+module Event exposing (Event)
+
+type alias Event =
+    { char : Char }
