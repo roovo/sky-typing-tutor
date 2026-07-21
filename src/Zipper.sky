@@ -1,19 +1,22 @@
 module Zipper exposing
     ( Zipper
-    , singleton
-    , fromList
+    , after
     , before
     , current
-    , after
     , first
+    , fromList
     , next
     , previous
+    , singleton
+    , toList
     )
 
 import Sky.Core.Prelude exposing (..)
 import Sky.Core.List as List
 
-
+--
+-- TYPE
+--
 type alias Zipper a =
     { ls : List a
     , focus : a
@@ -21,6 +24,9 @@ type alias Zipper a =
     }
 
 
+--
+-- CONSTRUCTION
+--
 singleton : a -> Zipper a
 singleton x =
     { ls = [], focus = x, rs = [] }
@@ -29,11 +35,56 @@ singleton x =
 fromList : List a -> Maybe (Zipper a)
 fromList xs =
     case xs of
+
         [] ->
             Nothing
 
         y :: ys ->
             Just { ls = [], focus = y, rs = ys }
+
+
+--
+-- MOVEMENT
+--
+first : Zipper a -> Zipper a
+first zipper =
+    case List.reverse zipper.ls of
+
+        [] ->
+            zipper
+
+        y :: ys ->
+            { ls = [], focus = y, rs = ys ++ [ zipper.focus ] ++ zipper.rs }
+
+
+next : Zipper a -> Zipper a
+next zipper =
+    case zipper.rs of
+
+        [] ->
+            zipper
+
+        y :: ys ->
+            { ls = zipper.focus :: zipper.ls, focus = y, rs = ys }
+
+
+previous : Zipper a -> Zipper a
+previous zipper =
+    case zipper.ls of
+
+        [] ->
+            zipper
+
+        y :: ys ->
+            { ls = ys, focus = y, rs = zipper.focus :: zipper.rs }
+
+
+--
+-- INFO
+--
+after : Zipper a -> List a
+after zipper =
+    zipper.rs
 
 
 before : Zipper a -> List a
@@ -46,36 +97,9 @@ current zipper =
     zipper.focus
 
 
-after : Zipper a -> List a
-after zipper =
-    zipper.rs
-
-
-first : Zipper a -> Zipper a
-first zipper =
-    case List.reverse zipper.ls of
-        [] ->
-            zipper
-
-        y :: ys ->
-            { ls = [], focus = y, rs = ys ++ [ zipper.focus ] ++ zipper.rs }
-
-
-next : Zipper a -> Zipper a
-next zipper =
-    case zipper.rs of
-        [] ->
-            zipper
-
-        y :: ys ->
-            { ls = zipper.focus :: zipper.ls, focus = y, rs = ys }
-
-
-previous : Zipper a -> Zipper a
-previous zipper =
-    case zipper.ls of
-        [] ->
-            zipper
-
-        y :: ys ->
-            { ls = ys, focus = y, rs = zipper.focus :: zipper.rs }
+---
+-- CONVERSION
+--
+toList : Zipper a -> List a
+toList z =
+    before z ++ [ current z ] ++ after z

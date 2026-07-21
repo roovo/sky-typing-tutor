@@ -7,28 +7,125 @@ import Sky.Test as Test exposing (Test)
 import Zipper exposing (Zipper)
 
 
-makeZipper list =
-    case Zipper.fromList list of
-
-        Just z ->
-            z
-
-        Nothing ->
-            Zipper.singleton 0
-
-
 tests : List Test
 tests =
+    afterTests ++ beforeTests ++ combinationTests ++ currentTests ++ firstTests
+        ++ fromListTests
+        ++ nextTests
+        ++ previousTests
+        ++ singletonTests
+        ++ toListTests
+
+
+afterTests : List Test
+afterTests =
     [ Test.test
-          "singleton creates a zipper with one element"
-          (\_ -> Test.equal 1 (Zipper.current (Zipper.singleton 1)))
+          "after after two nexts"
+          (\_ ->
+              let
+                  z =
+                      makeZipper [ 1, 2, 3, 4 ] |> Zipper.next |> Zipper.next
+              in
+                  Test.equal [ 4 ] (Zipper.after z))
+    ]
+
+
+beforeTests : List Test
+beforeTests =
+    [ Test.test
+          "before after two nexts"
+          (\_ ->
+              let
+                  z =
+                      makeZipper [ 1, 2, 3, 4 ] |> Zipper.next |> Zipper.next
+              in
+                  Test.equal [ 1, 2 ] (Zipper.before z))
+    ]
+
+
+combinationTests : List Test
+combinationTests =
+    [ Test.test
+          "combination: next then previous returns to previous"
+          (\_ ->
+              let
+                  z =
+                      makeZipper [ 1, 2, 3 ] |> Zipper.next |> Zipper.next
+                          |> Zipper.previous
+              in
+                  Test.equal 2 (Zipper.current z))
     , Test.test
-          "singleton has empty before"
-          (\_ -> Test.equal [] (Zipper.before (Zipper.singleton 1)))
+          "combination: traversing to end and back preserves list"
+          (\_ ->
+              let
+                  z =
+                      makeZipper [ 1, 2, 3 ] |> Zipper.next |> Zipper.next
+                          |> Zipper.previous
+                          |> Zipper.previous
+              in
+                  Test.equal [ 1, 2, 3 ] (Zipper.toList z))
+    ]
+
+
+currentTests : List Test
+currentTests =
+    [ Test.test
+          "current after two nexts"
+          (\_ ->
+              let
+                  z =
+                      makeZipper [ 1, 2, 3, 4 ] |> Zipper.next |> Zipper.next
+              in
+                  Test.equal 3 (Zipper.current z))
+    ]
+
+
+firstTests : List Test
+firstTests =
+    [ Test.test
+          "first from middle focuses on first element"
+          (\_ ->
+              let
+                  z =
+                      makeZipper [ 1, 2, 3, 4 ] |> Zipper.next |> Zipper.next
+                          |> Zipper.first
+              in
+                  Test.equal 1 (Zipper.current z))
     , Test.test
-          "singleton has empty after"
-          (\_ -> Test.equal [] (Zipper.after (Zipper.singleton 1)))
+          "first from middle has empty before"
+          (\_ ->
+              let
+                  z =
+                      makeZipper [ 1, 2, 3, 4 ] |> Zipper.next |> Zipper.next
+                          |> Zipper.first
+              in
+                  Test.equal [] (Zipper.before z))
     , Test.test
+          "first from middle has all others after"
+          (\_ ->
+              let
+                  z =
+                      makeZipper [ 1, 2, 3, 4 ] |> Zipper.next |> Zipper.next
+                          |> Zipper.first
+              in
+                  Test.equal [ 2, 3, 4 ] (Zipper.after z))
+    , Test.test
+          "first when already at first is no-op"
+          (\_ ->
+              let
+                  z = makeZipper [ 1, 2, 3 ] |> Zipper.first
+              in
+                  Test.equal 1 (Zipper.current z))
+    , Test.test
+          "first on singleton stays put"
+          (\_ ->
+              Test.equal 1 (Zipper.current (Zipper.first (Zipper.singleton 1))))
+    ]
+
+
+fromListTests : List Test
+fromListTests =
+    [ Test.test
           "fromList with empty list returns Nothing"
           (\_ ->
               case Zipper.fromList [] of
@@ -59,7 +156,12 @@ tests =
                   z = makeZipper [ 1, 2, 3 ]
               in
                   Test.equal [ 2, 3 ] (Zipper.after z))
-    , Test.test
+    ]
+
+
+nextTests : List Test
+nextTests =
+    [ Test.test
           "next moves to second element"
           (\_ ->
               let
@@ -106,11 +208,17 @@ tests =
                   z =
                       makeZipper [ 1, 2, 3 ] |> Zipper.next |> Zipper.next
                           |> Zipper.next
-                  reconstructed =
-                      Zipper.before z ++ [ Zipper.current z ] ++ Zipper.after z
               in
-                  Test.equal [ 1, 2, 3 ] reconstructed)
+                  Test.equal [ 1, 2, 3 ] (Zipper.toList z))
     , Test.test
+          "next on singleton stays put"
+          (\_ -> Test.equal 1 (Zipper.current (Zipper.next (Zipper.singleton 1))))
+    ]
+
+
+previousTests : List Test
+previousTests =
+    [ Test.test
           "previous moves back"
           (\_ ->
               let
@@ -132,10 +240,8 @@ tests =
                   z =
                       makeZipper [ 1, 2, 3 ] |> Zipper.previous
                           |> Zipper.previous
-                  reconstructed =
-                      Zipper.before z ++ [ Zipper.current z ] ++ Zipper.after z
               in
-                  Test.equal [ 1, 2, 3 ] reconstructed)
+                  Test.equal [ 1, 2, 3 ] (Zipper.toList z))
     , Test.test
           "multiple previous from middle sticks to start"
           (\_ ->
@@ -147,87 +253,57 @@ tests =
               in
                   Test.equal 1 (Zipper.current z))
     , Test.test
-          "first from middle focuses on first element"
-          (\_ ->
-              let
-                  z =
-                      makeZipper [ 1, 2, 3, 4 ] |> Zipper.next |> Zipper.next
-                          |> Zipper.first
-              in
-                  Test.equal 1 (Zipper.current z))
-    , Test.test
-          "first from middle has empty before"
-          (\_ ->
-              let
-                  z =
-                      makeZipper [ 1, 2, 3, 4 ] |> Zipper.next |> Zipper.next
-                          |> Zipper.first
-              in
-                  Test.equal [] (Zipper.before z))
-    , Test.test
-          "first from middle has all others after"
-          (\_ ->
-              let
-                  z =
-                      makeZipper [ 1, 2, 3, 4 ] |> Zipper.next |> Zipper.next
-                          |> Zipper.first
-              in
-                  Test.equal [ 2, 3, 4 ] (Zipper.after z))
-    , Test.test
-          "first when already at first is no-op"
-          (\_ ->
-              let
-                  z = makeZipper [ 1, 2, 3 ] |> Zipper.first
-              in
-                  Test.equal 1 (Zipper.current z))
-    , Test.test
-          "next then previous returns to previous"
-          (\_ ->
-              let
-                  z =
-                      makeZipper [ 1, 2, 3 ] |> Zipper.next |> Zipper.next
-                          |> Zipper.previous
-              in
-                  Test.equal 2 (Zipper.current z))
-    , Test.test
-          "traversing to end and back preserves list"
-          (\_ ->
-              let
-                  z =
-                      makeZipper [ 1, 2, 3 ] |> Zipper.next |> Zipper.next
-                          |> Zipper.previous
-                          |> Zipper.previous
-                  reconstructed =
-                      Zipper.before z ++ [ Zipper.current z ] ++ Zipper.after z
-              in
-                  Test.equal [ 1, 2, 3 ] reconstructed)
-    , Test.test
-          "before after two nexts"
-          (\_ ->
-              let
-                  z =
-                      makeZipper [ 1, 2, 3, 4 ] |> Zipper.next |> Zipper.next
-              in
-                  Test.equal [ 1, 2 ] (Zipper.before z))
-    , Test.test
-          "after after two nexts"
-          (\_ ->
-              let
-                  z =
-                      makeZipper [ 1, 2, 3, 4 ] |> Zipper.next |> Zipper.next
-              in
-                  Test.equal [ 4 ] (Zipper.after z))
-    , Test.test
-          "next on singleton stays put"
-          (\_ -> Test.equal 1 (Zipper.current (Zipper.next (Zipper.singleton 1))))
-    , Test.test
           "previous on singleton stays put"
           (\_ ->
               Test.equal
                   1
                   (Zipper.current (Zipper.previous (Zipper.singleton 1))))
-    , Test.test
-          "first on singleton stays put"
-          (\_ ->
-              Test.equal 1 (Zipper.current (Zipper.first (Zipper.singleton 1))))
     ]
+
+
+singletonTests : List Test
+singletonTests =
+    [ Test.test
+          "singleton creates a zipper with one element"
+          (\_ -> Test.equal 1 (Zipper.current (Zipper.singleton 1)))
+    , Test.test
+          "singleton has empty before"
+          (\_ -> Test.equal [] (Zipper.before (Zipper.singleton 1)))
+    , Test.test
+          "singleton has empty after"
+          (\_ -> Test.equal [] (Zipper.after (Zipper.singleton 1)))
+    ]
+
+
+toListTests : List Test
+toListTests =
+    [ Test.test
+          "toList returns a singletom list for a singleton zipper"
+          (\_ -> Zipper.singleton 1 |> Zipper.toList |> Test.equal [ 1 ])
+    , Test.test
+          "toList returns the correct list for a non-singleton zipper"
+          (\_ ->
+              makeZipper [ 1, 2, 3, 4 ] |> Zipper.toList
+                  |> Test.equal [ 1, 2, 3, 4 ])
+    , Test.test
+          "toList returns the correct list even if it has had current moved around"
+          (\_ ->
+              makeZipper [ 1, 2, 3, 4 ] |> Zipper.previous |> Zipper.next
+                  |> Zipper.next
+                  |> Zipper.previous
+                  |> Zipper.toList
+                  |> Test.equal [ 1, 2, 3, 4 ])
+    ]
+
+
+--
+-- HELPERS
+--
+makeZipper list =
+    case Zipper.fromList list of
+
+        Just z ->
+            z
+
+        Nothing ->
+            Zipper.singleton 0
