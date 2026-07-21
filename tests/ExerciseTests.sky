@@ -17,6 +17,16 @@ printablesTests =
           (\_ ->
               exerciseWithText "" |> Exercise.printables
                   |> Test.equal [ UnstyledEnd ])
+    , Test.test
+          "printables handles a single line string containing just printables"
+          (\_ ->
+              exerciseWithText "a b" |> Exercise.printables
+                  |> Test.equal
+                         [ Styled "a" Current
+                         , Styled " " Waiting
+                         , Styled "b" Waiting
+                         , UnstyledEnd
+                         ])
     ]
 
 

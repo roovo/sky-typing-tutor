@@ -16,6 +16,7 @@ type Style
     = Current
     | Error
     | Completed
+    | Unstyled
     | Waiting
 
 type Printable
@@ -54,16 +55,12 @@ beforeStyles zippedSteps =
 
 currentStyle : Zipper Step -> List Printable
 currentStyle zippedSteps =
-    [ zippedSteps |> Zipper.current |> toPrintable ]
+    [ zippedSteps |> Zipper.current |> toPrintable Current ]
 
 
 afterStyles : Zipper Step -> List Printable
 afterStyles zippedSteps =
-    []
-    -- let
-    --     toPrintable step = { content = Step.toString step, style = Waiting }
-    -- in
-    --     zippedSteps |> Zipper.after |> List.map toPrintable
+    zippedSteps |> Zipper.after |> List.map (toPrintable Waiting)
 
 
 setStyles : Zipper Step -> List Printable
@@ -78,21 +75,21 @@ steps exercise =
         |> Maybe.withDefault (Zipper.singleton Step.initEnd)
 
 
-toPrintable : Step -> Printable
-toPrintable step =
+toPrintable : Style -> Step -> Printable
+toPrintable style step =
     case step of
 
-        End ->
+        Step.End ->
             UnstyledEnd
 
-        EnterChar ->
+        Step.EnterChar ->
             UnstyledEnd
 
-        EmptyLine ->
+        Step.EmptyLine ->
             UnstyledEnd
 
-        Skip _ ->
+        Step.Skip _ ->
             UnstyledEnd
 
-        Typeable _ ->
-            UnstyledEnd
+        Step.Typeable ch ->
+            Styled (String.fromChar ch) style
