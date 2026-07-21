@@ -7,7 +7,27 @@ import Step
 
 tests : List Test
 tests =
-    isTypeableTests
+    isSkipableTests ++ isTypeableTests
+
+
+isSkipableTests : List Test
+isSkipableTests =
+    [ Test.test
+          "isSkipable returns False for a normal Step"
+          (\_ -> Step.init 'f' |> Step.isSkipable |> Test.equal False)
+    , Test.test
+          "isSkipable returns False for an EnterChar"
+          (\_ -> Step.initEnterChar |> Step.isSkipable |> Test.equal False)
+    , Test.test
+          "isSkipable returns True for an EmptyLine"
+          (\_ -> Step.initEmptyLine |> Step.isSkipable |> Test.equal True)
+    , Test.test
+          "isSkipable returns True for a Skip Step"
+          (\_ -> Step.initSkip "a" |> Step.isSkipable |> Test.equal True)
+    , Test.test
+          "isSkipable returns True for an End Step"
+          (\_ -> Step.initEnd |> Step.isSkipable |> Test.equal True)
+    ]
 
 
 isTypeableTests : List Test

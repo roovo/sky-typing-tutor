@@ -1,4 +1,13 @@
-module Step exposing (Step(..), init, initEnd, initEnterChar, initEmptyLine, initSkip, isTypeable)
+module Step exposing
+    ( Step(..)
+    , init
+    , initEnd
+    , initEnterChar
+    , initEmptyLine
+    , initSkip
+    , isSkipable
+    , isTypeable
+    )
 
 --
 -- TYPE
@@ -42,6 +51,23 @@ initSkip string =
 --
 -- PREDICATES
 --
+isSkipable : Step -> Bool
+isSkipable step =
+    case step of
+
+        EmptyLine ->
+            True
+
+        Skip _ ->
+            True
+
+        End ->
+            True
+
+        _ ->
+            False
+
+
 isTypeable : Step -> Bool
 isTypeable step =
     case step of
