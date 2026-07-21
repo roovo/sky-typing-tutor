@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Page.Exercise as PageExercise
+import Page.Exercise as PageExercise exposing (Msg(..))
 import Sky.Core.Prelude exposing (..)
 import Sky.Core.String as String
 import Sky.Core.Task as Task
@@ -53,7 +53,7 @@ getArg argList =
 -- MODEL
 --
 type AppModel
-    = Exercise Page.Exercise.Model
+    = Exercise PageExercise.Model
     | NoFile
 
 --
@@ -67,16 +67,24 @@ type Msg
 
 update : Msg -> AppModel -> ( AppModel, Cmd Msg )
 update msg model =
-    case msg of
+    case ( msg, model ) of
 
-        GotExerciseMsg _ ->
+        ( GotExerciseMsg subMsg, Exercise subModel ) ->
+            PageExercise.update subMsg subModel |> updateWith Exercise
+
+        ( GotExerciseMsg _, _ ) ->
             ( model, Cmd.none )
 
-        Quit ->
+        ( Quit, _ ) ->
             ( model, Cmd.perform (System.exit 0) (\_ -> NoOp) )
 
-        NoOp ->
+        ( NoOp, _ ) ->
             ( model, Cmd.none )
+
+
+updateWith : (submodel -> AppModel) -> submodel -> ( AppModel, Cmd Msg )
+updateWith toModel subModel =
+    ( toModel subModel, Cmd.none )
 
 --
 -- ONKEY
@@ -96,7 +104,7 @@ onKey keyEvent =
         Quit
 
     else
-        NoOp
+        GotExerciseMsg (PageExercise.KeyTyped keyEvent)
 
 
 --

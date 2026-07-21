@@ -1,4 +1,4 @@
-module Page.Exercise exposing (Model, Msg, init, view)
+module Page.Exercise exposing (Model, Msg(..), init, view, update)
 
 import Exercise exposing (Exercise, Style(..))
 import Sky.Core.Prelude exposing (..)
@@ -21,8 +21,21 @@ init filename exerciseText =
 --
 -- UPDATE
 --
+type alias KeyEvent =
+    { kind : String
+    , value : String
+    }
+
 type Msg
-    = KeyDown Int
+    = KeyTyped KeyEvent
+
+
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+
+        KeyTyped keyEvent ->
+            { model | exercise = { title = "foo", text = keyEvent.value } }
 
 
 --
