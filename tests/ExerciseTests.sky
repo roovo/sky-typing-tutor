@@ -179,6 +179,22 @@ printableLinesTests =
                            , UnstyledEnd
                            ]
                          ])
+    , Test.test
+          "printableLines handles a multi line string with blank lines in middle"
+          (\_ ->
+              exerciseWithText "ab   \n  \n\ncd" |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Styled "a" Current
+                           , Styled "b" Waiting
+                           , StyledEnter Waiting
+                           ]
+                         , []
+                         , []
+                         , [ Styled "c" Waiting
+                           , Styled "d" Waiting
+                           , UnstyledEnd
+                           ]
+                         ])
     ]
 
 

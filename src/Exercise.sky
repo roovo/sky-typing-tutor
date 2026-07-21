@@ -69,6 +69,9 @@ splitIntoLines printables currentLine acc =
                         []
                         (List.reverse (p :: currentLine) :: acc)
 
+                UnstyledEmptyLine ->
+                    splitIntoLines rest [] (List.reverse currentLine :: acc)
+
                 _ ->
                     splitIntoLines rest (p :: currentLine) acc
 
