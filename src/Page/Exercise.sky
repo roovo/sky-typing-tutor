@@ -35,7 +35,38 @@ update msg model =
     case msg of
 
         KeyTyped keyEvent ->
-            { model | exercise = { title = "foo", text = keyEvent.value } }
+            consumeKeyEvent keyEvent model
+
+
+consumeKeyEvent : KeyEvent -> Model -> Model
+consumeKeyEvent keyEvent model =
+    let
+        -- charToConsume : Maybe Char
+        charToConsume =
+            if keyEvent.kind == "char" then
+                keyEvent.value |> String.toList |> List.head
+
+            else if keyEvent.kind == "enter" then
+                Just (Char.fromCode 13)
+
+            else if keyEvent.kind == "backspace" then
+                Just (Char.fromCode 8)
+
+            else if keyEvent.kind == "space" then
+                Just (Char.fromCode 32)
+
+            else
+                Nothing
+        newExercise =
+            case charToConsume of
+
+                Just ch ->
+                    Exercise.consume ch model.exercise
+
+                Nothing ->
+                    model.exercise
+    in
+        { model | exercise = newExercise }
 
 
 --
