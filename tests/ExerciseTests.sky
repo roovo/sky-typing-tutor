@@ -109,7 +109,7 @@ printableLinesTests =
                            , Styled "b" Waiting
                            , StyledEnter Waiting
                            ]
-                         , [ Unstyled "  "
+                         , [ Styled "  " Unstyled
                            , Styled "c" Waiting
                            , Styled "d" Waiting
                            , UnstyledEnd
@@ -120,12 +120,12 @@ printableLinesTests =
           (\_ ->
               exerciseWithText "  ab\n  cd" |> Exercise.printableLines
                   |> Test.equal
-                         [ [ Unstyled "  "
+                         [ [ Styled "  " Unstyled
                            , Styled "a" Current
                            , Styled "b" Waiting
                            , StyledEnter Waiting
                            ]
-                         , [ Unstyled "  "
+                         , [ Styled "  " Unstyled
                            , Styled "c" Waiting
                            , Styled "d" Waiting
                            , UnstyledEnd

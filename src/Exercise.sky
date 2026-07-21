@@ -22,7 +22,6 @@ type Style
 type Printable
     = Styled String Style
     | StyledEnter Style
-    | Unstyled String
     | UnstyledEmptyLine
     | UnstyledEnd
 
@@ -145,7 +144,7 @@ toPrintable style step =
             UnstyledEmptyLine
 
         Step.Skip st ->
-            Unstyled st
+            Styled st Unstyled
 
         Step.Typeable ch ->
             Styled (String.fromChar ch) style
