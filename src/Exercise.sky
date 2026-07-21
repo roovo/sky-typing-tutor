@@ -1,6 +1,7 @@
-module Exercise exposing (Exercise, Printable(..), Style(..), init, printableLines, title)
+module Exercise exposing (Exercise, Printable(..), Style(..), consume, init, printableLines, title)
 
 import Sky.Core.Debug as Debug
+import Event exposing (Event)
 import ExerciseParser
 import Step
 import Zipper
@@ -8,8 +9,9 @@ import Zipper
 -- MODEL
 --
 type alias Exercise =
-    { title : String
+    { events : List Event
     , text : String
+    , title : String
     }
 
 type Style
@@ -28,7 +30,7 @@ type Printable
 
 init : String -> String -> Exercise
 init title text =
-    { title = title, text = text }
+    { events = [], text = text, title = title }
 
 
 --
@@ -37,6 +39,167 @@ init title text =
 printableLines : Exercise -> List (List Printable)
 printableLines exercise =
     splitIntoLines (printables exercise) [] []
+
+
+title : Exercise -> String
+title exercise =
+    exercise.title
+
+
+--
+-- PROGRESSING
+--
+consume : Char -> Exercise -> Exercise
+consume ch exercise =
+    { exercise | events = logEvent ch exercise }
+
+--
+-- PRIVATE
+--
+type Direction
+    = Next
+    | Previous
+
+
+beforeStyles : Zipper Step -> List Printable
+beforeStyles zippedSteps =
+    zippedSteps |> Zipper.before |> List.map (toPrintable Completed)
+
+
+currentStyle : Int -> Zipper Step -> List Printable
+currentStyle errorCount zippedSteps =
+    let
+        style =
+            if errorCount <= 0 then
+                Current
+            else
+                Error
+    in
+    [ zippedSteps |> Zipper.current |> toPrintable style ]
+
+
+afterStyles : Int -> Zipper Step -> List Printable
+afterStyles errorCount zippedSteps =
+    zippedSteps |> Zipper.after |> List.indexedMap (afterPrintable errorCount)
+
+
+afterPrintable : Int -> Int -> Step -> Printable
+afterPrintable errorCount index step =
+    if index < (errorCount - 1) then
+        toPrintable Error step
+    else
+        toPrintable Waiting step
+
+
+followEvents : List Event -> Zipper Step -> Zipper Step
+followEvents events initialSteps =
+    processEvents (List.reverse events) initialSteps 0
+
+
+followEventsErrorCount : List Event -> Zipper Step -> Int
+followEventsErrorCount events initialSteps =
+    processEventsErrors (List.reverse events) initialSteps 0
+
+
+processEvents : List Event -> Zipper Step -> Int -> Zipper Step
+processEvents events steps1 errorCount =
+    case events of
+
+        [] ->
+            steps1
+
+        event :: rest ->
+            let
+                isMatchingChar = Step.matchesTyped event.char (Zipper.current steps1)
+                isErrorFree = errorCount <= 0
+                isBackSpace = event.char == backspaceChar
+                atEnd = Step.isEnd (Zipper.current steps1)
+            in
+            if isMatchingChar && isErrorFree then
+                processEvents rest (skipOver Next steps1) errorCount
+
+            else if atEnd then
+                processEvents rest steps1 errorCount
+
+            else if isBackSpace && isErrorFree then
+                processEvents rest (skipOver Previous steps1) errorCount
+
+            else if isBackSpace then
+                processEvents rest steps1 (errorCount - 1)
+
+            else
+                processEvents rest steps1 (errorCount + 1)
+
+
+processEventsErrors : List Event -> Zipper Step -> Int -> Int
+processEventsErrors events steps1 errorCount =
+    case events of
+
+        [] ->
+            errorCount
+
+        event :: rest ->
+            let
+                isMatchingChar = Step.matchesTyped event.char (Zipper.current steps1)
+                isErrorFree = errorCount <= 0
+                isBackSpace = event.char == backspaceChar
+                atEnd = Step.isEnd (Zipper.current steps1)
+            in
+            if isMatchingChar && isErrorFree then
+                processEventsErrors rest (skipOver Next steps1) errorCount
+
+            else if atEnd then
+                processEventsErrors rest steps1 errorCount
+
+            else if isBackSpace && isErrorFree then
+                processEventsErrors rest (skipOver Previous steps1) errorCount
+
+            else if isBackSpace then
+                processEventsErrors rest steps1 (errorCount - 1)
+
+            else
+                processEventsErrors rest steps1 (errorCount + 1)
+
+
+backspaceChar : Char
+backspaceChar =
+    Char.fromCode 8
+
+
+logEvent : Char -> Exercise -> List Event
+logEvent ch exercise =
+    let
+        newEvent = { char = ch }
+    in
+        newEvent :: exercise.events
+
+
+printables : Exercise -> List Printable
+printables exercise =
+    let
+        initial = steps exercise |> Zipper.first |> toInitialStep
+        zippedSteps = followEvents exercise.events initial
+        errorCount = followEventsErrorCount exercise.events initial
+    in
+    setStyles zippedSteps errorCount
+
+
+setStyles : Zipper Step -> Int -> List Printable
+setStyles zippedSteps errorCount =
+    beforeStyles zippedSteps ++ currentStyle errorCount zippedSteps
+        ++ afterStyles errorCount zippedSteps
+
+
+skipOver : Direction -> Zipper Step -> Zipper Step
+skipOver direction steps1 =
+    let
+        newSteps = zipperMover direction steps1
+    in
+        if Step.isSkipable (Zipper.current newSteps) then
+            skipOver direction newSteps
+
+        else
+            newSteps
 
 
 splitIntoLines : List Printable -> List Printable -> List (List Printable) -> List (List Printable)
@@ -60,56 +223,6 @@ splitIntoLines printables currentLine acc =
 
                 _ ->
                     splitIntoLines rest (p :: currentLine) acc
-
-
-title : Exercise -> String
-title exercise =
-    exercise.title
-
---
--- PRIVATE
---
-type Direction
-    = Next
-    | Previous
-
-
-beforeStyles : Zipper Step -> List Printable
-beforeStyles zippedSteps =
-    zippedSteps |> Zipper.before |> List.map (toPrintable Completed)
-
-
-currentStyle : Zipper Step -> List Printable
-currentStyle zippedSteps =
-    [ zippedSteps |> Zipper.current |> toPrintable Current ]
-
-
-afterStyles : Zipper Step -> List Printable
-afterStyles zippedSteps =
-    zippedSteps |> Zipper.after |> List.map (toPrintable Waiting)
-
-
-printables : Exercise -> List Printable
-printables exercise =
-    steps exercise |> Zipper.first |> toInitialStep |> setStyles
-
-
-setStyles : Zipper Step -> List Printable
-setStyles zippedSteps =
-    beforeStyles zippedSteps ++ currentStyle zippedSteps
-        ++ afterStyles zippedSteps
-
-
-skipOver : Direction -> Zipper Step -> Zipper Step
-skipOver direction steps1 =
-    let
-        newSteps = zipperMover direction steps1
-    in
-        if Step.isSkipable (Zipper.current newSteps) then
-            skipOver direction newSteps
-
-        else
-            newSteps
 
 
 steps : Exercise -> Zipper Step

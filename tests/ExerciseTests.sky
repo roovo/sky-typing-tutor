@@ -7,7 +7,138 @@ import Exercise exposing (Exercise, Printable(..), Style(..))
 
 tests : List Test
 tests =
-    printableLinesTests
+    consumeTests ++ printableLinesTests
+
+
+consumeTests : List Test
+consumeTests =
+    [ Test.test
+          "consume consumes the first character of the exercise"
+          (\_ ->
+              exerciseWithText "abc" |> Exercise.consume 'a'
+                  |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Styled "a" Completed
+                           , Styled "b" Current
+                           , Styled "c" Waiting
+                           , UnstyledEnd
+                           ]
+                         ])
+    , Test.test
+          "consume consumes the first 2 characters of the exercise"
+          (\_ ->
+              exerciseWithText "abc" |> Exercise.consume 'a'
+                  |> Exercise.consume 'b'
+                  |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Styled "a" Completed
+                           , Styled "b" Completed
+                           , Styled "c" Current
+                           , UnstyledEnd
+                           ]
+                         ])
+    , Test.test
+          "consume consumes onto the 2nd line of a multiline string"
+          (\_ ->
+              exerciseWithText "ab\nc" |> Exercise.consume 'a'
+                  |> Exercise.consume 'b'
+                  |> Exercise.consume enterChar
+                  |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Styled "a" Completed
+                           , Styled "b" Completed
+                           , StyledEnter Completed
+                           ]
+                         , [ Styled "c" Current, UnstyledEnd ]
+                         ])
+    , Test.test
+          "consume styles with an Error if the wrong character is typed"
+          (\_ ->
+              exerciseWithText "abc" |> Exercise.consume 'a'
+                  |> Exercise.consume 'c'
+                  |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Styled "a" Completed
+                           , Styled "b" Error
+                           , Styled "c" Waiting
+                           , UnstyledEnd
+                           ]
+                         ])
+    , Test.test
+          "consume styles with multiple Errors if the wrong characters are typed"
+          (\_ ->
+              exerciseWithText "abc" |> Exercise.consume 'a'
+                  |> Exercise.consume 'c'
+                  |> Exercise.consume 'd'
+                  |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Styled "a" Completed
+                           , Styled "b" Error
+                           , Styled "c" Error
+                           , UnstyledEnd
+                           ]
+                         ])
+    , Test.test
+          "consume handles leading whitespace"
+          (\_ ->
+              exerciseWithText "  ab\n  cd" |> Exercise.consume 'a'
+                  |> Exercise.consume 'b'
+                  |> Exercise.consume enterChar
+                  |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Styled "  " Unstyled
+                           , Styled "a" Completed
+                           , Styled "b" Completed
+                           , StyledEnter Completed
+                           ]
+                         , [ Styled "  " Unstyled
+                           , Styled "c" Current
+                           , Styled "d" Waiting
+                           , UnstyledEnd
+                           ]
+                         ])
+    , Test.test
+          "consume does nothing if backspace typed as first character"
+          (\_ ->
+              exerciseWithText "abc" |> Exercise.consume backspaceChar
+                  |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Styled "a" Current
+                           , Styled "b" Waiting
+                           , Styled "c" Waiting
+                           , UnstyledEnd
+                           ]
+                         ])
+    , Test.test
+          "consume goes back if backspace typed part way through the exercise"
+          (\_ ->
+              exerciseWithText "abc" |> Exercise.consume 'a'
+                  |> Exercise.consume 'b'
+                  |> Exercise.consume backspaceChar
+                  |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Styled "a" Completed
+                           , Styled "b" Current
+                           , Styled "c" Waiting
+                           , UnstyledEnd
+                           ]
+                         ])
+    , Test.test
+          "consume allows errors to be corrected using backspace"
+          (\_ ->
+              exerciseWithText "abc" |> Exercise.consume 'a'
+                  |> Exercise.consume 'c'
+                  |> Exercise.consume backspaceChar
+                  |> Exercise.consume 'b'
+                  |> Exercise.printableLines
+                  |> Test.equal
+                         [ [ Styled "a" Completed
+                           , Styled "b" Completed
+                           , Styled "c" Current
+                           , UnstyledEnd
+                           ]
+                         ])
+    ]
 
 
 printableLinesTests : List Test
@@ -137,6 +268,16 @@ printableLinesTests =
 --
 -- HELPERS
 --
+backspaceChar : Char
+backspaceChar =
+    Char.fromCode 8
+
+
+enterChar : Char
+enterChar =
+    Char.fromCode 13
+
+
 exerciseWithText : String -> Exercise
 exerciseWithText text =
     Exercise.init "" text
