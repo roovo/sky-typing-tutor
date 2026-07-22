@@ -81,7 +81,7 @@ view toMsg model =
         , Background.color (Ui.rgb 18 22 38)
         , Font.color (Ui.rgb 220 220 230)
         ]
-        [ viewHeading model, viewBody model ]
+        [ viewHeading model, viewBody model, viewFooter model ]
 
 
 viewHeading : Model -> Element msg
@@ -95,6 +95,38 @@ viewHeading model =
         , Border.rounded 4
         ]
         (Ui.el [] (Ui.text <| Exercise.title model.exercise))
+
+
+viewFooter : Model -> Element msg
+viewFooter model =
+    Ui.el
+        [ Ui.width Ui.fill
+        , Ui.padding 1
+        , Font.color (Ui.rgb 142 200 168)
+        , Border.width 1
+        , Border.color (Ui.rgb 142 200 168)
+        , Border.rounded 4
+        ]
+        (Ui.el
+            []
+            (Ui.text <| "Accuracy: "
+                ++ formatFloat2dp (Exercise.accuracy model.exercise)))
+
+
+formatFloat2dp : Float -> String
+formatFloat2dp f =
+    let
+        rounded = Math.round (f * 100.0)
+        whole = rounded // 100
+        frac = Math.abs (rounded - whole * 100)
+        fracStr =
+            if frac < 10 then
+                "0" ++ String.fromInt frac
+
+            else
+                String.fromInt frac
+    in
+        String.fromInt whole ++ "." ++ fracStr
 
 
 viewBody : Model -> Element msg
