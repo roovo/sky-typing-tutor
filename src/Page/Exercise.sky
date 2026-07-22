@@ -93,9 +93,14 @@ viewHeading model =
 viewBody : Model -> Element msg
 viewBody model =
     let
-        lines = Exercise.printableLines model.exercise
+        allLines = Exercise.printableLines model.exercise
+        currentLineIndex = Exercise.currentLineIndex model.exercise
+        visibleLineCount = 20
+        scrollOffset = Math.max 0 (currentLineIndex - visibleLineCount // 3)
+        windowedLines =
+            allLines |> List.drop scrollOffset |> List.take visibleLineCount
     in
-        Ui.column [ Ui.spacing 0 ] (List.map viewLine lines)
+        Ui.column [ Ui.spacing 0 ] (List.map viewLine windowedLines)
 
 
 viewLine : List Exercise.Printable -> Element msg
