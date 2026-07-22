@@ -31,6 +31,7 @@ type alias KeyEvent =
 
 type Msg
     = KeyTyped KeyEvent
+    | Tick
 
 
 update : Msg -> Model -> Model
@@ -39,6 +40,9 @@ update msg model =
 
         KeyTyped keyEvent ->
             consumeKeyEvent keyEvent model
+
+        Tick ->
+            { model | elapsedTime = model.elapsedTime + 10 }
 
 
 consumeKeyEvent : KeyEvent -> Model -> Model
