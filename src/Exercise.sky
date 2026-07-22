@@ -214,22 +214,6 @@ exerciseZipper exercise =
     }
 
 
-follwedSteps : Exercise -> Zipper Step
-follwedSteps exercise =
-    exercise |> steps |> Zipper.first |> toInitialStep
-        |> followEvents exercise.events
-
-
-followEvents : List Event -> Zipper Step -> Zipper Step
-followEvents events initialSteps =
-    processEvents (List.reverse events) initialSteps 0
-
-
-followEventsErrorCount : List Event -> Zipper Step -> Int
-followEventsErrorCount events initialSteps =
-    processEventsErrors (List.reverse events) initialSteps 0
-
-
 howManyCharacters : Exercise -> Int
 howManyCharacters exercise =
     exercise.stepsBefore |> List.filter Step.isTypeable |> List.length
@@ -243,71 +227,6 @@ howManyWords exercise =
 lettersPerWord : Float
 lettersPerWord =
     5.0
-
-
-processEvents : List Event -> Zipper Step -> Int -> Zipper Step
-processEvents events steps1 errorCount =
-    case events of
-
-        [] ->
-            steps1
-
-        event :: rest ->
-            let
-                isMatchingChar =
-                    Step.matchesTyped event.char (Zipper.current steps1)
-                isErrorFree = errorCount <= 0
-                isBackSpace = event.char == backspaceChar
-                atEnd = Step.isEnd (Zipper.current steps1)
-            in
-                if isMatchingChar && isErrorFree then
-                    processEvents rest (skipOver Next steps1) errorCount
-
-                else if atEnd then
-                    processEvents rest steps1 errorCount
-
-                else if isBackSpace && isErrorFree then
-                    processEvents rest (skipOver Previous steps1) errorCount
-
-                else if isBackSpace then
-                    processEvents rest steps1 (errorCount - 1)
-
-                else
-                    processEvents rest steps1 (errorCount + 1)
-
-
-processEventsErrors : List Event -> Zipper Step -> Int -> Int
-processEventsErrors events steps1 errorCount =
-    case events of
-
-        [] ->
-            errorCount
-
-        event :: rest ->
-            let
-                isMatchingChar =
-                    Step.matchesTyped event.char (Zipper.current steps1)
-                isErrorFree = errorCount <= 0
-                isBackSpace = event.char == backspaceChar
-                atEnd = Step.isEnd (Zipper.current steps1)
-            in
-                if isMatchingChar && isErrorFree then
-                    processEventsErrors rest (skipOver Next steps1) errorCount
-
-                else if atEnd then
-                    processEventsErrors rest steps1 errorCount
-
-                else if isBackSpace && isErrorFree then
-                    processEventsErrors
-                        rest
-                        (skipOver Previous steps1)
-                        errorCount
-
-                else if isBackSpace then
-                    processEventsErrors rest steps1 (errorCount - 1)
-
-                else
-                    processEventsErrors rest steps1 (errorCount + 1)
 
 
 logEvent : Char -> Int -> Exercise -> List Event
@@ -369,12 +288,6 @@ splitIntoLines printables currentLine acc =
 
                 _ ->
                     splitIntoLines rest (p :: currentLine) acc
-
-
-steps : Exercise -> Zipper Step
-steps exercise =
-    exercise.text |> ExerciseParser.toSteps |> Zipper.fromList
-        |> Maybe.withDefault (Zipper.singleton Step.initEnd)
 
 
 toFloat : Int -> Float
