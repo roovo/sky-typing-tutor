@@ -2,6 +2,7 @@ module Exercise exposing
     ( Exercise
     , Printable(..)
     , Style(..)
+    , accuracy
     , consume
     , currentLineIndex
     , init
@@ -45,6 +46,17 @@ init title text =
 --
 -- INFO
 --
+accuracy : Exercise -> Float
+accuracy exercise =
+    case Event.howManyTyped exercise.events of
+
+        0 ->
+            0.0
+
+        n ->
+            (toFloat <| howManyCharacters exercise) / toFloat n * 100.0
+
+
 currentLineIndex : Exercise -> Int
 currentLineIndex exercise =
     let
@@ -89,24 +101,6 @@ type Direction
     | Previous
 
 
-beforeStyles : Zipper Step -> List Printable
-beforeStyles zippedSteps =
-    zippedSteps |> Zipper.before |> List.map (toPrintable Completed)
-
-
-currentStyle : Int -> Zipper Step -> List Printable
-currentStyle errorCount zippedSteps =
-    let
-        style =
-            if errorCount <= 0 then
-                Current
-
-            else
-                Error
-    in
-        [ zippedSteps |> Zipper.current |> toPrintable style ]
-
-
 afterStyles : Int -> Zipper Step -> List Printable
 afterStyles errorCount zippedSteps =
     zippedSteps |> Zipper.after |> List.indexedMap (afterPrintable errorCount)
@@ -126,6 +120,24 @@ backspaceChar =
     Char.fromCode 8
 
 
+beforeStyles : Zipper Step -> List Printable
+beforeStyles zippedSteps =
+    zippedSteps |> Zipper.before |> List.map (toPrintable Completed)
+
+
+currentStyle : Int -> Zipper Step -> List Printable
+currentStyle errorCount zippedSteps =
+    let
+        style =
+            if errorCount <= 0 then
+                Current
+
+            else
+                Error
+    in
+        [ zippedSteps |> Zipper.current |> toPrintable style ]
+
+
 follwedSteps : Exercise -> Zipper Step
 follwedSteps exercise =
     exercise |> steps |> Zipper.first |> toInitialStep
@@ -140,6 +152,15 @@ followEvents events initialSteps =
 followEventsErrorCount : List Event -> Zipper Step -> Int
 followEventsErrorCount events initialSteps =
     processEventsErrors (List.reverse events) initialSteps 0
+
+
+howManyCharacters : Exercise -> Int
+howManyCharacters exercise =
+    steps exercise |> Zipper.first |> toInitialStep
+        |> followEvents exercise.events
+        |> Zipper.before
+        |> List.filter Step.isTypeable
+        |> List.length
 
 
 processEvents : List Event -> Zipper Step -> Int -> Zipper Step
@@ -277,6 +298,11 @@ steps : Exercise -> Zipper Step
 steps exercise =
     exercise.text |> ExerciseParser.toSteps |> Zipper.fromList
         |> Maybe.withDefault (Zipper.singleton Step.initEnd)
+
+
+toFloat : Int -> Float
+toFloat n =
+    String.fromInt n |> String.toFloat |> Maybe.withDefault 0.0
 
 
 toInitialStep : Zipper Step -> Zipper Step

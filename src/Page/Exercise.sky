@@ -5,6 +5,7 @@ import Sky.Core.Prelude exposing (..)
 import Std.Ui as Ui
 import Std.Ui exposing (Element)
 import Std.Ui.Background as Background
+import Std.Ui.Border as Border
 import Std.Ui.Font as Font
 
 --
@@ -86,8 +87,14 @@ view toMsg model =
 viewHeading : Model -> Element msg
 viewHeading model =
     Ui.el
-        [ Font.color (Ui.rgb 142 200 168) ]
-        (Ui.text <| Exercise.title model.exercise)
+        [ Ui.width Ui.fill
+        , Ui.padding 1
+        , Font.color (Ui.rgb 142 200 168)
+        , Border.width 1
+        , Border.color (Ui.rgb 142 200 168)
+        , Border.rounded 4
+        ]
+        (Ui.el [] (Ui.text <| Exercise.title model.exercise))
 
 
 viewBody : Model -> Element msg

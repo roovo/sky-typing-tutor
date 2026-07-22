@@ -7,7 +7,26 @@ import Exercise exposing (Exercise, Printable(..), Style(..))
 
 tests : List Test
 tests =
-    consumeTests ++ currentLineIndexTests ++ printableLinesTests
+    accuracyTests ++ consumeTests ++ currentLineIndexTests
+        ++ printableLinesTests
+
+
+accuracyTests : List Test
+accuracyTests =
+    [ Test.test
+          "accuracy returns 0.0 for an empty exercise with nothing typed"
+          (\_ -> exerciseWithText "" |> Exercise.accuracy |> Test.equal 0.0)
+    , Test.test
+          "accuracy returns 0.0 for a single character incorrectly typed in a single character exercise"
+          (\_ ->
+              exerciseWithText "a" |> Exercise.consume 'x' |> Exercise.accuracy
+                  |> Test.equal 0.0)
+    , Test.test
+          "accuracy returns 100.0 for a single character correctly typed in a single character exercise"
+          (\_ ->
+              exerciseWithText "a" |> Exercise.consume 'a' |> Exercise.accuracy
+                  |> Test.equal 100.0)
+    ]
 
 
 consumeTests : List Test
