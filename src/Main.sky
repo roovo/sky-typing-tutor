@@ -112,7 +112,13 @@ onKey keyEvent =
 --
 subscriptions : AppModel -> Sub Msg
 subscriptions model =
-    Sub.none
+    case model of
+
+        Exercise _ ->
+            Sub.every 10 (GotExerciseMsg PageExercise.Tick)
+
+        NoFile ->
+            Sub.none
 
 
 --
