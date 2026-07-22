@@ -1,0 +1,11 @@
+module Event exposing (Event, howManyTyped, timeTaken)
+
+type alias Event =
+    { char : Char
+    , timeTaken : Int
+    }
+
+
+timeTaken : List Event -> Int
+timeTaken events =
+    List.foldl (\e acc -> e.timeTaken + acc) 0 events

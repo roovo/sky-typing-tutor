@@ -1,4 +1,4 @@
-- show the language of the file in the exercise
+- show a summary on exercise completion
 - show progress in the footer (lines and/or characters remaining - completed when finished)
 - persist attempts (text file or sqlite database)
 - have some way of tracking with keyboard is being used
