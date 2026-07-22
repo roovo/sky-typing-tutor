@@ -26,6 +26,42 @@ accuracyTests =
           (\_ ->
               exerciseWithText "a" |> Exercise.consume 'a' |> Exercise.accuracy
                   |> Test.equal 100.0)
+    , Test.test
+          "accuracy returns 50.0 for a single character with a a corrected single bad character typed"
+          (\_ ->
+              exerciseWithText "a" |> Exercise.consume 'b'
+                  |> Exercise.consume backspaceChar
+                  |> Exercise.consume 'a'
+                  |> Exercise.accuracy
+                  |> Test.equal 50.0)
+    , Test.test
+          "accuracy returns 100.0 for a multiple correctly typed characters"
+          (\_ ->
+              exerciseWithText "abc" |> Exercise.consume 'a'
+                  |> Exercise.consume 'b'
+                  |> Exercise.consume 'c'
+                  |> Exercise.accuracy
+                  |> Test.equal 100.0)
+    , Test.test
+          "accuracy counts the enter key as a character"
+          (\_ ->
+              exerciseWithText "a\nbc" |> Exercise.consume 'a'
+                  |> Exercise.consume enterChar
+                  |> Exercise.consume 'b'
+                  |> Exercise.consume 'b'
+                  |> Exercise.accuracy
+                  |> Test.equal 75.0)
+    , Test.test
+          "accuracy doesn't count 'correctly typed' characters when in error state"
+          (\_ ->
+              exerciseWithText "abc" |> Exercise.consume 'a'
+                  |> Exercise.consume 'a'
+                  |> Exercise.consume 'b'
+                  |> Exercise.consume backspaceChar
+                  |> Exercise.consume backspaceChar
+                  |> Exercise.consume 'b'
+                  |> Exercise.accuracy
+                  |> Test.equal 50.0)
     ]
 
 
