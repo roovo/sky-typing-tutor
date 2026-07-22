@@ -156,6 +156,13 @@ currentLineIndexTests =
           (\_ ->
               exerciseWithText "a\nb\nc" |> Exercise.currentLineIndex
                   |> Test.equal 0)
+    , Test.test
+          "currentLineIndex is 1 when on the 2nd line of a multi line string containing just printables"
+          (\_ ->
+              exerciseWithText "a\nb\nc" |> Exercise.consume 'a'
+                  |> Exercise.consume enterChar
+                  |> Exercise.currentLineIndex
+                  |> Test.equal 1)
     ]
 
 

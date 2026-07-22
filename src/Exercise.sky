@@ -47,7 +47,21 @@ init title text =
 --
 currentLineIndex : Exercise -> Int
 currentLineIndex exercise =
-    0
+    let
+        newLineSteps step =
+            case step of
+
+                Step.EnterChar ->
+                    True
+
+                Step.EmptyLine ->
+                    True
+
+                _ ->
+                    False
+    in
+        follwedSteps exercise |> Zipper.before |> List.filter newLineSteps
+            |> List.length
 
 
 printableLines : Exercise -> List (List Printable)
@@ -105,6 +119,17 @@ afterPrintable errorCount index step =
 
     else
         toPrintable Waiting step
+
+
+backspaceChar : Char
+backspaceChar =
+    Char.fromCode 8
+
+
+follwedSteps : Exercise -> Zipper Step
+follwedSteps exercise =
+    exercise |> steps |> Zipper.first |> toInitialStep
+        |> followEvents exercise.events
 
 
 followEvents : List Event -> Zipper Step -> Zipper Step
@@ -180,11 +205,6 @@ processEventsErrors events steps1 errorCount =
 
                 else
                     processEventsErrors rest steps1 (errorCount + 1)
-
-
-backspaceChar : Char
-backspaceChar =
-    Char.fromCode 8
 
 
 logEvent : Char -> Exercise -> List Event
