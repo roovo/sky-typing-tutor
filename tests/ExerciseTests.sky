@@ -19,47 +19,49 @@ accuracyTests =
     , Test.test
           "accuracy returns 0.0 for a single character incorrectly typed in a single character exercise"
           (\_ ->
-              exerciseWithText "a" |> Exercise.consume 'x' |> Exercise.accuracy
+              exerciseWithText "a" |> Exercise.consume 'x' 0
+                  |> Exercise.accuracy
                   |> Test.equal 0.0)
     , Test.test
           "accuracy returns 100.0 for a single character correctly typed in a single character exercise"
           (\_ ->
-              exerciseWithText "a" |> Exercise.consume 'a' |> Exercise.accuracy
+              exerciseWithText "a" |> Exercise.consume 'a' 0
+                  |> Exercise.accuracy
                   |> Test.equal 100.0)
     , Test.test
           "accuracy returns 50.0 for a single character with a a corrected single bad character typed"
           (\_ ->
-              exerciseWithText "a" |> Exercise.consume 'b'
-                  |> Exercise.consume backspaceChar
-                  |> Exercise.consume 'a'
+              exerciseWithText "a" |> Exercise.consume 'b' 0
+                  |> Exercise.consume backspaceChar 0
+                  |> Exercise.consume 'a' 0
                   |> Exercise.accuracy
                   |> Test.equal 50.0)
     , Test.test
           "accuracy returns 100.0 for a multiple correctly typed characters"
           (\_ ->
-              exerciseWithText "abc" |> Exercise.consume 'a'
-                  |> Exercise.consume 'b'
-                  |> Exercise.consume 'c'
+              exerciseWithText "abc" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'b' 0
+                  |> Exercise.consume 'c' 0
                   |> Exercise.accuracy
                   |> Test.equal 100.0)
     , Test.test
           "accuracy counts the enter key as a character"
           (\_ ->
-              exerciseWithText "a\nbc" |> Exercise.consume 'a'
-                  |> Exercise.consume enterChar
-                  |> Exercise.consume 'b'
-                  |> Exercise.consume 'b'
+              exerciseWithText "a\nbc" |> Exercise.consume 'a' 0
+                  |> Exercise.consume enterChar 0
+                  |> Exercise.consume 'b' 0
+                  |> Exercise.consume 'b' 0
                   |> Exercise.accuracy
                   |> Test.equal 75.0)
     , Test.test
           "accuracy doesn't count 'correctly typed' characters when in error state"
           (\_ ->
-              exerciseWithText "abc" |> Exercise.consume 'a'
-                  |> Exercise.consume 'a'
-                  |> Exercise.consume 'b'
-                  |> Exercise.consume backspaceChar
-                  |> Exercise.consume backspaceChar
-                  |> Exercise.consume 'b'
+              exerciseWithText "abc" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'b' 0
+                  |> Exercise.consume backspaceChar 0
+                  |> Exercise.consume backspaceChar 0
+                  |> Exercise.consume 'b' 0
                   |> Exercise.accuracy
                   |> Test.equal 50.0)
     ]
@@ -70,7 +72,7 @@ consumeTests =
     [ Test.test
           "consume consumes the first character of the exercise"
           (\_ ->
-              exerciseWithText "abc" |> Exercise.consume 'a'
+              exerciseWithText "abc" |> Exercise.consume 'a' 0
                   |> Exercise.printableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
@@ -82,8 +84,8 @@ consumeTests =
     , Test.test
           "consume consumes the first 2 characters of the exercise"
           (\_ ->
-              exerciseWithText "abc" |> Exercise.consume 'a'
-                  |> Exercise.consume 'b'
+              exerciseWithText "abc" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'b' 0
                   |> Exercise.printableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
@@ -95,9 +97,9 @@ consumeTests =
     , Test.test
           "consume consumes onto the 2nd line of a multiline string"
           (\_ ->
-              exerciseWithText "ab\nc" |> Exercise.consume 'a'
-                  |> Exercise.consume 'b'
-                  |> Exercise.consume enterChar
+              exerciseWithText "ab\nc" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'b' 0
+                  |> Exercise.consume enterChar 0
                   |> Exercise.printableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
@@ -109,8 +111,8 @@ consumeTests =
     , Test.test
           "consume styles with an Error if the wrong character is typed"
           (\_ ->
-              exerciseWithText "abc" |> Exercise.consume 'a'
-                  |> Exercise.consume 'c'
+              exerciseWithText "abc" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'c' 0
                   |> Exercise.printableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
@@ -122,9 +124,9 @@ consumeTests =
     , Test.test
           "consume styles with multiple Errors if the wrong characters are typed"
           (\_ ->
-              exerciseWithText "abc" |> Exercise.consume 'a'
-                  |> Exercise.consume 'c'
-                  |> Exercise.consume 'd'
+              exerciseWithText "abc" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'c' 0
+                  |> Exercise.consume 'd' 0
                   |> Exercise.printableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
@@ -136,9 +138,9 @@ consumeTests =
     , Test.test
           "consume handles leading whitespace"
           (\_ ->
-              exerciseWithText "  ab\n  cd" |> Exercise.consume 'a'
-                  |> Exercise.consume 'b'
-                  |> Exercise.consume enterChar
+              exerciseWithText "  ab\n  cd" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'b' 0
+                  |> Exercise.consume enterChar 0
                   |> Exercise.printableLines
                   |> Test.equal
                          [ [ Styled "  " Unstyled
@@ -155,7 +157,7 @@ consumeTests =
     , Test.test
           "consume does nothing if backspace typed as first character"
           (\_ ->
-              exerciseWithText "abc" |> Exercise.consume backspaceChar
+              exerciseWithText "abc" |> Exercise.consume backspaceChar 0
                   |> Exercise.printableLines
                   |> Test.equal
                          [ [ Styled "a" Current
@@ -167,9 +169,9 @@ consumeTests =
     , Test.test
           "consume goes back if backspace typed part way through the exercise"
           (\_ ->
-              exerciseWithText "abc" |> Exercise.consume 'a'
-                  |> Exercise.consume 'b'
-                  |> Exercise.consume backspaceChar
+              exerciseWithText "abc" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'b' 0
+                  |> Exercise.consume backspaceChar 0
                   |> Exercise.printableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
@@ -181,10 +183,10 @@ consumeTests =
     , Test.test
           "consume allows errors to be corrected using backspace"
           (\_ ->
-              exerciseWithText "abc" |> Exercise.consume 'a'
-                  |> Exercise.consume 'c'
-                  |> Exercise.consume backspaceChar
-                  |> Exercise.consume 'b'
+              exerciseWithText "abc" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'c' 0
+                  |> Exercise.consume backspaceChar 0
+                  |> Exercise.consume 'b' 0
                   |> Exercise.printableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
@@ -214,20 +216,20 @@ currentLineIndexTests =
     , Test.test
           "currentLineIndex is 1 when on the 2nd line of a multi line string containing just printables"
           (\_ ->
-              exerciseWithText "a\nb\nc" |> Exercise.consume 'a'
-                  |> Exercise.consume enterChar
+              exerciseWithText "a\nb\nc" |> Exercise.consume 'a' 0
+                  |> Exercise.consume enterChar 0
                   |> Exercise.currentLineIndex
                   |> Test.equal 1)
     , Test.test
           "currentLineIndex is 5 when on the 6th line of a multi line string containing some empty lines"
           (\_ ->
               exerciseWithText "   \n \n\na\n  \nb\n\nc\nd"
-                  |> Exercise.consume 'a'
-                  |> Exercise.consume enterChar
-                  |> Exercise.consume 'b'
-                  |> Exercise.consume enterChar
-                  |> Exercise.consume 'c'
-                  |> Exercise.consume enterChar
+                  |> Exercise.consume 'a' 0
+                  |> Exercise.consume enterChar 0
+                  |> Exercise.consume 'b' 0
+                  |> Exercise.consume enterChar 0
+                  |> Exercise.consume 'c' 0
+                  |> Exercise.consume enterChar 0
                   |> Exercise.currentLineIndex
                   |> Test.equal 5)
     ]

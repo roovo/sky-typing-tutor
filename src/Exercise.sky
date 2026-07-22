@@ -89,8 +89,8 @@ title exercise =
 --
 -- PROGRESSING
 --
-consume : Char -> Exercise -> Exercise
-consume ch exercise =
+consume : Char -> Int -> Exercise -> Exercise
+consume ch elapsedTime exercise =
     { exercise | events = logEvent ch exercise }
 
 --

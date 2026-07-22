@@ -68,7 +68,7 @@ consumeKeyEvent keyEvent model =
             case charToConsume of
 
                 Just ch ->
-                    Exercise.consume ch model.exercise
+                    Exercise.consume ch model.elapsedTime model.exercise
 
                 Nothing ->
                     model.exercise
