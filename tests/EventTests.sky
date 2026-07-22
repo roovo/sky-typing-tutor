@@ -38,6 +38,10 @@ timeTakenTests =
     [ Test.test
           "timeTaken is 0 if there are no Events"
           (\_ -> [] |> Event.timeTaken |> Test.equal 0)
+    , Test.test
+          "timeTaken returns the sum of the times for all consumed chars (including backspaces)"
+          (\_ ->
+              eventsWithCorrectedMistake |> Event.timeTaken |> Test.equal 120000)
     ]
 
 
@@ -52,3 +56,20 @@ backspaceChar =
 enterChar : Char
 enterChar =
     Char.fromCode 13
+
+
+eventsWithCorrectedMistake : List Event
+eventsWithCorrectedMistake =
+    [ Event 'a' 10000
+    , Event 'b' 10000
+    , Event 'c' 10000
+    , Event ' ' 10000
+    , Event 'd' 10000
+    , Event 'd' 10000
+    , Event backspaceChar 10000
+    , Event 'e' 10000
+    , Event 'f' 10000
+    , Event ' ' 10000
+    , Event 'g' 10000
+    , Event 'h' 10000
+    ]

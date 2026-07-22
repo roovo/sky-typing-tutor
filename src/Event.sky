@@ -13,7 +13,7 @@ howManyTyped events =
 
 timeTaken : List Event -> Int
 timeTaken events =
-    0
+    List.foldl (\e acc -> e.timeTaken + acc) 0 events
 
 
 --

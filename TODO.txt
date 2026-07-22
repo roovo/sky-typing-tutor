@@ -16,3 +16,7 @@ Desirable sky changes:
 - toFloat (having to do String.fromInt n |> String.toFloat |> Maybe.withDefault 0.0)
 - Tui - able to determine how many rows high it is
 
+sky bugs:
+- timeTaken events = events |> List.map .timeTaken |> List.foldl (\n acc -> n + acc) 0
+  The .timeTaken field accessor is causing the runtime type mismatch. This is a codegen issue with field accessors used as first-class functions in List.map. 
+
