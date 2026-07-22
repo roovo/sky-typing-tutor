@@ -91,8 +91,7 @@ currentLineIndex exercise =
                 _ ->
                     False
     in
-        follwedSteps exercise |> Zipper.before |> List.filter newLineSteps
-            |> List.length
+        exercise.stepsBefore |> List.filter newLineSteps |> List.length
 
 
 printableLines : Exercise -> List (List Printable)
