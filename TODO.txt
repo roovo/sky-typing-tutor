@@ -1,6 +1,4 @@
-- when it is windowed - but a status bar at the bottom.  For now it can show if
-  the exercise is finished or not
-- add wpm calculation and put in the footer
+- show progress in the footer (lines and/or characters remaining - completed when finished)
 - persist attempts (text file or sqlite database)
 - it is slow for larger files (e.g. src/Main.sky)
 
