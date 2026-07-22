@@ -1,4 +1,22 @@
-module Event exposing (Event)
+module Event exposing (Event, howManyTyped)
 
 type alias Event =
     { char : Char }
+
+
+howManyTyped : List Event -> Int
+howManyTyped events =
+    events |> withoutBackspaces |> List.length
+
+
+--
+-- PRIVATE
+--
+backspaceChar : Char
+backspaceChar =
+    Char.fromCode 8
+
+
+withoutBackspaces : List Event -> List Event
+withoutBackspaces events =
+    List.filter (\e -> e.char /= backspaceChar) events

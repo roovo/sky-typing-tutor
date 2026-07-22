@@ -1,0 +1,42 @@
+module EventTests exposing (tests)
+
+import Sky.Core.Prelude exposing (..)
+import Sky.Test as Test exposing (Test)
+import Event exposing (Event)
+
+
+tests : List Test
+tests =
+    howManyTypedTests
+
+
+howManyTypedTests : List Test
+howManyTypedTests =
+    [ Test.test
+          "howManyTyped is 0 if there are no Events"
+          (\_ -> [] |> Event.howManyTyped |> Test.equal 0)
+    , Test.test
+          "howManyTyped is 2 if there is char and enter key in the list"
+          (\_ ->
+              [ Event 'a', Event enterChar ] |> Event.howManyTyped
+                  |> Test.equal 2)
+    , Test.test
+          "howManyTyped ignores backspace characters"
+          (\_ ->
+              [ Event 'a', Event enterChar, Event backspaceChar, Event 'b' ]
+                  |> Event.howManyTyped
+                  |> Test.equal 3)
+    ]
+
+
+--
+-- HELPERS
+--
+backspaceChar : Char
+backspaceChar =
+    Char.fromCode 8
+
+
+enterChar : Char
+enterChar =
+    Char.fromCode 13
