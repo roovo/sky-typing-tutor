@@ -163,6 +163,18 @@ currentLineIndexTests =
                   |> Exercise.consume enterChar
                   |> Exercise.currentLineIndex
                   |> Test.equal 1)
+    , Test.test
+          "currentLineIndex is 5 when on the 6th line of a multi line string containing some empty lines"
+          (\_ ->
+              exerciseWithText "   \n \n\na\n  \nb\n\nc\nd"
+                  |> Exercise.consume 'a'
+                  |> Exercise.consume enterChar
+                  |> Exercise.consume 'b'
+                  |> Exercise.consume enterChar
+                  |> Exercise.consume 'c'
+                  |> Exercise.consume enterChar
+                  |> Exercise.currentLineIndex
+                  |> Test.equal 5)
     ]
 
 
