@@ -7,7 +7,7 @@ import Exercise exposing (Exercise, Printable(..), Style(..))
 
 tests : List Test
 tests =
-    consumeTests ++ printableLinesTests
+    consumeTests ++ currentLineIndexTests ++ printableLinesTests
 
 
 consumeTests : List Test
@@ -138,6 +138,24 @@ consumeTests =
                            , UnstyledEnd
                            ]
                          ])
+    ]
+
+
+currentLineIndexTests : List Test
+currentLineIndexTests =
+    [ Test.test
+          "currentLineIndex is zero if there is no text"
+          (\_ -> exerciseWithText "" |> Exercise.currentLineIndex |> Test.equal 0)
+    , Test.test
+          "currentLineIndex is zero when at the start of a single line string containing just printables"
+          (\_ ->
+              exerciseWithText "a b" |> Exercise.currentLineIndex
+                  |> Test.equal 0)
+    , Test.test
+          "currentLineIndex is zero when at the start of a multi line string containing just printables"
+          (\_ ->
+              exerciseWithText "a\nb\nc" |> Exercise.currentLineIndex
+                  |> Test.equal 0)
     ]
 
 
