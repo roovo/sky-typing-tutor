@@ -1,15 +1,17 @@
-- need to window the view so that we are not drawing all the lines of a long
-  file many of which will not be visible in the terminal
 - when it is windowed - but a status bar at the bottom.  For now it can show if
   the exercise is finished or not
 - add accuracy calculation and put in the footer
 - add wpm calculation and put in the footer
 - persist attempts (text file or sqlite database)
+- it is slow for larger files (e.g. src/Main.sky)
 
 Desirable sky changes:
 - Debug.log
 - Cmd.map
 - allow function definitions in let blocks
 - allow Page.Exercise to be used as Page.Exercise without having to alias it as PageExercise
+- point free notation
 - port Parser.elm (as it relies on Kernel modules)
+- 'sky test' will by default run all tests in the tests directory
+- "describe" is added to test for grouping tests (needs to be in the output too)
 
