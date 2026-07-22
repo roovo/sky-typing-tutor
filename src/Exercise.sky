@@ -8,6 +8,7 @@ module Exercise exposing
     , init
     , printableLines
     , title
+    , wpm
     )
 
 import Sky.Core.Debug as Debug
@@ -84,6 +85,11 @@ printableLines exercise =
 title : Exercise -> String
 title exercise =
     exercise.title
+
+
+wpm : Exercise -> Float
+wpm exercise =
+    0.0
 
 
 --

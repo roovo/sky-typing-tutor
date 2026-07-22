@@ -9,6 +9,7 @@ tests : List Test
 tests =
     accuracyTests ++ consumeTests ++ currentLineIndexTests
         ++ printableLinesTests
+        ++ wpmTests
 
 
 accuracyTests : List Test
@@ -356,6 +357,14 @@ printableLinesTests =
                            , UnstyledEnd
                            ]
                          ])
+    ]
+
+
+wpmTests : List Test
+wpmTests =
+    [ Test.test
+          "wpm returns 0.0 for an empty exercise with nothing typed"
+          (\_ -> exerciseWithText "" |> Exercise.wpm |> Test.equal 0.0)
     ]
 
 
