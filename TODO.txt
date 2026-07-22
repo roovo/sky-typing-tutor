@@ -5,3 +5,11 @@
 - add accuracy calculation and put in the footer
 - add wpm calculation and put in the footer
 - persist attempts (text file or sqlite database)
+
+Desirable sky changes:
+- Debug.log
+- Cmd.map
+- allow function definitions in let blocks
+- allow Page.Exercise to be used as Page.Exercise without having to alias it as PageExercise
+- port Parser.elm (as it relies on Kernel modules)
+
