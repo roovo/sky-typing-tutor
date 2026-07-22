@@ -42,7 +42,11 @@ update msg model =
             consumeKeyEvent keyEvent model
 
         Tick ->
-            { model | elapsedTime = model.elapsedTime + 10 }
+            if List.isEmpty model.exercise.events then
+                model
+
+            else
+                { model | elapsedTime = model.elapsedTime + 10 }
 
 
 consumeKeyEvent : KeyEvent -> Model -> Model
