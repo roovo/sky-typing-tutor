@@ -77,7 +77,7 @@ consumeKeyEvent keyEvent model =
                 Nothing ->
                     model.exercise
     in
-        { model | exercise = newExercise }
+        { model | exercise = newExercise, elapsedTime = 0 }
 
 
 --
