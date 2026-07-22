@@ -1,4 +1,4 @@
-module Event exposing (Event, howManyTyped)
+module Event exposing (Event, howManyTyped, timeTaken)
 
 type alias Event =
     { char : Char
@@ -9,6 +9,11 @@ type alias Event =
 howManyTyped : List Event -> Int
 howManyTyped events =
     events |> withoutBackspaces |> List.length
+
+
+timeTaken : List Event -> Int
+timeTaken events =
+    0
 
 
 --
