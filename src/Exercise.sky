@@ -325,12 +325,7 @@ logEvent ch elapsedTime exercise =
 
 printables : Exercise -> List Printable
 printables exercise =
-    let
-        initial = steps exercise |> Zipper.first |> toInitialStep
-        zippedSteps = followEvents exercise.events initial
-        errorCount = followEventsErrorCount exercise.events initial
-    in
-        setStyles zippedSteps errorCount
+    setStyles (exerciseZipper exercise) exercise.errorCount
 
 
 setStyles : Zipper Step -> Int -> List Printable
