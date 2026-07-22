@@ -239,6 +239,117 @@ currentLineIndexTests =
 languageTests : List Test
 languageTests =
     [ Test.test
+          "language returns 'CSS' for the extension '.css'"
+          (\_ ->
+              Exercise.init "filename.css" "" |> Exercise.language
+                  |> Test.equal "CSS")
+    , Test.test
+          "language returns 'Dockerfile' for the extension '.dockerfile'"
+          (\_ ->
+              Exercise.init "filename.dockerfile" "" |> Exercise.language
+                  |> Test.equal "Dockerfile")
+    , Test.test
+          "language returns 'Elm' for the extension '.elm'"
+          (\_ ->
+              Exercise.init "filename.elm" "" |> Exercise.language
+                  |> Test.equal "Elm")
+    , Test.test
+          "language returns 'Elixir' for the extension '.ex'"
+          (\_ ->
+              Exercise.init "filename.ex" "" |> Exercise.language
+                  |> Test.equal "Elixir")
+    , Test.test
+          "language returns 'Elixir' for the extension '.exs'"
+          (\_ ->
+              Exercise.init "filename.exs" "" |> Exercise.language
+                  |> Test.equal "Elixir")
+    , Test.test
+          "language returns 'Go' for the extension '.go'"
+          (\_ ->
+              Exercise.init "filename.go" "" |> Exercise.language
+                  |> Test.equal "Go")
+    , Test.test
+          "language returns 'Java' for the extension '.java'"
+          (\_ ->
+              Exercise.init "filename.java" "" |> Exercise.language
+                  |> Test.equal "Java")
+    , Test.test
+          "language returns 'JavaScript' for the extension '.js'"
+          (\_ ->
+              Exercise.init "filename.js" "" |> Exercise.language
+                  |> Test.equal "JavaScript")
+    , Test.test
+          "language returns 'JSON' for the extension '.json'"
+          (\_ ->
+              Exercise.init "filename.json" "" |> Exercise.language
+                  |> Test.equal "JSON")
+    , Test.test
+          "language returns 'Lua' for the extension '.lua'"
+          (\_ ->
+              Exercise.init "filename.lua" "" |> Exercise.language
+                  |> Test.equal "Lua")
+    , Test.test
+          "language returns 'Markdown' for the extension '.md'"
+          (\_ ->
+              Exercise.init "filename.md" "" |> Exercise.language
+                  |> Test.equal "Markdown")
+    , Test.test
+          "language returns 'Python' for the extension '.py'"
+          (\_ ->
+              Exercise.init "filename.py" "" |> Exercise.language
+                  |> Test.equal "Python")
+    , Test.test
+          "language returns 'Ruby' for the extension '.rb'"
+          (\_ ->
+              Exercise.init "filename.rb" "" |> Exercise.language
+                  |> Test.equal "Ruby")
+    , Test.test
+          "language returns 'Shell' for the extension '.bash'"
+          (\_ ->
+              Exercise.init "filename.bash" "" |> Exercise.language
+                  |> Test.equal "Shell")
+    , Test.test
+          "language returns 'Shell' for the extension '.sh'"
+          (\_ ->
+              Exercise.init "filename.sh" "" |> Exercise.language
+                  |> Test.equal "Shell")
+    , Test.test
+          "language returns 'Sky' for the extension '.sky'"
+          (\_ ->
+              Exercise.init "filename.sky" "" |> Exercise.language
+                  |> Test.equal "Sky")
+    , Test.test
+          "language returns 'SQL' for the extension '.sql'"
+          (\_ ->
+              Exercise.init "filename.sql" "" |> Exercise.language
+                  |> Test.equal "SQL")
+    , Test.test
+          "language returns 'Text' for the extension '.txt'"
+          (\_ ->
+              Exercise.init "filename.txt" "" |> Exercise.language
+                  |> Test.equal "Text")
+    , Test.test
+          "language returns 'TypeScript' for the extension '.ts'"
+          (\_ ->
+              Exercise.init "filename.ts" "" |> Exercise.language
+                  |> Test.equal "TypeScript")
+    , Test.test
+          "language returns 'YAML' for the extension '.yml'"
+          (\_ ->
+              Exercise.init "filename.yml" "" |> Exercise.language
+                  |> Test.equal "YAML")
+    , Test.test
+          "language returns 'YAML' for the extension '.yaml'"
+          (\_ ->
+              Exercise.init "filename.yaml" "" |> Exercise.language
+                  |> Test.equal "YAML")
+    , Test.test
+          "language returns 'unknown' for the extension .not_a_real_language"
+          (\_ ->
+              Exercise.init "filename.not_a_real_language" ""
+                  |> Exercise.language
+                  |> Test.equal "unknown")
+    , Test.test
           "language returns 'unknown' if there is no extension"
           (\_ ->
               Exercise.init "filename" "" |> Exercise.language

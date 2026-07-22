@@ -97,7 +97,73 @@ currentLineIndex exercise =
 
 language : Exercise -> String
 language exercise =
-    "unknown"
+    case Path.ext exercise.title of
+
+        ".bash" ->
+            "Shell"
+
+        ".css" ->
+            "CSS"
+
+        ".dockerfile" ->
+            "Dockerfile"
+
+        ".elm" ->
+            "Elm"
+
+        ".ex" ->
+            "Elixir"
+
+        ".exs" ->
+            "Elixir"
+
+        ".go" ->
+            "Go"
+
+        ".java" ->
+            "Java"
+
+        ".js" ->
+            "JavaScript"
+
+        ".json" ->
+            "JSON"
+
+        ".lua" ->
+            "Lua"
+
+        ".md" ->
+            "Markdown"
+
+        ".py" ->
+            "Python"
+
+        ".rb" ->
+            "Ruby"
+
+        ".sh" ->
+            "Shell"
+
+        ".sky" ->
+            "Sky"
+
+        ".sql" ->
+            "SQL"
+
+        ".ts" ->
+            "TypeScript"
+
+        ".txt" ->
+            "Text"
+
+        ".yml" ->
+            "YAML"
+
+        ".yaml" ->
+            "YAML"
+
+        _ ->
+            "unknown"
 
 
 printableLines : Int -> Int -> Exercise -> List (List Printable)
