@@ -169,11 +169,6 @@ type Direction
     | Previous
 
 
-afterStyles : Int -> Zipper Step -> List Printable
-afterStyles errorCount zippedSteps =
-    zippedSteps |> Zipper.after |> List.indexedMap (afterPrintable errorCount)
-
-
 afterPrintable : Int -> Int -> Step -> Printable
 afterPrintable errorCount index step =
     if index < (errorCount - 1) then
@@ -186,24 +181,6 @@ afterPrintable errorCount index step =
 backspaceChar : Char
 backspaceChar =
     Char.fromCode 8
-
-
-beforeStyles : Zipper Step -> List Printable
-beforeStyles zippedSteps =
-    zippedSteps |> Zipper.before |> List.map (toPrintable Completed)
-
-
-currentStyle : Int -> Zipper Step -> List Printable
-currentStyle errorCount zippedSteps =
-    let
-        style =
-            if errorCount <= 0 then
-                Current
-
-            else
-                Error
-    in
-        [ zippedSteps |> Zipper.current |> toPrintable style ]
 
 
 currentStepStyle : Int -> Style
@@ -258,17 +235,6 @@ logEvent ch elapsedTime exercise =
         newEvent = { char = ch, timeTaken = elapsedTime }
     in
         newEvent :: exercise.events
-
-
-printables : Exercise -> List Printable
-printables exercise =
-    setStyles (exerciseZipper exercise) exercise.errorCount
-
-
-setStyles : Zipper Step -> Int -> List Printable
-setStyles zippedSteps errorCount =
-    beforeStyles zippedSteps ++ currentStyle errorCount zippedSteps
-        ++ afterStyles errorCount zippedSteps
 
 
 skipOver : Direction -> Zipper Step -> Zipper Step
