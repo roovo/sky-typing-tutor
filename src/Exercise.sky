@@ -304,6 +304,34 @@ splitIntoLines printables currentLine acc =
                     splitIntoLines rest (p :: currentLine) acc
 
 
+takeFirstNLines : Int -> List Step -> List Step
+takeFirstNLines n steps1 =
+    takeFirstNLinesHelper n steps1 0 []
+
+
+takeFirstNLinesHelper : Int -> List Step -> Int -> List Step -> List Step
+takeFirstNLinesHelper n steps1 lineCount acc =
+    case steps1 of
+
+        [] ->
+            List.reverse acc
+
+        step :: rest ->
+            if lineCount >= n then
+                List.reverse acc
+
+            else
+                let
+                    newLineCount =
+                        if isNewLineStep step then
+                            lineCount + 1
+
+                        else
+                            lineCount
+                in
+                    takeFirstNLinesHelper n rest newLineCount (step :: acc)
+
+
 takeLastNLines : Int -> List Step -> List Step
 takeLastNLines n steps1 =
     takeLastNLinesHelper n (List.reverse steps1) 0 []
