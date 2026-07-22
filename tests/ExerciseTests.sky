@@ -210,8 +210,8 @@ printableLinesTests =
                            , Styled "b" Waiting
                            , StyledEnter Waiting
                            ]
-                         , []
-                         , []
+                         , [ UnstyledEmptyLine ]
+                         , [ UnstyledEmptyLine ]
                          , [ Styled "c" Waiting
                            , Styled "d" Waiting
                            , UnstyledEnd

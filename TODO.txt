@@ -1,7 +1,9 @@
-- empty lines are not rendered in the TUI
+- don't show the enter char on the end of lines until it is the current step
+  in the exercise.
 - need to window the view so that we are not drawing all the lines of a long
   file many of which will not be visible in the terminal
 - when it is windowed - but a status bar at the bottom.  For now it can show if
   the exercise is finished or not
 - add accuracy calculation and put in the footer
 - add wpm calculation and put in the footer
+- persist attempts (text file or sqlite database)
