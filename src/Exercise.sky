@@ -206,6 +206,15 @@ currentStyle errorCount zippedSteps =
         [ zippedSteps |> Zipper.current |> toPrintable style ]
 
 
+currentStepStyle : Int -> Style
+currentStepStyle errorCount =
+    if errorCount <= 0 then
+        Current
+
+    else
+        Error
+
+
 exerciseZipper : Exercise -> Zipper Step
 exerciseZipper exercise =
     { ls = List.reverse exercise.stepsBefore
@@ -395,6 +404,23 @@ toPrintable style step =
 
         Step.Typeable ch ->
             Styled (String.fromChar ch) style
+
+
+windowedPrintables : Int -> Int -> Exercise -> List Printable
+windowedPrintables linesBefore linesAfter exercise =
+    let
+        windowedBefore = takeLastNLines linesBefore exercise.stepsBefore
+        windowedAfter = takeFirstNLines linesAfter exercise.stepsAfter
+        beforePrintables = List.map (toPrintable Completed) windowedBefore
+        currentPrintable =
+            [ toPrintable
+                  (currentStepStyle exercise.errorCount)
+                  exercise.stepsCurrent
+            ]
+        afterPrintables =
+            List.indexedMap (afterPrintable exercise.errorCount) windowedAfter
+    in
+        beforePrintables ++ currentPrintable ++ afterPrintables
 
 
 zipperMover : Direction -> Zipper Step -> Zipper Step
