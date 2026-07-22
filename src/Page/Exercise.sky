@@ -111,7 +111,11 @@ viewPrintable printable =
             Ui.el (styleAttrs style) (Ui.text ch)
 
         Exercise.StyledEnter style ->
-            Ui.el (styleAttrs style) (Ui.text "↵")
+            if style == Exercise.Current then
+                Ui.el (styleAttrs style) (Ui.text "↵")
+
+            else
+                Ui.el (styleAttrs style) (Ui.text " ")
 
         Exercise.UnstyledEmptyLine ->
             Ui.text ""
