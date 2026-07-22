@@ -116,7 +116,9 @@ viewFooter model =
         (Ui.el
             []
             (Ui.text <| "Accuracy: "
-                ++ formatFloat2dp (Exercise.accuracy model.exercise)))
+                ++ formatFloat2dp (Exercise.accuracy model.exercise)
+                ++ "%    ElapsedTime: "
+                ++ String.fromInt model.elapsedTime))
 
 
 formatFloat2dp : Float -> String
