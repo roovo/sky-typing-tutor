@@ -122,7 +122,45 @@ wpm exercise =
 --
 consume : Char -> Int -> Exercise -> Exercise
 consume ch elapsedTime exercise =
-    { exercise | events = logEvent ch elapsedTime exercise }
+    let
+        zippedSteps = exerciseZipper exercise
+        isMatchingChar = Step.matchesTyped ch (Zipper.current zippedSteps)
+        isErrorFree = exercise.errorCount <= 0
+        isBackSpace = ch == backspaceChar
+        atEnd = Step.isEnd (Zipper.current zippedSteps)
+    in
+        if isMatchingChar && isErrorFree then
+            let
+                newZippedSteps = skipOver Next zippedSteps
+            in
+                { exercise | events = logEvent ch elapsedTime exercise
+                , stepsAfter = Zipper.after newZippedSteps
+                , stepsBefore = Zipper.before newZippedSteps
+                , stepsCurrent = Zipper.current newZippedSteps
+                }
+
+        else if atEnd then
+            exercise
+
+        else if isBackSpace && isErrorFree then
+            let
+                newZippedSteps = skipOver Previous zippedSteps
+            in
+                { exercise | events = logEvent ch elapsedTime exercise
+                , stepsAfter = Zipper.after newZippedSteps
+                , stepsBefore = Zipper.before newZippedSteps
+                , stepsCurrent = Zipper.current newZippedSteps
+                }
+
+        else if isBackSpace then
+            { exercise | events = logEvent ch elapsedTime exercise
+            , errorCount = exercise.errorCount - 1
+            }
+
+        else
+            { exercise | events = logEvent ch elapsedTime exercise
+            , errorCount = exercise.errorCount + 1
+            }
 
 --
 -- PRIVATE
@@ -167,6 +205,14 @@ currentStyle errorCount zippedSteps =
                 Error
     in
         [ zippedSteps |> Zipper.current |> toPrintable style ]
+
+
+exerciseZipper : Exercise -> Zipper Step
+exerciseZipper exercise =
+    { ls = List.reverse exercise.stepsBefore
+    , focus = exercise.stepsCurrent
+    , rs = exercise.stepsAfter
+    }
 
 
 follwedSteps : Exercise -> Zipper Step
