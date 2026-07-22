@@ -74,7 +74,7 @@ consumeTests =
           "consume consumes the first character of the exercise"
           (\_ ->
               exerciseWithText "abc" |> Exercise.consume 'a' 0
-                  |> Exercise.printableLines
+                  |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
                            , Styled "b" Current
@@ -87,7 +87,7 @@ consumeTests =
           (\_ ->
               exerciseWithText "abc" |> Exercise.consume 'a' 0
                   |> Exercise.consume 'b' 0
-                  |> Exercise.printableLines
+                  |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
                            , Styled "b" Completed
@@ -101,7 +101,7 @@ consumeTests =
               exerciseWithText "ab\nc" |> Exercise.consume 'a' 0
                   |> Exercise.consume 'b' 0
                   |> Exercise.consume enterChar 0
-                  |> Exercise.printableLines
+                  |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
                            , Styled "b" Completed
@@ -114,7 +114,7 @@ consumeTests =
           (\_ ->
               exerciseWithText "abc" |> Exercise.consume 'a' 0
                   |> Exercise.consume 'c' 0
-                  |> Exercise.printableLines
+                  |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
                            , Styled "b" Error
@@ -128,7 +128,7 @@ consumeTests =
               exerciseWithText "abc" |> Exercise.consume 'a' 0
                   |> Exercise.consume 'c' 0
                   |> Exercise.consume 'd' 0
-                  |> Exercise.printableLines
+                  |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
                            , Styled "b" Error
@@ -142,7 +142,7 @@ consumeTests =
               exerciseWithText "  ab\n  cd" |> Exercise.consume 'a' 0
                   |> Exercise.consume 'b' 0
                   |> Exercise.consume enterChar 0
-                  |> Exercise.printableLines
+                  |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "  " Unstyled
                            , Styled "a" Completed
@@ -159,7 +159,7 @@ consumeTests =
           "consume does nothing if backspace typed as first character"
           (\_ ->
               exerciseWithText "abc" |> Exercise.consume backspaceChar 0
-                  |> Exercise.printableLines
+                  |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Current
                            , Styled "b" Waiting
@@ -173,7 +173,7 @@ consumeTests =
               exerciseWithText "abc" |> Exercise.consume 'a' 0
                   |> Exercise.consume 'b' 0
                   |> Exercise.consume backspaceChar 0
-                  |> Exercise.printableLines
+                  |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
                            , Styled "b" Current
@@ -188,7 +188,7 @@ consumeTests =
                   |> Exercise.consume 'c' 0
                   |> Exercise.consume backspaceChar 0
                   |> Exercise.consume 'b' 0
-                  |> Exercise.printableLines
+                  |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
                            , Styled "b" Completed
@@ -241,12 +241,12 @@ printableLinesTests =
     [ Test.test
           "printableLines returns an UnstyledEnd if there is no text"
           (\_ ->
-              exerciseWithText "" |> Exercise.printableLines
+              exerciseWithText "" |> allPrintableLines
                   |> Test.equal [ [ UnstyledEnd ] ])
     , Test.test
           "printableLines handles a single line string containing just printables"
           (\_ ->
-              exerciseWithText "a b" |> Exercise.printableLines
+              exerciseWithText "a b" |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Current
                            , Styled " " Waiting
@@ -257,7 +257,7 @@ printableLinesTests =
     , Test.test
           "printableLines handles a multi line string containing just printables"
           (\_ ->
-              exerciseWithText "ab\ncd" |> Exercise.printableLines
+              exerciseWithText "ab\ncd" |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Current
                            , Styled "b" Waiting
@@ -271,7 +271,7 @@ printableLinesTests =
     , Test.test
           "printableLines handles a multi line string with line trailing whitspace"
           (\_ ->
-              exerciseWithText "ab   \ncd" |> Exercise.printableLines
+              exerciseWithText "ab   \ncd" |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Current
                            , Styled "b" Waiting
@@ -285,7 +285,7 @@ printableLinesTests =
     , Test.test
           "printableLines handles a multi line string with blank lines at start"
           (\_ ->
-              exerciseWithText "   \n  \n\nab\ncd" |> Exercise.printableLines
+              exerciseWithText "   \n  \n\nab\ncd" |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Current
                            , Styled "b" Waiting
@@ -299,7 +299,7 @@ printableLinesTests =
     , Test.test
           "printableLines handles a multi line string with blank lines in middle"
           (\_ ->
-              exerciseWithText "ab   \n  \n\ncd" |> Exercise.printableLines
+              exerciseWithText "ab   \n  \n\ncd" |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Current
                            , Styled "b" Waiting
@@ -315,7 +315,7 @@ printableLinesTests =
     , Test.test
           "printableLines handles a multi line string with blank lines at end"
           (\_ ->
-              exerciseWithText "ab\ncd  \n   \n\n" |> Exercise.printableLines
+              exerciseWithText "ab\ncd  \n   \n\n" |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Current
                            , Styled "b" Waiting
@@ -329,7 +329,7 @@ printableLinesTests =
     , Test.test
           "printableLines handles a multi line string with leading whitespace on 2nd line"
           (\_ ->
-              exerciseWithText "ab\n  cd" |> Exercise.printableLines
+              exerciseWithText "ab\n  cd" |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Current
                            , Styled "b" Waiting
@@ -344,7 +344,7 @@ printableLinesTests =
     , Test.test
           "printableLines handles a multi line string with leading whitespace on 1st line"
           (\_ ->
-              exerciseWithText "  ab\n  cd" |> Exercise.printableLines
+              exerciseWithText "  ab\n  cd" |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "  " Unstyled
                            , Styled "a" Current
@@ -406,3 +406,8 @@ enterChar =
 exerciseWithText : String -> Exercise
 exerciseWithText text =
     Exercise.init "" text
+
+
+allPrintableLines : Exercise -> List (List Printable)
+allPrintableLines exercise =
+    Exercise.printableLines 999 999 exercise

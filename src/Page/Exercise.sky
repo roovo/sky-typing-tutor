@@ -144,14 +144,12 @@ formatFloat2dp f =
 viewBody : Model -> Element msg
 viewBody model =
     let
-        allLines = Exercise.printableLines model.exercise
-        currentLineIndex = Exercise.currentLineIndex model.exercise
         visibleLineCount = 20
-        scrollOffset = Math.max 0 (currentLineIndex - visibleLineCount // 3)
-        windowedLines =
-            allLines |> List.drop scrollOffset |> List.take visibleLineCount
+        linesBefore = visibleLineCount // 3
+        linesAfter = visibleLineCount - linesBefore - 1
+        lines = Exercise.printableLines linesBefore linesAfter model.exercise
     in
-        Ui.column [ Ui.spacing 0 ] (List.map viewLine windowedLines)
+        Ui.column [ Ui.spacing 0 ] (List.map viewLine lines)
 
 
 viewLine : List Exercise.Printable -> Element msg

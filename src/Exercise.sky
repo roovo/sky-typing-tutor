@@ -94,9 +94,9 @@ currentLineIndex exercise =
         exercise.stepsBefore |> List.filter newLineSteps |> List.length
 
 
-printableLines : Exercise -> List (List Printable)
-printableLines exercise =
-    splitIntoLines (printables exercise) [] []
+printableLines : Int -> Int -> Exercise -> List (List Printable)
+printableLines linesBefore linesAfter exercise =
+    splitIntoLines (windowedPrintables linesBefore linesAfter exercise) [] []
 
 
 title : Exercise -> String
