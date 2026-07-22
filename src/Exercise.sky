@@ -89,7 +89,14 @@ title exercise =
 
 wpm : Exercise -> Float
 wpm exercise =
-    0.0
+    let
+        timeTaken = Event.timeTaken exercise.events
+    in
+        if timeTaken == 0 then
+            0.0
+
+        else
+            howManyWords exercise / (toFloat timeTaken) * 60000.0
 
 
 --
@@ -167,6 +174,16 @@ howManyCharacters exercise =
         |> Zipper.before
         |> List.filter Step.isTypeable
         |> List.length
+
+
+howManyWords : Exercise -> Float
+howManyWords exercise =
+    (toFloat <| howManyCharacters exercise) / lettersPerWord
+
+
+lettersPerWord : Float
+lettersPerWord =
+    5.0
 
 
 processEvents : List Event -> Zipper Step -> Int -> Zipper Step

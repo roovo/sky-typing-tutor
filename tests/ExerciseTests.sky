@@ -369,10 +369,22 @@ wpmTests =
           "wpm returns 60.0 for a 5 letter exercise with everything typed in 1 sec"
           (\_ ->
               exerciseWithText "abcde" |> Exercise.consume 'a' 0
-                  |> Exercise.consume 'b' 40
-                  |> Exercise.consume 'c' 20
-                  |> Exercise.consume 'd' 20
-                  |> Exercise.consume 'e' 20
+                  |> Exercise.consume 'b' 400
+                  |> Exercise.consume 'c' 200
+                  |> Exercise.consume 'd' 200
+                  |> Exercise.consume 'e' 200
+                  |> Exercise.wpm
+                  |> Test.equal 60.0)
+    , Test.test
+          "wpm only includes characters of progress (so ignores backspaces and erroneious keys)"
+          (\_ ->
+              exerciseWithText "abcde" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'a' 400
+                  |> Exercise.consume backspaceChar 200
+                  |> Exercise.consume 'b' 100
+                  |> Exercise.consume 'c' 100
+                  |> Exercise.consume 'd' 100
+                  |> Exercise.consume 'e' 100
                   |> Exercise.wpm
                   |> Test.equal 60.0)
     ]
