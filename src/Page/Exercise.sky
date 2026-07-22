@@ -12,12 +12,14 @@ import Std.Ui.Font as Font
 -- MODEL
 --
 type alias Model =
-    { exercise : Exercise }
+    { exercise : Exercise
+    , elapsedTime : Int
+    }
 
 
 init : String -> String -> Model
 init filename exerciseText =
-    { exercise = Exercise.init filename exerciseText }
+    { exercise = Exercise.init filename exerciseText, elapsedTime = 0 }
 
 --
 -- UPDATE
