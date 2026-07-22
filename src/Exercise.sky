@@ -6,6 +6,7 @@ module Exercise exposing
     , consume
     , currentLineIndex
     , init
+    , language
     , printableLines
     , title
     , wpm
@@ -92,6 +93,11 @@ currentLineIndex exercise =
                     False
     in
         exercise.stepsBefore |> List.filter newLineSteps |> List.length
+
+
+language : Exercise -> String
+language exercise =
+    "unknown"
 
 
 printableLines : Int -> Int -> Exercise -> List (List Printable)

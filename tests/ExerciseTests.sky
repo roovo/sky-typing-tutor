@@ -7,7 +7,7 @@ import Exercise exposing (Exercise, Printable(..), Style(..))
 
 tests : List Test
 tests =
-    accuracyTests ++ consumeTests ++ currentLineIndexTests
+    accuracyTests ++ consumeTests ++ currentLineIndexTests ++ languageTests
         ++ printableLinesTests
         ++ wpmTests
 
@@ -233,6 +233,16 @@ currentLineIndexTests =
                   |> Exercise.consume enterChar 0
                   |> Exercise.currentLineIndex
                   |> Test.equal 5)
+    ]
+
+
+languageTests : List Test
+languageTests =
+    [ Test.test
+          "language returns 'unknown' if there is no extension"
+          (\_ ->
+              Exercise.init "filename" "" |> Exercise.language
+                  |> Test.equal "unknown")
     ]
 
 
