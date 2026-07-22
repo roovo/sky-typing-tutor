@@ -365,6 +365,16 @@ wpmTests =
     [ Test.test
           "wpm returns 0.0 for an empty exercise with nothing typed"
           (\_ -> exerciseWithText "" |> Exercise.wpm |> Test.equal 0.0)
+    , Test.test
+          "wpm returns 60.0 for a 5 letter exercise with everything typed in 1 sec"
+          (\_ ->
+              exerciseWithText "abcde" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'b' 40
+                  |> Exercise.consume 'c' 20
+                  |> Exercise.consume 'd' 20
+                  |> Exercise.consume 'e' 20
+                  |> Exercise.wpm
+                  |> Test.equal 60.0)
     ]
 
 

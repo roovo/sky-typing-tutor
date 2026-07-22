@@ -97,7 +97,7 @@ wpm exercise =
 --
 consume : Char -> Int -> Exercise -> Exercise
 consume ch elapsedTime exercise =
-    { exercise | events = logEvent ch exercise }
+    { exercise | events = logEvent ch elapsedTime exercise }
 
 --
 -- PRIVATE
@@ -234,10 +234,10 @@ processEventsErrors events steps1 errorCount =
                     processEventsErrors rest steps1 (errorCount + 1)
 
 
-logEvent : Char -> Exercise -> List Event
-logEvent ch exercise =
+logEvent : Char -> Int -> Exercise -> List Event
+logEvent ch elapsedTime exercise =
     let
-        newEvent = { char = ch }
+        newEvent = { char = ch, timeTaken = elapsedTime }
     in
         newEvent :: exercise.events
 

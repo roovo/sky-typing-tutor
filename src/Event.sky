@@ -1,7 +1,9 @@
 module Event exposing (Event, howManyTyped)
 
 type alias Event =
-    { char : Char }
+    { char : Char
+    , timeTaken : Int
+    }
 
 
 howManyTyped : List Event -> Int
