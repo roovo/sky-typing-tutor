@@ -232,11 +232,7 @@ followEventsErrorCount events initialSteps =
 
 howManyCharacters : Exercise -> Int
 howManyCharacters exercise =
-    steps exercise |> Zipper.first |> toInitialStep
-        |> followEvents exercise.events
-        |> Zipper.before
-        |> List.filter Step.isTypeable
-        |> List.length
+    exercise.stepsBefore |> List.filter Step.isTypeable |> List.length
 
 
 howManyWords : Exercise -> Float
