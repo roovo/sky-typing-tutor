@@ -20,7 +20,11 @@ import Zipper
 -- MODEL
 --
 type alias Exercise =
-    { events : List Event
+    { errorCount : Int
+    , events : List Event
+    , stepsAfter : List Step
+    , stepsBefore : List Step
+    , stepsCurrent : Step
     , text : String
     , title : String
     }
@@ -41,7 +45,21 @@ type Printable
 
 init : String -> String -> Exercise
 init title text =
-    { events = [], text = text, title = title }
+    let
+        zippedSteps =
+            text |> ExerciseParser.toSteps |> Zipper.fromList
+                |> Maybe.withDefault (Zipper.singleton Step.initEnd)
+                |> Zipper.first
+                |> toInitialStep
+    in
+        { errorCount = 0
+        , events = []
+        , stepsAfter = Zipper.after zippedSteps
+        , stepsBefore = Zipper.before zippedSteps
+        , stepsCurrent = Zipper.current zippedSteps
+        , text = text
+        , title = title
+        }
 
 
 --
