@@ -104,7 +104,11 @@ viewHeading model =
         , Border.color (Ui.rgb 142 200 168)
         , Border.rounded 4
         ]
-        (Ui.el [] (Ui.text <| Exercise.title model.exercise))
+        (Ui.el
+            []
+            (Ui.text <| Exercise.title model.exercise ++ " ("
+                ++ Exercise.language model.exercise
+                ++ ")"))
 
 
 viewFooter : Model -> Element msg
@@ -147,7 +151,8 @@ viewBody model =
         visibleLineCount = 20
         linesBefore = visibleLineCount // 3
         linesAfter = visibleLineCount - linesBefore - 1
-        lines = Exercise.printableLines linesBefore linesAfter model.exercise
+        lines =
+            Exercise.printableLines linesBefore linesAfter model.exercise
     in
         Ui.column [ Ui.spacing 0 ] (List.map viewLine lines)
 
