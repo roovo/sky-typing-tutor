@@ -224,6 +224,20 @@ howManyWords exercise =
     (toFloat <| howManyCharacters exercise) / lettersPerWord
 
 
+isNewLineStep : Step -> Bool
+isNewLineStep step =
+    case step of
+
+        Step.EnterChar ->
+            True
+
+        Step.EmptyLine ->
+            True
+
+        _ ->
+            False
+
+
 lettersPerWord : Float
 lettersPerWord =
     5.0
@@ -288,6 +302,34 @@ splitIntoLines printables currentLine acc =
 
                 _ ->
                     splitIntoLines rest (p :: currentLine) acc
+
+
+takeLastNLines : Int -> List Step -> List Step
+takeLastNLines n steps1 =
+    takeLastNLinesHelper n (List.reverse steps1) 0 []
+
+
+takeLastNLinesHelper : Int -> List Step -> Int -> List Step -> List Step
+takeLastNLinesHelper n steps1 lineCount acc =
+    case steps1 of
+
+        [] ->
+            acc
+
+        step :: rest ->
+            if lineCount >= n then
+                acc
+
+            else
+                let
+                    newLineCount =
+                        if isNewLineStep step then
+                            lineCount + 1
+
+                        else
+                            lineCount
+                in
+                    takeLastNLinesHelper n rest newLineCount (step :: acc)
 
 
 toFloat : Int -> Float
