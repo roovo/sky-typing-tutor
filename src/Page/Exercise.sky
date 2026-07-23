@@ -120,7 +120,7 @@ viewHeading model =
         ]
         (Ui.el
             []
-            (Ui.text <| Exercise.title model.exercise ++ " ("
+            (Ui.text <| Exercise.fullPath model.exercise ++ " ("
                 ++ Exercise.language model.exercise
                 ++ ")"))
 
@@ -196,7 +196,8 @@ viewExerciseCompleted model =
               (Ui.text "Exercise Completed!")
         , Ui.column
               [ Ui.spacing 0 ]
-              [ Ui.text ("Title:           " ++ Exercise.title model.exercise)
+              [ Ui.text
+                    ("Title:           " ++ Exercise.fullPath model.exercise)
               , Ui.text
                     ("Language:        " ++ Exercise.language model.exercise)
               , Ui.text

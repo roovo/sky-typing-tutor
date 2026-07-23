@@ -9,7 +9,7 @@ module Exercise exposing
     , isComplete
     , language
     , printableLines
-    , title
+    , fullPath
     , typeableCharacterCount
     , wpm
     )
@@ -29,7 +29,7 @@ type alias Exercise =
     , stepsBefore : List Step
     , stepsCurrent : Step
     , text : String
-    , title : String
+    , fullPath : String
     }
 
 type Style
@@ -47,7 +47,7 @@ type Printable
 
 
 init : String -> String -> Exercise
-init title text =
+init fullPath text =
     let
         zippedSteps =
             text |> ExerciseParser.toSteps |> Zipper.fromList
@@ -61,7 +61,7 @@ init title text =
         , stepsBefore = Zipper.before zippedSteps
         , stepsCurrent = Zipper.current zippedSteps
         , text = text
-        , title = title
+        , fullPath = fullPath
         }
 
 
@@ -104,7 +104,7 @@ isComplete exercise =
 
 language : Exercise -> String
 language exercise =
-    case Path.ext exercise.title of
+    case Path.ext exercise.fullPath of
 
         ".bash" ->
             "Shell"
@@ -178,9 +178,9 @@ printableLines linesBefore linesAfter exercise =
     splitIntoLines (windowedPrintables linesBefore linesAfter exercise) [] []
 
 
-title : Exercise -> String
-title exercise =
-    exercise.title
+fullPath : Exercise -> String
+fullPath exercise =
+    exercise.fullPath
 
 
 typeableCharacterCount : Exercise -> Int
