@@ -7,7 +7,8 @@ import Exercise exposing (Exercise, Printable(..), Style(..))
 
 tests : List Test
 tests =
-    accuracyTests ++ consumeTests ++ currentLineIndexTests ++ languageTests
+    accuracyTests ++ consumeTests ++ currentLineIndexTests ++ isCompleteTests
+        ++ languageTests
         ++ printableLinesTests
         ++ wpmTests
 
@@ -233,6 +234,14 @@ currentLineIndexTests =
                   |> Exercise.consume enterChar 0
                   |> Exercise.currentLineIndex
                   |> Test.equal 5)
+    ]
+
+
+isCompleteTests : List Test
+isCompleteTests =
+    [ Test.test
+          "isComplete returns False for an exercise with content that hasn't started yet"
+          (\_ -> exerciseWithText "ab" |> Exercise.isComplete |> Test.equal False)
     ]
 
 

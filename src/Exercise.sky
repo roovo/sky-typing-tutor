@@ -6,6 +6,7 @@ module Exercise exposing
     , consume
     , currentLineIndex
     , init
+    , isComplete
     , language
     , printableLines
     , title
@@ -93,6 +94,11 @@ currentLineIndex exercise =
                     False
     in
         exercise.stepsBefore |> List.filter newLineSteps |> List.length
+
+
+isComplete : Exercise -> Bool
+isComplete exercise =
+    False
 
 
 language : Exercise -> String
