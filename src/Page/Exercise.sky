@@ -236,8 +236,18 @@ viewExerciseCompleted model =
                     (Analysis.overallAssessment
                         (toFloat <| Session.wpmTarget model.session)
                         model.exercise)
+              , Ui.text ("")
+              , hr
+              , Ui.text ("")
+              , Ui.text ("r - to re-run this exercise")
               ]
         ]
+
+
+hr =
+    Ui.el
+        [ Ui.width Ui.fill, Font.color (Ui.rgb 142 200 168) ]
+        (Ui.text (String.repeat 300 "─"))
 
 
 viewLine : List Exercise.Printable -> Element msg
