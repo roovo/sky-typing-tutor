@@ -37,6 +37,7 @@ type alias KeyEvent =
 
 type Msg
     = KeyTyped KeyEvent
+    | Restart
     | Tick
 
 
@@ -45,7 +46,17 @@ update msg model =
     case msg of
 
         KeyTyped keyEvent ->
-            consumeKeyEvent keyEvent model
+            if Exercise.isComplete model.exercise then
+                handleCompletedKey keyEvent model
+
+            else
+                consumeKeyEvent keyEvent model
+
+        Restart ->
+            init
+                model.session
+                (Exercise.fullPath model.exercise)
+                model.exercise.text
 
         Tick ->
             if List.isEmpty model.exercise.events then
@@ -84,6 +95,15 @@ consumeKeyEvent keyEvent model =
                     model.exercise
     in
         { model | exercise = newExercise, elapsedTime = 0 }
+
+
+handleCompletedKey : keyEvent -> Model -> Model
+handleCompletedKey keyEvent model =
+    if keyEvent.kind == "char" && keyEvent.value == "r" then
+        update Restart model
+
+    else
+        model
 
 
 --
