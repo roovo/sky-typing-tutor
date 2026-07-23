@@ -98,7 +98,7 @@ currentLineIndex exercise =
 
 isComplete : Exercise -> Bool
 isComplete exercise =
-    False
+    exercise.stepsCurrent |> Step.isEnd
 
 
 language : Exercise -> String

@@ -242,6 +242,13 @@ isCompleteTests =
     [ Test.test
           "isComplete returns False for an exercise with content that hasn't started yet"
           (\_ -> exerciseWithText "ab" |> Exercise.isComplete |> Test.equal False)
+    , Test.test
+          "isComplete returns True for an exercise which has been perfectly completed"
+          (\_ ->
+              exerciseWithText "ab" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'b' 0
+                  |> Exercise.isComplete
+                  |> Test.equal True)
     ]
 
 
