@@ -1,5 +1,6 @@
 module Page.Exercise exposing (Model, Msg(..), init, view, update)
 
+import Analysis
 import Exercise exposing (Exercise, Style(..))
 import Session
 import Sky.Core.Prelude exposing (..)
@@ -209,6 +210,11 @@ viewExerciseCompleted model =
               , Ui.text
                     ("WPM:             "
                         ++ formatFloat2dp (Exercise.wpm model.exercise))
+              , Ui.text ("")
+              , Ui.text
+                    (Analysis.overallAssessment
+                        (toFloat <| Session.wpmTarget model.session)
+                        model.exercise)
               ]
         ]
 
@@ -261,3 +267,11 @@ styleAttrs style =
 
         Exercise.Unstyled ->
             []
+
+
+--
+-- PRIVATE
+--
+toFloat : Int -> Float
+toFloat n =
+    String.fromInt n |> String.toFloat |> Maybe.withDefault 0.0
