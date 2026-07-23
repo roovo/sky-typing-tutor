@@ -147,6 +147,15 @@ formatFloat2dp f =
 
 viewBody : Model -> Element msg
 viewBody model =
+    if Exercise.isComplete model.exercise then
+        viewExerciseCompleted model
+
+    else
+        viewExercise model
+
+
+viewExercise : Model -> Element msg
+viewExercise model =
     let
         visibleLineCount = 20
         linesBefore = visibleLineCount // 3
@@ -155,6 +164,27 @@ viewBody model =
             Exercise.printableLines linesBefore linesAfter model.exercise
     in
         Ui.column [ Ui.spacing 0 ] (List.map viewLine lines)
+
+
+viewExerciseCompleted : Model -> Element msg
+viewExerciseCompleted model =
+    Ui.column
+        [ Ui.spacing 8
+        , Ui.padding 16
+        , Border.width 1
+        , Border.color (Ui.rgb 142 200 168)
+        , Border.rounded 4
+        ]
+        [ Ui.el
+              [ Font.bold, Font.color (Ui.rgb 142 200 168) ]
+              (Ui.text "Exercise Completed!")
+        , Ui.text ("Title:    " ++ Exercise.title model.exercise)
+        , Ui.text ("Language: " ++ Exercise.language model.exercise)
+        , Ui.text
+              ("Accuracy: " ++ formatFloat2dp (Exercise.accuracy model.exercise)
+                  ++ "%")
+        , Ui.text ("WPM:      " ++ formatFloat2dp (Exercise.wpm model.exercise))
+        ]
 
 
 viewLine : List Exercise.Printable -> Element msg
