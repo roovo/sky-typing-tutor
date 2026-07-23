@@ -10,6 +10,7 @@ module Exercise exposing
     , language
     , printableLines
     , title
+    , typeableCharacterCount
     , wpm
     )
 
@@ -75,7 +76,7 @@ accuracy exercise =
             0.0
 
         n ->
-            (toFloat <| howManyCharacters exercise) / toFloat n * 100.0
+            (toFloat <| typeableCharacterCount exercise) / toFloat n * 100.0
 
 
 currentLineIndex : Exercise -> Int
@@ -182,6 +183,11 @@ title exercise =
     exercise.title
 
 
+typeableCharacterCount : Exercise -> Int
+typeableCharacterCount exercise =
+    exercise.stepsBefore |> List.filter Step.isTypeable |> List.length
+
+
 wpm : Exercise -> Float
 wpm exercise =
     let
@@ -278,14 +284,9 @@ exerciseZipper exercise =
     }
 
 
-howManyCharacters : Exercise -> Int
-howManyCharacters exercise =
-    exercise.stepsBefore |> List.filter Step.isTypeable |> List.length
-
-
 howManyWords : Exercise -> Float
 howManyWords exercise =
-    (toFloat <| howManyCharacters exercise) / lettersPerWord
+    (toFloat <| typeableCharacterCount exercise) / lettersPerWord
 
 
 isNewLineStep : Step -> Bool

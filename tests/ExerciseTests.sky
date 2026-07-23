@@ -10,6 +10,7 @@ tests =
     accuracyTests ++ consumeTests ++ currentLineIndexTests ++ isCompleteTests
         ++ languageTests
         ++ printableLinesTests
+        ++ typeableCharacterCountTests
         ++ wpmTests
 
 
@@ -532,6 +533,16 @@ printableLinesTests =
                            , UnstyledEnd
                            ]
                          ])
+    ]
+
+
+typeableCharacterCountTests : List Test
+typeableCharacterCountTests =
+    [ Test.test
+          "typeableCharacterCount returns 0 for an empty exercise"
+          (\_ ->
+              exerciseWithText "" |> Exercise.typeableCharacterCount
+                  |> Test.equal 0)
     ]
 
 
