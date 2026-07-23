@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Page.Exercise as PageExercise exposing (Msg(..))
+import Session
 import Sky.Core.Prelude exposing (..)
 import Sky.Core.String as String
 import Sky.Core.Task as Task
@@ -32,18 +33,19 @@ init _ =
         case getArg userArgs of
 
             "" ->
-                ( NoFile, Cmd.none )
+                ( NoFile Session.init, Cmd.none )
 
             filename ->
                 case Task.run (File.readFile filename) of
 
                     Ok contents ->
-                        ( Exercise (PageExercise.init filename contents)
+                        ( Exercise
+                              (PageExercise.init Session.init filename contents)
                         , Cmd.none
                         )
 
                     Err _ ->
-                        ( NoFile, Cmd.none )
+                        ( NoFile Session.init, Cmd.none )
 
 
 getArg argList =
@@ -54,7 +56,7 @@ getArg argList =
 --
 type AppModel
     = Exercise PageExercise.Model
-    | NoFile
+    | NoFile Session
 
 --
 -- UPDATE
@@ -117,7 +119,7 @@ subscriptions model =
         Exercise _ ->
             Sub.every 10 (GotExerciseMsg PageExercise.Tick)
 
-        NoFile ->
+        NoFile _ ->
             Sub.none
 
 
@@ -131,7 +133,7 @@ view model =
         Exercise subModel ->
             PageExercise.view GotExerciseMsg subModel
 
-        NoFile ->
+        NoFile _ ->
             notFoundView
 
 

@@ -1,0 +1,39 @@
+module Session exposing (Session, init, terminalLineHeight)
+
+
+--
+-- CONSTANTS
+--
+initialineHeight : Int
+initialineHeight =
+    36
+
+--
+-- MODEL
+--
+type Session
+    = Session Config
+
+type alias Config =
+    { terminalLineHeight : Int }
+
+
+init : Session
+init =
+    Session { terminalLineHeight = initialineHeight }
+
+
+--
+-- INFO
+--
+terminalLineHeight : Session -> Int
+terminalLineHeight session =
+    session |> config |> .terminalLineHeight
+
+
+--
+-- PRIVATE
+--
+config : Session -> Config
+config Session c =
+    c
