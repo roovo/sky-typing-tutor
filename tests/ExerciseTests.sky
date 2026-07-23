@@ -543,6 +543,27 @@ typeableCharacterCountTests =
           (\_ ->
               exerciseWithText "" |> Exercise.typeableCharacterCount
                   |> Test.equal 0)
+    , Test.test
+          "typeableCharacterCount returns the number of characters in a simple sigle line exercise"
+          (\_ ->
+              exerciseWithText "ab" |> Exercise.typeableCharacterCount
+                  |> Test.equal 2)
+    , Test.test
+          "typeableCharacterCount ignores leading whitespace"
+          (\_ ->
+              exerciseWithText "    ab" |> Exercise.typeableCharacterCount
+                  |> Test.equal 2)
+    , Test.test
+          "typeableCharacterCount includes enter char"
+          (\_ ->
+              exerciseWithText "    a\nb" |> Exercise.typeableCharacterCount
+                  |> Test.equal 3)
+    , Test.test
+          "typeableCharacterCount excludes empty lines"
+          (\_ ->
+              exerciseWithText "    a\n  \n\nb\n   \n"
+                  |> Exercise.typeableCharacterCount
+                  |> Test.equal 3)
     ]
 
 
