@@ -36,11 +36,14 @@ init _ =
                 ( NoFile Session.init, Cmd.none )
 
             filename ->
-                case Task.run (File.readFile filename) of
+                let
+                    fullPath = resolveFullPath filename
+                in
+                case Task.run (File.readFile fullPath) of
 
                     Ok contents ->
                         ( Exercise
-                              (PageExercise.init Session.init filename contents)
+                              (PageExercise.init Session.init fullPath contents)
                         , Cmd.none
                         )
 
@@ -50,6 +53,13 @@ init _ =
 
 getArg argList =
     Maybe.withDefault "" (List.head argList)
+
+
+resolveFullPath : String -> String
+resolveFullPath path =
+    Task.run (Process.run "realpath" [ path ])
+        |> Result.withDefault path
+        |> String.trim
 
 --
 -- MODEL
