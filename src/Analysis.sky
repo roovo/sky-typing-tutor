@@ -1,0 +1,12 @@
+module Analysis exposing (overallAssessment)
+
+import Exercise
+
+
+overallAssessment : Exercise -> String
+overallAssessment exercise =
+    if Exercise.accuracy exercise < 90.0 then
+        "Focus on accuracy. Slow down and aim for fewer errors."
+
+    else
+        "Reasonable accuracy. Focus on your problem characters before pushing speed."

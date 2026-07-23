@@ -1,0 +1,61 @@
+module AnalysisTests exposing (tests)
+
+import Sky.Core.Prelude exposing (..)
+import Sky.Test as Test exposing (Test)
+import Analysis
+import Exercise
+
+
+tests : List Test
+tests =
+    overallAssessmentTests
+
+
+overallAssessmentTests : List Test
+overallAssessmentTests =
+    [ Test.test
+          "overallAssessment returns 'Focus on accuracy' if accuracy = 81.81%"
+          (\_ ->
+              inaccurateExercise |> Analysis.overallAssessment |> String.left 17
+                  |> Test.equal "Focus on accuracy")
+    , Test.test
+          "overallAssessment returns 'Reasonable accuracy' if accuracy = 90%"
+          (\_ ->
+              betterAccuracyExercise |> Analysis.overallAssessment
+                  |> String.left 19
+                  |> Test.equal "Reasonable accuracy")
+    ]
+
+
+--
+-- HELPERS
+--
+betterAccuracyExercise : Exercise
+betterAccuracyExercise =
+    Exercise.init "" "1234567890" |> Exercise.consume '1' 0
+        |> Exercise.consume '2' 0
+        |> Exercise.consume '3' 0
+        |> Exercise.consume '4' 0
+        |> Exercise.consume '5' 0
+        |> Exercise.consume '6' 0
+        |> Exercise.consume '7' 0
+        |> Exercise.consume '8' 0
+        |> Exercise.consume '9' 0
+        -- |> Exercise.accuracy => 90
+
+
+inaccurateExercise : Exercise
+inaccurateExercise =
+    Exercise.init "" "1234567890" |> Exercise.consume '1' 0
+        |> Exercise.consume '2' 0
+        |> Exercise.consume '3' 0
+        |> Exercise.consume '4' 0
+        |> Exercise.consume '5' 0
+        |> Exercise.consume '6' 0
+        |> Exercise.consume '7' 0
+        |> Exercise.consume '8' 0
+        |> Exercise.consume '9' 0
+        |> Exercise.consume '9' 0
+        |> Exercise.consume '9' 0
+
+        -- |> Exercise.accuracy => 81.81
