@@ -1,0 +1,47 @@
+module Database exposing (db)
+
+import Sky.Core.Prelude exposing (..)
+import Sky.Core.File as File
+import Sky.Core.Task as Task
+import Sky.Core.Error as Error exposing (Error)
+import Std.Db as Db
+import Std.Log exposing (println)
+
+
+db =
+    let
+        homeDir =
+            System.getenvOr "HOME" "."
+        dir = homeDir ++ "/.typing-tutor"
+        path = dir ++ "/results.db"
+        _ = Task.run (File.mkdirAll dir)
+    in
+        case Task.run (Db.open "sqlite" path) of
+
+            Ok conn ->
+                let
+                    _ = initSchema conn
+                in
+                    conn
+
+            Err e ->
+                let
+                    _ =
+                        println ("Database unavailable: " ++ Error.toString e)
+                in
+                    System.exit 1
+
+
+initSchema conn =
+    Db.execRaw
+        conn
+        """CREATE TABLE IF NOT EXISTS results (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            full_path TEXT NOT NULL,
+            language TEXT NOT NULL,
+            accuracy REAL NOT NULL,
+            wpm REAL NOT NULL,
+            character_count INTEGER NOT NULL,
+            events TEXT NOT NULL,
+            completed_at TEXT NOT NULL
+        )"""

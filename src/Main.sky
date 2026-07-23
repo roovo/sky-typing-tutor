@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import Database
 import Page.Exercise as PageExercise exposing (Msg(..))
 import Session
 import Sky.Core.Prelude exposing (..)
@@ -28,6 +29,7 @@ main =
 init : () -> ( AppModel, Cmd Msg )
 init _ =
     let
+        __ = Database.db
         userArgs = System.args () |> Task.run |> Result.withDefault []
     in
         case getArg userArgs of
@@ -39,16 +41,19 @@ init _ =
                 let
                     fullPath = resolveFullPath filename
                 in
-                case Task.run (File.readFile fullPath) of
+                    case Task.run (File.readFile fullPath) of
 
-                    Ok contents ->
-                        ( Exercise
-                              (PageExercise.init Session.init fullPath contents)
-                        , Cmd.none
-                        )
+                        Ok contents ->
+                            ( Exercise
+                                  (PageExercise.init
+                                      Session.init
+                                      fullPath
+                                      contents)
+                            , Cmd.none
+                            )
 
-                    Err _ ->
-                        ( NoFile Session.init, Cmd.none )
+                        Err _ ->
+                            ( NoFile Session.init, Cmd.none )
 
 
 getArg argList =
@@ -57,8 +62,7 @@ getArg argList =
 
 resolveFullPath : String -> String
 resolveFullPath path =
-    Task.run (Process.run "realpath" [ path ])
-        |> Result.withDefault path
+    Task.run (Process.run "realpath" [ path ]) |> Result.withDefault path
         |> String.trim
 
 --
