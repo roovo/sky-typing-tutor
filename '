@@ -178,23 +178,18 @@ viewExerciseCompleted model =
         [ Ui.el
               [ Font.bold, Font.color (Ui.rgb 142 200 168) ]
               (Ui.text "Exercise Completed!")
-        , Ui.column
-              [ Ui.spacing 0 ]
-              [ Ui.text ("Title:           " ++ Exercise.title model.exercise)
-              , Ui.text
-                    ("Language:        " ++ Exercise.language model.exercise)
-              , Ui.text
-                    ("Character Count: "
-                        ++ (String.fromInt
-                               <| Exercise.typeableCharacterCount model.exercise))
-              , Ui.text
-                    ("Accuracy:        "
-                        ++ formatFloat2dp (Exercise.accuracy model.exercise)
-                        ++ "%")
-              , Ui.text
-                    ("WPM:             "
-                        ++ formatFloat2dp (Exercise.wpm model.exercise))
-              ]
+        , Ui.text ("Title:      " ++ Exercise.title model.exercise)
+        , Ui.text ("Language:   " ++ Exercise.language model.exercise)
+        , Ui.text
+              ("Character Count: "
+                  ++ (String.fromInt
+                         <| Exercise.typeableCharacterCount model.exercise))
+        , Ui.text
+              ("Accuracy:   "
+                  ++ formatFloat2dp (Exercise.accuracy model.exercise)
+                  ++ "%")
+        , Ui.text
+              ("WPM:        " ++ formatFloat2dp (Exercise.wpm model.exercise))
         ]
 
 
