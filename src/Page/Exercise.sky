@@ -1,9 +1,13 @@
 module Page.Exercise exposing (Model, Msg(..), init, view, update)
 
 import Analysis
+import Database
 import Exercise exposing (Exercise, Style(..))
+import Sky.Core.Error as Error exposing (Error)
 import Session
 import Sky.Core.Prelude exposing (..)
+import Std.Cmd as Cmd
+import Std.Db as Db
 import Std.Ui as Ui
 import Std.Ui exposing (Element)
 import Std.Ui.Background as Background
@@ -16,6 +20,7 @@ import Std.Ui.Font as Font
 type alias Model =
     { elapsedTime : Int
     , exercise : Exercise
+    , saveStatus : String
     , session : Session
     }
 
@@ -24,6 +29,7 @@ init : Session -> String -> String -> Model
 init session filename exerciseText =
     { elapsedTime = 0
     , exercise = Exercise.init filename exerciseText
+    , saveStatus = ""
     , session = session
     }
 
@@ -38,36 +44,56 @@ type alias KeyEvent =
 type Msg
     = KeyTyped KeyEvent
     | Restart
+    | SaveComplete (Result Error Int)
     | SaveResults
     | Tick
 
 
-update : Msg -> Model -> Model
-update msg model =
+update : (Msg -> parentMsg) -> Msg -> Model -> ( Model, Cmd parentMsg )
+update toMsg msg model =
     case msg of
 
         KeyTyped keyEvent ->
             if Exercise.isComplete model.exercise then
-                handleCompletedKey keyEvent model
+                handleCompletedKey toMsg keyEvent model
 
             else
-                consumeKeyEvent keyEvent model
+                ( consumeKeyEvent keyEvent model, Cmd.none )
 
         Restart ->
-            init
-                model.session
-                (Exercise.fullPath model.exercise)
-                model.exercise.text
+            ( init
+                  model.session
+                  (Exercise.fullPath model.exercise)
+                  model.exercise.text
+            , Cmd.none
+            )
+
+        SaveComplete result ->
+            let
+                status =
+                    case result of
+
+                        Ok _ ->
+                            "✓ Saved"
+
+                        Err e ->
+                            "✗ Save failed: " ++ Error.toString e
+            in
+                ( { model | saveStatus = status }, Cmd.none )
 
         SaveResults ->
-            model
+            ( model
+            , Cmd.perform
+                  (saveResult model.exercise)
+                  (\r -> toMsg (SaveComplete r))
+            )
 
         Tick ->
             if List.isEmpty model.exercise.events then
-                model
+                ( model, Cmd.none )
 
             else
-                { model | elapsedTime = model.elapsedTime + 10 }
+                ( { model | elapsedTime = model.elapsedTime + 10 }, Cmd.none )
 
 
 consumeKeyEvent : KeyEvent -> Model -> Model
@@ -101,13 +127,30 @@ consumeKeyEvent keyEvent model =
         { model | exercise = newExercise, elapsedTime = 0 }
 
 
-handleCompletedKey : keyEvent -> Model -> Model
-handleCompletedKey keyEvent model =
+saveResult : Exercise -> Task Error Int
+saveResult exercise =
+    Db.exec
+        Database.db
+        "INSERT INTO results (full_path, language, accuracy, wpm, character_count, events, completed_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))"
+        [ Exercise.fullPath exercise
+        , Exercise.language exercise
+        , String.fromFloat (Exercise.accuracy exercise)
+        , String.fromFloat (Exercise.wpm exercise)
+        , String.fromInt (Exercise.typeableCharacterCount exercise)
+        , "[]"
+        ]
+
+
+handleCompletedKey : (Msg -> parentMsg) -> keyEvent -> Model -> ( Model, Cmd parentMsg )
+handleCompletedKey toMsg keyEvent model =
     if keyEvent.kind == "char" && keyEvent.value == "r" then
-        update Restart model
+        update toMsg Restart model
+
+    else if keyEvent.kind == "char" && keyEvent.value == "s" then
+        update toMsg SaveResults model
 
     else
-        model
+        ( model, Cmd.none )
 
 
 --
@@ -209,41 +252,49 @@ viewExercise model =
 viewExerciseCompleted : Model -> Element msg
 viewExerciseCompleted model =
     Ui.column
-        [ Ui.spacing 4
-        , Ui.padding 16
-        , Border.width 1
-        , Border.color (Ui.rgb 142 200 168)
-        , Border.rounded 4
-        ]
-        [ Ui.el
-              [ Font.bold, Font.color (Ui.rgb 142 200 168) ]
-              (Ui.text "Exercise Completed!")
+        [ Ui.spacing 8 ]
+        [ Ui.column
+              [ Ui.spacing 4
+              , Ui.padding 16
+              , Border.width 1
+              , Border.color (Ui.rgb 142 200 168)
+              , Border.rounded 4
+              ]
+              [ Ui.el
+                    [ Font.bold, Font.color (Ui.rgb 142 200 168) ]
+                    (Ui.text "Exercise Completed!")
+              , Ui.column
+                    [ Ui.spacing 0 ]
+                    [ Ui.text
+                          ("Title:           "
+                              ++ Exercise.fullPath model.exercise)
+                    , Ui.text
+                          ("Language:        "
+                              ++ Exercise.language model.exercise)
+                    , Ui.text
+                          ("Character Count: "
+                              ++ (String.fromInt
+                                     <| Exercise.typeableCharacterCount
+                                            model.exercise))
+                    , Ui.text
+                          ("Accuracy:        "
+                              ++ formatFloat2dp
+                                     (Exercise.accuracy model.exercise)
+                              ++ "%")
+                    , Ui.text
+                          ("WPM:             "
+                              ++ formatFloat2dp (Exercise.wpm model.exercise))
+                    , Ui.text ""
+                    , Ui.text
+                          (Analysis.overallAssessment
+                              (toFloat <| Session.wpmTarget model.session)
+                              model.exercise)
+                    ]
+              ]
         , Ui.column
               [ Ui.spacing 0 ]
-              [ Ui.text
-                    ("Title:           " ++ Exercise.fullPath model.exercise)
-              , Ui.text
-                    ("Language:        " ++ Exercise.language model.exercise)
-              , Ui.text
-                    ("Character Count: "
-                        ++ (String.fromInt
-                               <| Exercise.typeableCharacterCount model.exercise))
-              , Ui.text
-                    ("Accuracy:        "
-                        ++ formatFloat2dp (Exercise.accuracy model.exercise)
-                        ++ "%")
-              , Ui.text
-                    ("WPM:             "
-                        ++ formatFloat2dp (Exercise.wpm model.exercise))
-              , Ui.text ("")
-              , Ui.text
-                    (Analysis.overallAssessment
-                        (toFloat <| Session.wpmTarget model.session)
-                        model.exercise)
-              , Ui.text ("")
-              , hr
-              , Ui.text ("")
-              , Ui.text ("r - re-run this exercise     s - save results")
+              [ Ui.text "  r - re-run this exercise"
+              , Ui.text ("  s - save results  " ++ model.saveStatus)
               ]
         ]
 

@@ -86,7 +86,11 @@ update msg model =
     case ( msg, model ) of
 
         ( GotExerciseMsg subMsg, Exercise subModel ) ->
-            PageExercise.update subMsg subModel |> updateWith Exercise
+            let
+                ( newSubModel, cmd ) =
+                    PageExercise.update GotExerciseMsg subMsg subModel
+            in
+            ( Exercise newSubModel, cmd )
 
         ( GotExerciseMsg _, _ ) ->
             ( model, Cmd.none )
@@ -97,10 +101,6 @@ update msg model =
         ( NoOp, _ ) ->
             ( model, Cmd.none )
 
-
-updateWith : (submodel -> AppModel) -> submodel -> ( AppModel, Cmd Msg )
-updateWith toModel subModel =
-    ( toModel subModel, Cmd.none )
 
 --
 -- ONKEY
