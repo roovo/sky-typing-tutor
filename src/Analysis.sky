@@ -3,10 +3,16 @@ module Analysis exposing (overallAssessment)
 import Exercise
 
 
-overallAssessment : Exercise -> String
-overallAssessment exercise =
+overallAssessment : Float -> Exercise -> String
+overallAssessment wpmThreshold exercise =
     if Exercise.accuracy exercise < 90.0 then
         "Focus on accuracy. Slow down and aim for fewer errors."
 
+    else if Exercise.accuracy exercise >= 95.0 && Exercise.wpm exercise >= wpmThreshold then
+        "Excellent! Try a harder exercise."
+
+    else if Exercise.accuracy exercise >= 95.0 then
+        "Your accuracy is great. Try pushing your speed a little."
+
     else
-        "Reasonable accuracy. Focus on your problem characters before pushing speed."
+        "Good progress. Focus on your problem characters before pushing speed."

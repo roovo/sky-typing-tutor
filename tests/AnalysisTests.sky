@@ -16,14 +16,27 @@ overallAssessmentTests =
     [ Test.test
           "overallAssessment returns 'Focus on accuracy' if accuracy = 81.81%"
           (\_ ->
-              inaccurateExercise |> Analysis.overallAssessment |> String.left 17
+              inaccurateExercise |> Analysis.overallAssessment 0.0
+                  |> String.left 17
                   |> Test.equal "Focus on accuracy")
     , Test.test
-          "overallAssessment returns 'Reasonable accuracy' if accuracy = 90%"
+          "overallAssessment returns 'Good progress' if accuracy = 90%"
           (\_ ->
-              betterAccuracyExercise |> Analysis.overallAssessment
-                  |> String.left 19
-                  |> Test.equal "Reasonable accuracy")
+              betterAccuracyExercise |> Analysis.overallAssessment 0.0
+                  |> String.left 13
+                  |> Test.equal "Good progress")
+    , Test.test
+          "overallAssessment returns 'Excellent' if accuracy = 100% & wpm meets threshold"
+          (\_ ->
+              perfectAccuracyFastExercise |> Analysis.overallAssessment 80.0
+                  |> String.left 9
+                  |> Test.equal "Excellent")
+    , Test.test
+          "overallAssessment returns 'Your accuracy is great' if accuracy = 100% & wpm is under threshold"
+          (\_ ->
+              perfectAccuracyFastExercise |> Analysis.overallAssessment 90.0
+                  |> String.left 22
+                  |> Test.equal "Your accuracy is great")
     ]
 
 
@@ -41,6 +54,7 @@ betterAccuracyExercise =
         |> Exercise.consume '7' 0
         |> Exercise.consume '8' 0
         |> Exercise.consume '9' 0
+        |> Exercise.consume '9' 0
         -- |> Exercise.accuracy => 90
 
 
@@ -57,5 +71,20 @@ inaccurateExercise =
         |> Exercise.consume '9' 0
         |> Exercise.consume '9' 0
         |> Exercise.consume '9' 0
-
         -- |> Exercise.accuracy => 81.81
+
+
+perfectAccuracyFastExercise : Exercise
+perfectAccuracyFastExercise =
+    Exercise.init "" "1234567890" |> Exercise.consume '1' 0
+        |> Exercise.consume '2' 300
+        |> Exercise.consume '3' 150
+        |> Exercise.consume '4' 150
+        |> Exercise.consume '5' 150
+        |> Exercise.consume '6' 150
+        |> Exercise.consume '7' 150
+        |> Exercise.consume '8' 150
+        |> Exercise.consume '9' 150
+        |> Exercise.consume '0' 150
+
+        -- |> Exercise.wpm => 80
