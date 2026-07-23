@@ -1,17 +1,12 @@
-module Session exposing (Session, init, terminalLineHeight, wpmCode, wpmProse)
+module Session exposing (Session, init, terminalLineHeight, wpmTarget)
 
 
 --
 -- CONSTANTS
 --
-defaultWpmCode : Int
-defaultWpmCode =
+defaultWpmTarget : Int
+defaultWpmTarget =
     40
-
-
-defaultWpmProse : Int
-defaultWpmProse =
-    60
 
 
 initialineHeight : Int
@@ -26,18 +21,14 @@ type Session
 
 type alias Config =
     { terminalLineHeight : Int
-    , wpmCode : Int
-    , wpmProse : Int
+    , wpmTarget : Int
     }
 
 
 init : Session
 init =
     Session
-        { terminalLineHeight = initialineHeight
-        , wpmCode = defaultWpmCode
-        , wpmProse = defaultWpmProse
-        }
+        { terminalLineHeight = initialineHeight, wpmTarget = defaultWpmTarget }
 
 
 --
@@ -48,14 +39,9 @@ terminalLineHeight session =
     session |> config |> .terminalLineHeight
 
 
-wpmCode : Session -> Int
-wpmCode session =
-    session |> config |> .wpmCode
-
-
-wpmProse : Session -> Int
-wpmProse session =
-    session |> config |> .wpmProse
+wpmTarget : Session -> Int
+wpmTarget session =
+    session |> config |> .wpmTarget
 
 
 --
