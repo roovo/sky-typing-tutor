@@ -1,6 +1,7 @@
 module Page.Exercise exposing (Model, Msg(..), init, view, update)
 
 import Exercise exposing (Exercise, Style(..))
+import Session
 import Sky.Core.Prelude exposing (..)
 import Std.Ui as Ui
 import Std.Ui exposing (Element)
@@ -85,6 +86,14 @@ consumeKeyEvent keyEvent model =
 
 
 --
+-- CONSTANTS
+--
+headerFooterPaddingLines : Int
+headerFooterPaddingLines =
+    16
+
+
+--
 -- VIEW
 --
 view : (Msg -> parentMsg) -> Model -> Element parentMsg
@@ -161,7 +170,9 @@ viewBody model =
 viewExercise : Model -> Element msg
 viewExercise model =
     let
-        visibleLineCount = 20
+        visibleLineCount =
+            (Session.terminalLineHeight model.session)
+                - headerFooterPaddingLines
         linesBefore = visibleLineCount // 3
         linesAfter = visibleLineCount - linesBefore - 1
         lines =
