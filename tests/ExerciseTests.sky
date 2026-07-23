@@ -240,13 +240,51 @@ currentLineIndexTests =
 isCompleteTests : List Test
 isCompleteTests =
     [ Test.test
+          "isComplete returns True for an exercise with no content"
+          (\_ -> exerciseWithText "" |> Exercise.isComplete |> Test.equal True)
+    , Test.test
           "isComplete returns False for an exercise with content that hasn't started yet"
           (\_ -> exerciseWithText "ab" |> Exercise.isComplete |> Test.equal False)
+    , Test.test
+          "isComplete returns False for an exercise which has been not been completed"
+          (\_ ->
+              exerciseWithText "ab" |> Exercise.consume 'a' 0
+                  |> Exercise.isComplete
+                  |> Test.equal False)
+    , Test.test
+          "isComplete returns False for an exercise with mistakes which has been not been completed"
+          (\_ ->
+              exerciseWithText "ab" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'a' 0
+                  |> Exercise.consume backspaceChar 0
+                  |> Exercise.consume 'c' 0
+                  |> Exercise.isComplete
+                  |> Test.equal False)
     , Test.test
           "isComplete returns True for an exercise which has been perfectly completed"
           (\_ ->
               exerciseWithText "ab" |> Exercise.consume 'a' 0
                   |> Exercise.consume 'b' 0
+                  |> Exercise.isComplete
+                  |> Test.equal True)
+    , Test.test
+          "isComplete returns True for an exercise which has been completed with some mistakes"
+          (\_ ->
+              exerciseWithText "ab" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'c' 0
+                  |> Exercise.consume backspaceChar 0
+                  |> Exercise.consume backspaceChar 0
+                  |> Exercise.consume 'b' 0
+                  |> Exercise.isComplete
+                  |> Test.equal True)
+    , Test.test
+          "isComplete returns True for an exercise which has been completed with characters typed after completion"
+          (\_ ->
+              exerciseWithText "ab" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'b' 0
+                  |> Exercise.consume backspaceChar 0
+                  |> Exercise.consume 'c' 0
                   |> Exercise.isComplete
                   |> Test.equal True)
     ]
