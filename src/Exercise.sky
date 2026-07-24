@@ -22,17 +22,10 @@ import Zipper
 
 -- MODEL
 --
--- COMPILER BUG WORKAROUND: Storing stepsBefore/stepsCurrent/stepsAfter
--- as separate fields instead of a single `Zipper Step` field because
--- parametric record aliases nested in another record fail codegen
--- cross-module. (Issue 2) The `exerciseZipper` helper reconstructs
--- the Zipper transiently when needed.
 type alias Exercise =
     { errorCount : Int
     , events : List Event
-    , stepsAfter : List Step
-    , stepsBefore : List Step
-    , stepsCurrent : Step
+    , steps : Zipper Step
     , text : String
     , fullPath : String
     }
@@ -62,9 +55,7 @@ init fullPath text =
     in
         { errorCount = 0
         , events = []
-        , stepsAfter = Zipper.after zippedSteps
-        , stepsBefore = Zipper.before zippedSteps
-        , stepsCurrent = Zipper.current zippedSteps
+        , steps = zippedSteps
         , text = text
         , fullPath = fullPath
         }
@@ -99,12 +90,12 @@ currentLineIndex exercise =
                 _ ->
                     False
     in
-        exercise.stepsBefore |> List.filter newLineSteps |> List.length
+        Zipper.before exercise.steps |> List.filter newLineSteps |> List.length
 
 
 isComplete : Exercise -> Bool
 isComplete exercise =
-    exercise.stepsCurrent |> Step.isEnd
+    Zipper.current exercise.steps |> Step.isEnd
 
 
 language : Exercise -> String
@@ -190,7 +181,7 @@ fullPath exercise =
 
 typeableCharacterCount : Exercise -> Int
 typeableCharacterCount exercise =
-    exerciseZipper exercise |> Zipper.toList |> List.filter Step.isTypeable
+    exercise.steps |> Zipper.toList |> List.filter Step.isTypeable
         |> List.length
 
 
@@ -212,7 +203,7 @@ wpm exercise =
 consume : Char -> Int -> Exercise -> Exercise
 consume ch elapsedTime exercise =
     let
-        zippedSteps = exerciseZipper exercise
+        zippedSteps = exercise.steps
         isMatchingChar = Step.matchesTyped ch (Zipper.current zippedSteps)
         isErrorFree = exercise.errorCount <= 0
         isBackSpace = ch == backspaceChar
@@ -223,9 +214,7 @@ consume ch elapsedTime exercise =
                 newZippedSteps = skipOver Next zippedSteps
             in
                 { exercise | events = logEvent ch elapsedTime exercise
-                , stepsAfter = Zipper.after newZippedSteps
-                , stepsBefore = Zipper.before newZippedSteps
-                , stepsCurrent = Zipper.current newZippedSteps
+                , steps = newZippedSteps
                 }
 
         else if atEnd then
@@ -236,9 +225,7 @@ consume ch elapsedTime exercise =
                 newZippedSteps = skipOver Previous zippedSteps
             in
                 { exercise | events = logEvent ch elapsedTime exercise
-                , stepsAfter = Zipper.after newZippedSteps
-                , stepsBefore = Zipper.before newZippedSteps
-                , stepsCurrent = Zipper.current newZippedSteps
+                , steps = newZippedSteps
                 }
 
         else if isBackSpace then
@@ -282,17 +269,9 @@ currentStepStyle errorCount =
         Errored
 
 
-exerciseZipper : Exercise -> Zipper Step
-exerciseZipper exercise =
-    { ls = List.reverse exercise.stepsBefore
-    , focus = exercise.stepsCurrent
-    , rs = exercise.stepsAfter
-    }
-
-
 howManyCharactersSoFar : Exercise -> Int
 howManyCharactersSoFar exercise =
-    exercise.stepsBefore |> List.filter Step.isTypeable |> List.length
+    Zipper.before exercise.steps |> List.filter Step.isTypeable |> List.length
 
 
 howManyWordsSoFar : Exercise -> Float
@@ -468,13 +447,15 @@ toPrintable style step =
 windowedPrintables : Int -> Int -> Exercise -> List Printable
 windowedPrintables linesBefore linesAfter exercise =
     let
-        windowedBefore = takeLastNLines linesBefore exercise.stepsBefore
-        windowedAfter = takeFirstNLines linesAfter exercise.stepsAfter
+        windowedBefore =
+            takeLastNLines linesBefore (Zipper.before exercise.steps)
+        windowedAfter =
+            takeFirstNLines linesAfter (Zipper.after exercise.steps)
         beforePrintables = List.map (toPrintable Completed) windowedBefore
         currentPrintable =
             [ toPrintable
                   (currentStepStyle exercise.errorCount)
-                  exercise.stepsCurrent
+                  (Zipper.current exercise.steps)
             ]
         afterPrintables =
             List.indexedMap (afterPrintable exercise.errorCount) windowedAfter

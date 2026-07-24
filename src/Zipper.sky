@@ -17,14 +17,8 @@ import Sky.Core.List as List
 --
 -- TYPE
 --
--- COMPILER BUG WORKAROUND: Using type alias instead of parametric ADT
--- (type Zipper a = Zipper (List a) a (List a)) because cross-module
--- parametric ADTs emit unbound type parameters in generated Go. (Issue 1)
-type alias Zipper a =
-    { ls : List a
-    , focus : a
-    , rs : List a
-    }
+type Zipper a
+    = Zipper (List a) a (List a)
 
 
 --
@@ -32,7 +26,7 @@ type alias Zipper a =
 --
 singleton : a -> Zipper a
 singleton x =
-    { ls = [], focus = x, rs = [] }
+    Zipper [] x []
 
 
 fromList : List a -> Maybe (Zipper a)
@@ -43,61 +37,61 @@ fromList xs =
             Nothing
 
         y :: ys ->
-            Just { ls = [], focus = y, rs = ys }
+            Just (Zipper [] y ys)
 
 
 --
 -- MOVEMENT
 --
 first : Zipper a -> Zipper a
-first zipper =
-    case List.reverse zipper.ls of
+first ((Zipper ls x rs) as zipper) =
+    case List.reverse ls of
 
         [] ->
             zipper
 
         y :: ys ->
-            { ls = [], focus = y, rs = ys ++ [ zipper.focus ] ++ zipper.rs }
+            Zipper [] y (ys ++ [ x ] ++ rs)
 
 
 next : Zipper a -> Zipper a
-next zipper =
-    case zipper.rs of
+next ((Zipper ls x rs) as zipper) =
+    case rs of
 
         [] ->
             zipper
 
         y :: ys ->
-            { ls = zipper.focus :: zipper.ls, focus = y, rs = ys }
+            Zipper (x :: ls) y ys
 
 
 previous : Zipper a -> Zipper a
-previous zipper =
-    case zipper.ls of
+previous ((Zipper ls x rs) as zipper) =
+    case ls of
 
         [] ->
             zipper
 
         y :: ys ->
-            { ls = ys, focus = y, rs = zipper.focus :: zipper.rs }
+            Zipper ys y (x :: rs)
 
 
 --
 -- INFO
 --
 after : Zipper a -> List a
-after zipper =
-    zipper.rs
+after (Zipper _ _ rs) =
+    rs
 
 
 before : Zipper a -> List a
-before zipper =
-    List.reverse zipper.ls
+before (Zipper ls _ _) =
+    List.reverse ls
 
 
 current : Zipper a -> a
-current zipper =
-    zipper.focus
+current (Zipper _ x _) =
+    x
 
 
 ---
