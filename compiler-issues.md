@@ -255,13 +255,18 @@ Then reference as `PageExercises.ExercisesModel` in `Main.sky`.
 
 ---
 
-## Issue 5: Custom ADT in record field causes runtime panic after Tui model round-trip
+## Issue 5: ADT values in model record fields corrupted after Tui runtime serialisation round-trip
 
 ### Summary
 
-A custom ADT stored in a record field in the model panics at runtime after the first `update` cycle in a Sky.Tui app. The initial `view` renders correctly (proving the field is set properly by `init`), but after any key press triggers `update` → the model is serialised and deserialised by the Tui runtime, and the ADT field no longer matches any variant in a `case` expression, hitting `panic(rt.Unreachable("case"))`.
+ADT values stored in record fields in the model are corrupted after the Tui runtime's serialisation round-trip. The initial `view` renders correctly (proving the field is set properly by `init`), but after any key press triggers `update` — even if the model is returned unchanged — the ADT field no longer matches any variant in a `case` expression, causing a runtime panic.
 
-### Reproduction
+This affects:
+- Custom ADTs (variant tag lost entirely)
+- `Maybe` values (`Nothing` becomes `Just ""`)
+- Parameterised ADTs (`Status a`)
+
+### Reproduction 1: Custom ADT
 
 ```elm
 type PageMode
@@ -269,13 +274,13 @@ type PageMode
     | Adding String
 
 type alias ExercisesModel =
-    { exercises : Status (List ExerciseDb)
+    { exercises : ...
     , pageMode : PageMode
     , session : Session
     }
 
 init toMsg session =
-    ( { exercises = ..., pageMode = Listing, session = session }, Cmd.none )
+    ( { ..., pageMode = Listing, ... }, Cmd.none )
 
 view toMsg model =
     case model.pageMode of
@@ -283,40 +288,24 @@ view toMsg model =
         Adding input -> ...
 ```
 
-The initial render works. After any key press (even one that returns the model unchanged), the next `view` call panics:
+Initial render works. After any key press (even returning model unchanged from `update`), the next `view` call panics:
 
 ```
 Sky panic: CompilerBug (ref 9d2df012) — Unreachable code path
 panicMsg=sky.Unreachable(case): sky: codegen reached an arm the exhaustiveness checker said was impossible
 ```
 
-### Expected behaviour
-
-Custom ADTs stored in model record fields should survive the Tui runtime's gob encode/decode round-trip without corruption.
-
-### Workaround
-
-Use primitive types instead of custom ADTs in model fields. For example, use a `String` field where empty means one state and non-empty means another.
-
----
-
-## Issue 6: `Maybe` value in record field corrupted after Tui model round-trip
-
-### Summary
-
-A `Maybe String` field set to `Nothing` in the model becomes `Just ""` after the first update cycle in a Sky.Tui app. The initial render sees `Nothing` correctly, but after the model passes through the Tui runtime's serialisation round-trip, the field reads as `Just ""`.
-
-### Reproduction
+### Reproduction 2: Maybe value
 
 ```elm
 type alias ExercisesModel =
     { adding : Maybe String
-    , exercises : Status (List ExerciseDb)
+    , exercises : ...
     , session : Session
     }
 
 init toMsg session =
-    ( { adding = Nothing, exercises = ..., session = session }, Cmd.none )
+    ( { adding = Nothing, ... }, Cmd.none )
 
 view toMsg model =
     case model.adding of
@@ -324,15 +313,36 @@ view toMsg model =
         Just input -> viewAddForm input ...
 ```
 
-On startup, the list view shows correctly (`Nothing` branch). After any key press (even with `update` returning the model unchanged), the view switches to the add form (`Just ""` branch).
+On startup, the list view shows correctly (`Nothing` branch). After any key press (even with `update` returning the model unchanged), the view switches to the add form — `Nothing` has become `Just ""`.
+
+### Reproduction 3: Parameterised ADT
+
+```elm
+type Status a
+    = Loading
+    | Loaded a
+    | Failed String
+
+type alias ExercisesModel =
+    { exercises : Status (List ExerciseDb)
+    , ...
+    }
+```
+
+Same panic as Reproduction 1 — the `Status` variant is lost after the round-trip.
 
 ### Expected behaviour
 
-`Nothing` should remain `Nothing` after the Tui runtime's model serialisation round-trip.
+ADT values stored in model record fields should survive the Tui runtime's gob encode/decode round-trip without corruption. `Nothing` should remain `Nothing`, and custom ADT variants should preserve their tags.
 
 ### Workaround
 
-Use a plain `String` field where `""` represents the "nothing" state.
+Replace ADTs with primitive types in model fields:
+- Instead of `PageMode` ADT → use `Bool` (`isAdding`) + `String` (input buffer)
+- Instead of `Maybe String` → use `String` (empty = nothing)
+- Instead of `Status a` → use `List a` + `String` (error message, empty = no error)
+
+Note: `Bool`, `String`, `Int`, `Float`, and `List` of records all survive the round-trip correctly.
 
 ---
 

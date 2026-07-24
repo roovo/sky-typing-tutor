@@ -1,4 +1,4 @@
-module Page.Exercises exposing (ExercisesModel, Msg(..), Status(..), init, update, view)
+module Page.Exercises exposing (ExercisesModel, Msg(..), init, update, view)
 
 import Database
 import Sky.Core.Error as Error exposing (Error)
@@ -17,8 +17,11 @@ type alias ExercisesModel =
     { -- COMPILER BUG WORKAROUND: This should be a PageMode ADT (Listing | Adding String)
       -- but custom ADTs and Maybe values in model fields are corrupted by the Tui runtime's
       -- serialisation round-trip. Using String (newExercisePath) and Bool (isAdding) instead.
+      -- Similarly, exercises/exerciseError should be a single Status ADT field
+      -- (Loading | Loaded (List ExerciseDb) | Failed String) but the same bug applies.
       newExercisePath : String
-    , exercises : Status (List ExerciseDb)
+    , exerciseError : String
+    , exercises : List ExerciseDb
     , isAdding : Bool
     , session : Session
     }
@@ -30,29 +33,39 @@ type alias ExerciseDb =
     , characterCount : Int
     }
 
-type Status a
-    = Loading
-    | Loaded a
-    | Failed String
-
 
 init : (Msg -> parentMsg) -> Session -> ( ExercisesModel, Cmd parentMsg )
 init toMsg session =
     let
-        exercises =
-            case Task.run
-                     (Db.query
-                         Database.db
-                         "SELECT id, name, language, character_count FROM exercises ORDER BY name"
-                         []) of
+        result =
+            Task.run
+                (Db.query
+                    Database.db
+                    "SELECT id, name, language, character_count FROM exercises ORDER BY name"
+                    [])
 
+        exercises =
+            case result of
                 Ok rows ->
-                    Loaded (List.map rowToExercise rows)
+                    List.map rowToExercise rows
+
+                Err _ ->
+                    []
+
+        exerciseError =
+            case result of
+                Ok _ ->
+                    ""
 
                 Err e ->
-                    Failed (Error.toString e)
+                    Error.toString e
     in
-        ( { newExercisePath = "", exercises = exercises, isAdding = False, session = session }
+        ( { newExercisePath = ""
+          , exerciseError = exerciseError
+          , exercises = exercises
+          , isAdding = False
+          , session = session
+          }
         , Cmd.none
         )
 
@@ -82,17 +95,30 @@ update toMsg msg model =
     case msg of
 
         CompletedExercisesFetch (Ok exercises) ->
-            ( { model | exercises = Loaded exercises }, Cmd.none )
+            ( { model | exercises = exercises }, Cmd.none )
 
         CompletedExercisesFetch (Err e) ->
-            ( { model | exercises = Failed (Error.toString e) }, Cmd.none )
+            ( { model | exerciseError = Error.toString e }, Cmd.none )
 
         KeyTyped keyEvent ->
-            if keyEvent.kind == "char" && keyEvent.value == "a" then
-              ( { model | isAdding = True, newExercisePath = "" }, Cmd.none )
+            if model.isAdding then
+                handleNewExerciseKeypresses keyEvent model
             else
-              ( model, Cmd.none )
+              -- ( model, Cmd.none )
+                handleListingKeypresses keyEvent model
 
+
+handleListingKeypresses : KeyEvent -> ExercisesModel -> ( ExercisesModel, Cmd msg )
+handleListingKeypresses keyEvent model =
+    if keyEvent.kind == "char" && keyEvent.value == "a" then
+        ( { model | isAdding = True, newExercisePath = "" }, Cmd.none )
+    else
+        ( model, Cmd.none )
+
+
+handleNewExerciseKeypresses : KeyEvent -> ExercisesModel -> ( ExercisesModel, Cmd msg )
+handleNewExerciseKeypresses keyEvent model =
+      ( model, Cmd.none )
 
 --
 -- VIEW
@@ -127,22 +153,16 @@ viewHeading =
 
 viewContent : ExercisesModel -> Element msg
 viewContent model =
-    case model.exercises of
+    if model.exerciseError /= "" then
+        Ui.el [ Font.color (Ui.rgb 180 50 50) ] (Ui.text ("Error: " ++ model.exerciseError))
 
-        Loading ->
-            Ui.text "Loading exercises..."
+    else if List.isEmpty model.exercises then
+        Ui.text "No exercises found. Run an exercise first to add one."
 
-        Failed err ->
-            Ui.el [ Font.color (Ui.rgb 180 50 50) ] (Ui.text ("Error: " ++ err))
-
-        Loaded exerciseList ->
-            if List.isEmpty exerciseList then
-                Ui.text "No exercises found. Run an exercise first to add one."
-
-            else
-                Ui.column
-                    [ Ui.spacing 4 ]
-                    (List.map viewExerciseRow exerciseList)
+    else
+        Ui.column
+            [ Ui.spacing 4 ]
+            (List.map viewExerciseRow model.exercises)
 
 
 viewExerciseRow : ExerciseDb -> Element msg

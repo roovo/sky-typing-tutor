@@ -1,0 +1,6 @@
+name    = "bug-repro-nested-tea-maybe"
+version = "0.1.0"
+entry   = "Main.sky"
+
+[source]
+root = "."

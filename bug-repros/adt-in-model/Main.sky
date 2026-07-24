@@ -1,0 +1,102 @@
+module Main exposing (main)
+
+{- Minimal reproduction: Custom ADT in model field corrupted after Tui round-trip.
+
+   Expected: Press any key, the view stays showing "Mode: Listing".
+   Actual: Press any key, panic: sky.Unreachable(case)
+
+   The PageMode ADT value is lost during the Tui runtime's model
+   serialisation/deserialisation cycle.
+-}
+
+import Sky.Core.Prelude exposing (..)
+import Std.Cmd as Cmd
+import Std.Sub as Sub
+import Std.Tui as Tui
+import Std.Ui as Ui
+import Std.Ui exposing (Element)
+
+
+type alias KeyEvent =
+    { kind : String
+    , value : String
+    }
+
+
+type PageMode
+    = Listing
+    | Adding String
+
+
+type alias Model =
+    { mode : PageMode
+    , counter : Int
+    }
+
+
+type Msg
+    = KeyPressed KeyEvent
+    | Quit
+    | NoOp
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { mode = Listing, counter = 0 }, Cmd.none )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+
+        KeyPressed _ ->
+            ( { model | counter = model.counter + 1 }, Cmd.none )
+
+        Quit ->
+            ( model, Cmd.perform (System.exit 0) (\_ -> NoOp) )
+
+        NoOp ->
+            ( model, Cmd.none )
+
+
+view : Model -> Element Msg
+view model =
+    Ui.column
+        [ Ui.padding 8, Ui.spacing 4 ]
+        [ Ui.text ("Counter: " ++ String.fromInt model.counter)
+        , Ui.text
+              (case model.mode of
+
+                  Listing ->
+                      "Mode: Listing"
+
+                  Adding s ->
+                      "Mode: Adding " ++ s)
+        , Ui.text "Press any key (should stay on 'Mode: Listing')"
+        ]
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.none
+
+
+onKey keyEvent =
+    if keyEvent.kind == "char" && keyEvent.value == "q" then
+        Quit
+
+    else if keyEvent.kind == "escape" then
+        Quit
+
+    else
+        KeyPressed keyEvent
+
+
+main =
+    Tui.app
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = subscriptions
+        , onKey = onKey
+        }
