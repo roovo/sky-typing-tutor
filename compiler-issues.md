@@ -1,5 +1,3 @@
-# Compiler Codegen Issues
-
 Three cases where well-typed Sky code (accepted by `sky check` / type-checker) generates invalid Go that fails `go build`. All discovered in the same project.
 
 ---
@@ -12,7 +10,32 @@ Using the `.field` accessor syntax in a pipeline generates Go code that returns 
 
 ### Reproduction
 
+Complete minimal app (`Main.sky` + `sky.toml`) that fails `sky build`:
+
+**sky.toml:**
+
+```toml
+name    = "field-accessor-bug"
+version = "0.1.0"
+entry   = "Main.sky"
+
+[source]
+root = "."
+```
+
+**Main.sky:**
+
 ```elm
+module Main exposing (main)
+
+import Sky.Core.Prelude exposing (..)
+import Std.Tui as Tui
+import Std.Cmd as Cmd
+import Std.Sub as Sub
+import Std.Ui as Ui
+import Std.Ui exposing (Element)
+
+
 type Session
     = Session Config
 
@@ -21,14 +44,53 @@ type alias Config =
     , wpmTarget : Int
     }
 
+
 config : Session -> Config
 config (Session c) =
     c
 
+
 terminalLineHeight : Session -> Int
 terminalLineHeight session =
     session |> config |> .terminalLineHeight
+
+
+type alias Model =
+    { value : Int }
+
+
+type Msg
+    = NoOp
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { value = terminalLineHeight (Session { terminalLineHeight = 36, wpmTarget = 40 }) }
+    , Cmd.none
+    )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update _ model =
+    ( model, Cmd.none )
+
+
+view : Model -> Element Msg
+view model =
+    Ui.text ("Value: " ++ String.fromInt model.value)
+
+
+main =
+    Tui.app
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = \_ -> Sub.none
+        , onKey = \_ -> NoOp
+        }
 ```
+
+The type-checker accepts this, but `go build` fails:
 
 ### Generated Go (broken)
 
@@ -71,22 +133,84 @@ A recursive function defined inside a `let...in` block generates a Go closure va
 
 ### Reproduction
 
+Complete minimal app that fails `sky build`:
+
+**sky.toml:**
+
+```toml
+name    = "recursive-let-bug"
+version = "0.1.0"
+entry   = "Main.sky"
+
+[source]
+root = "."
+```
+
+**Main.sky:**
+
 ```elm
+module Main exposing (main)
+
+import Sky.Core.Prelude exposing (..)
+import Std.Tui as Tui
+import Std.Cmd as Cmd
+import Std.Sub as Sub
+import Std.Ui as Ui
+import Std.Ui exposing (Element)
+
+
 takeWhile : (a -> Bool) -> List a -> List a
 takeWhile predicate list =
     let
-        takeWhileMemo memo list =
-            case list of
+        helper memo xs =
+            case xs of
+
                 [] ->
                     List.reverse memo
 
-                x :: xs ->
+                x :: rest ->
                     if predicate x then
-                        takeWhileMemo (x :: memo) xs
+                        helper (x :: memo) rest
+
                     else
                         List.reverse memo
     in
-        takeWhileMemo [] list
+        helper [] list
+
+
+type alias Model =
+    { items : List Int }
+
+
+type Msg
+    = NoOp
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { items = takeWhile (\n -> n < 5) [ 1, 2, 3, 4, 5, 6, 7 ] }
+    , Cmd.none
+    )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update _ model =
+    ( model, Cmd.none )
+
+
+view : Model -> Element Msg
+view model =
+    Ui.text ("Items: " ++ String.fromInt (List.length model.items))
+
+
+main =
+    Tui.app
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = \_ -> Sub.none
+        , onKey = \_ -> NoOp
+        }
 ```
 
 ### Go error
@@ -102,6 +226,7 @@ The closure is assigned to `takeWhileMemo_2` in a single statement, but the body
 ### Expected behaviour
 
 The compiler should either:
+
 - Emit a two-step `var takeWhileMemo_2 func(...) ...` declaration followed by the assignment (allowing the closure to capture the variable), or
 - Auto-lift the recursive local function to a top-level Go function.
 
@@ -138,17 +263,109 @@ When polymorphic list functions (`dropWhile`, `dropWhileRight`) feed into an ano
 
 ### Reproduction
 
+Complete minimal app that fails `sky build`:
+
+**sky.toml:**
+
+```toml
+name    = "lambda-coercion-bug"
+version = "0.1.0"
+entry   = "Main.sky"
+
+[source]
+root = "."
+```
+
+**Main.sky:**
+
 ```elm
-import List.Extra as LE
-import Step exposing (Step(..))
+module Main exposing (main)
+
+import Sky.Core.Prelude exposing (..)
+import Std.Tui as Tui
+import Std.Cmd as Cmd
+import Std.Sub as Sub
+import Std.Ui as Ui
+import Std.Ui exposing (Element)
+
+
+type Step
+    = Typeable Char
+    | EnterChar
+    | EmptyLine
+    | End
+
+
+dropWhile : (a -> Bool) -> List a -> List a
+dropWhile predicate list =
+    case list of
+
+        [] ->
+            []
+
+        x :: xs ->
+            if predicate x then
+                dropWhile predicate xs
+
+            else
+                list
+
+
+dropWhileRight : (a -> Bool) -> List a -> List a
+dropWhileRight p list =
+    List.foldr
+        (\x xs ->
+            if p x && List.isEmpty xs then
+                []
+
+            else
+                x :: xs)
+        []
+        list
+
 
 toSteps : String -> List Step
 toSteps string =
-    string |> String.trimEnd |> String.lines |> List.map parseLine
+    string |> String.lines |> List.map (\_ -> [ Typeable 'a', EnterChar ])
         |> List.concat
-        |> LE.dropWhile (\s -> s == EmptyLine)
-        |> LE.dropWhileRight (\s -> s == EnterChar || s == EmptyLine)
-        |> (\steps -> steps ++ [ Step.initEnd ])
+        |> dropWhile (\s -> s == EmptyLine)
+        |> dropWhileRight (\s -> s == EnterChar || s == EmptyLine)
+        |> (\steps -> steps ++ [ End ])
+
+
+type alias Model =
+    { steps : List Step }
+
+
+type Msg
+    = NoOp
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { steps = toSteps "hello\nworld" }
+    , Cmd.none
+    )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update _ model =
+    ( model, Cmd.none )
+
+
+view : Model -> Element Msg
+view model =
+    Ui.text ("Steps: " ++ String.fromInt (List.length model.steps))
+
+
+main =
+    Tui.app
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = \_ -> Sub.none
+        , onKey = \_ -> NoOp
+        }
 ```
 
 ### Go error
@@ -191,131 +408,191 @@ When two modules each expose a `type alias` with the same name (`Model`), the ty
 
 ### Reproduction
 
-```elm
--- src/Page/Exercise.sky
-module Page.Exercise exposing (Model, Msg(..), init, view, update)
+Complete minimal app that fails `sky build`. Three files in one directory:
 
-type alias Model =
-    { elapsedTime : Int
-    , exercise : Exercise
-    , saveStatus : String
-    , session : Session
-    }
+**sky.toml:**
+
+```toml
+name    = "same-name-type-alias-bug"
+version = "0.1.0"
+entry   = "Main.sky"
+
+[source]
+root = "."
 ```
 
+**Page/A.sky:**
+
 ```elm
--- src/Page/Exercises.sky
-module Page.Exercises exposing (Model, Msg(..), Status(..), init, update, view)
+module Page.A exposing (Model, init, view)
+
+import Sky.Core.Prelude exposing (..)
+import Std.Cmd as Cmd
+import Std.Ui as Ui
+import Std.Ui exposing (Element)
+
 
 type alias Model =
-    { exercises : Status
-    , session : Session
+    { name : String
+    , age : Int
     }
+
+
+init : Model
+init =
+    { name = "Alice", age = 30 }
+
+
+view : Model -> Element msg
+view model =
+    Ui.text ("A: " ++ model.name ++ " age " ++ String.fromInt model.age)
 ```
 
+**Page/B.sky:**
+
 ```elm
--- src/Main.sky
-import Page.Exercise as PageExercise
-import Page.Exercises as PageExercises
+module Page.B exposing (Model, init, view)
+
+import Sky.Core.Prelude exposing (..)
+import Std.Cmd as Cmd
+import Std.Ui as Ui
+import Std.Ui exposing (Element)
+
+
+type alias Model =
+    { title : String
+    , count : Int
+    }
+
+
+init : Model
+init =
+    { title = "Hello", count = 42 }
+
+
+view : Model -> Element msg
+view model =
+    Ui.text ("B: " ++ model.title ++ " count " ++ String.fromInt model.count)
+```
+
+**Main.sky:**
+
+```elm
+module Main exposing (main)
+
+import Page.A as PageA
+import Page.B as PageB
+import Sky.Core.Prelude exposing (..)
+import Std.Tui as Tui
+import Std.Cmd as Cmd
+import Std.Sub as Sub
+import Std.Ui as Ui
+import Std.Ui exposing (Element)
+
 
 type AppModel
-    = Exercise PageExercise.Model
-    | Exercises PageExercises.Model
+    = OnPageA PageA.Model
+    | OnPageB PageB.Model
+
+
+type Msg
+    = NoOp
+
+
+init : () -> ( AppModel, Cmd Msg )
+init _ =
+    ( OnPageA PageA.init, Cmd.none )
+
+
+update : Msg -> AppModel -> ( AppModel, Cmd Msg )
+update _ model =
+    ( model, Cmd.none )
+
+
+view : AppModel -> Element Msg
+view model =
+    case model of
+
+        OnPageA subModel ->
+            PageA.view subModel
+
+        OnPageB subModel ->
+            PageB.view subModel
+
+
+main =
+    Tui.app
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = \_ -> Sub.none
+        , onKey = \_ -> NoOp
+        }
 ```
 
 ### Errors
 
 ```
-[init] record is missing field(s): exercises
-[update] record is missing field(s): exercise
-[update] record is missing field(s): saveStatus
-[update] record is missing field(s): elapsedTime
-...
+[init] record is missing field(s): count, title
+[view] record is missing field(s): name
+[view] record is missing field(s): age
 ```
 
-All errors are in `src/Page/Exercise.sky` — the compiler thinks `Page.Exercise.Model` should have `Page.Exercises.Model`'s fields (specifically `exercises`), and vice versa. It has merged the two distinct types into one because they share the unqualified name `Model`.
+All errors are in `Page/A.sky` — the compiler thinks `Page.A.Model` should have `Page.B.Model`'s fields (`count`, `title`). It has merged the two distinct types into one because they share the unqualified name `Model`.
 
 ### Expected behaviour
 
-Qualified type references (`PageExercise.Model` and `PageExercises.Model`) should resolve to entirely separate types. Two modules exposing a type alias with the same name is idiomatic in Elm/ML-family languages and should not cause unification.
+Qualified type references (`PageA.Model` and `PageB.Model`) should resolve to entirely separate types. Two modules exposing a type alias with the same name is idiomatic in Elm/ML-family languages and should not cause unification.
 
 ### Workaround
 
 Give the type aliases distinct names across modules:
 
 ```elm
--- src/Page/Exercises.sky
-type alias ExercisesModel =
-    { exercises : Status
-    , session : Session
+-- Page/A.sky
+type alias PageAModel =
+    { name : String
+    , age : Int
+    }
+
+-- Page/B.sky
+type alias PageBModel =
+    { title : String
+    , count : Int
     }
 ```
 
-Then reference as `PageExercises.ExercisesModel` in `Main.sky`.
+Then reference as `PageA.PageAModel` and `PageB.PageBModel` in `Main.sky`.
 
 ---
 
-## Issue 5: ADT values in model record fields corrupted after Tui runtime serialisation round-trip
+## Issue 5: Custom parameterised ADT in model record field corrupted after Tui runtime serialisation round-trip
 
 ### Summary
 
-ADT values stored in record fields in the model are corrupted after the Tui runtime's serialisation round-trip. The initial `view` renders correctly (proving the field is set properly by `init`), but after any key press triggers `update` — even if the model is returned unchanged — the ADT field no longer matches any variant in a `case` expression, causing a runtime panic.
+A parameterised ADT (`Status a`) wrapping database query results, stored in a sub-page model field and nested inside a parent `AppModel` ADT variant, is corrupted after the Tui runtime's serialisation round-trip. The initial `view` renders correctly, but after any key press triggers `update` — even if the model is returned unchanged — the ADT field no longer matches any variant in a `case` expression, causing a runtime panic.
 
-This affects:
-- Custom ADTs (variant tag lost entirely)
-- `Maybe` values (`Nothing` becomes `Just ""`)
-- Parameterised ADTs (`Status a`)
+**Update (2026-07-24):** `Maybe` values and simple custom ADTs now survive the round-trip correctly (fixed in a recent compiler update). The bug still affects parameterised ADTs (`Status a`) but only in the full application — we could not reproduce it in a minimal standalone repro despite matching the model shape, nested TEA architecture, database queries, and cross-module types. The trigger appears to require a specific combination of factors present in the full app.
 
-### Reproduction 1: Custom ADT
+### Conditions that trigger the bug (in the real app)
 
-```elm
-type PageMode
-    = Listing
-    | Adding String
+- Sub-page model with a `Status (List ExerciseDb)` field
+- Data populated via `Task.run (Db.query ...)`
+- Model nested inside a parent `AppModel` ADT variant
+- Multiple other fields in the model (String, Maybe String, List, Session)
+- Nested TEA dispatch with `toMsg` pattern
 
-type alias ExercisesModel =
-    { exercises : ...
-    , pageMode : PageMode
-    , session : Session
-    }
+### Conditions that do NOT trigger the bug (tested in isolation)
 
-init toMsg session =
-    ( { ..., pageMode = Listing, ... }, Cmd.none )
+- Parameterised ADT in a flat (non-nested) model ✓
+- Parameterised ADT in a nested model without DB query ✓
+- Parameterised ADT in a nested model with DB query but matching field shapes ✓
+- `Maybe` values in any configuration ✓ (fixed)
+- Simple custom ADTs in any configuration ✓ (fixed)
 
-view toMsg model =
-    case model.pageMode of
-        Listing -> ...
-        Adding input -> ...
-```
+### Reproduction
 
-Initial render works. After any key press (even returning model unchanged from `update`), the next `view` call panics:
-
-```
-Sky panic: CompilerBug (ref 9d2df012) — Unreachable code path
-panicMsg=sky.Unreachable(case): sky: codegen reached an arm the exhaustiveness checker said was impossible
-```
-
-### Reproduction 2: Maybe value
-
-```elm
-type alias ExercisesModel =
-    { adding : Maybe String
-    , exercises : ...
-    , session : Session
-    }
-
-init toMsg session =
-    ( { adding = Nothing, ... }, Cmd.none )
-
-view toMsg model =
-    case model.adding of
-        Nothing -> viewListing ...
-        Just input -> viewAddForm input ...
-```
-
-On startup, the list view shows correctly (`Nothing` branch). After any key press (even with `update` returning the model unchanged), the view switches to the add form — `Nothing` has become `Just ""`.
-
-### Reproduction 3: Parameterised ADT
+The bug reproduces consistently in the full `sky-typing-tutor` app on the `buggy_branch` branch. Run `sky run` and press any key on the exercises page to trigger the panic.
 
 ```elm
 type Status a
@@ -324,25 +601,40 @@ type Status a
     | Failed String
 
 type alias ExercisesModel =
-    { exercises : Status (List ExerciseDb)
-    , ...
+    { newExercisePath : String
+    , exercises : Status (List ExerciseDb)
+    , isAdding : Maybe String
+    , session : Session
     }
 ```
 
-Same panic as Reproduction 1 — the `Status` variant is lost after the round-trip.
+With `init` populating via:
+
+```elm
+exercises =
+    case Task.run (Db.query Database.db "SELECT ..." []) of
+        Ok rows -> Loaded (List.map rowToExercise rows)
+        Err e -> Failed (Error.toString e)
+```
+
+The initial render works. After any key press, the next `view` call panics:
+
+```
+Sky panic: CompilerBug (ref a932bb1e) — Unreachable code path
+panicMsg=sky.Unreachable(case): sky: codegen reached an arm the exhaustiveness checker said was impossible
+```
+
+Removing the `Status` ADT and using plain fields (`exercises : List ExerciseDb` + `exerciseError : String`) resolves the issue. Removing the database query (hardcoding the data) also resolves the issue.
 
 ### Expected behaviour
 
-ADT values stored in model record fields should survive the Tui runtime's gob encode/decode round-trip without corruption. `Nothing` should remain `Nothing`, and custom ADT variants should preserve their tags.
+Parameterised ADTs stored in model record fields should survive the Tui runtime's gob encode/decode round-trip without corruption.
 
 ### Workaround
 
-Replace ADTs with primitive types in model fields:
-- Instead of `PageMode` ADT → use `Bool` (`isAdding`) + `String` (input buffer)
-- Instead of `Maybe String` → use `String` (empty = nothing)
-- Instead of `Status a` → use `List a` + `String` (error message, empty = no error)
+Replace the parameterised ADT with primitive types in model fields:
 
-Note: `Bool`, `String`, `Int`, `Float`, and `List` of records all survive the round-trip correctly.
+- Instead of `Status (List a)` → use `List a` + `String` (error message, empty = no error)
 
 ---
 
