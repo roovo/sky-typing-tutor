@@ -1,4 +1,4 @@
-module Page.Exercise exposing (Model, Msg(..), init, view, update)
+module Page.Exercise exposing (ExerciseModel, Msg(..), init, view, update)
 
 import Analysis
 import Database
@@ -18,7 +18,7 @@ import Std.Ui.Font as Font
 --
 -- MODEL
 --
-type alias Model =
+type alias ExerciseModel =
     { elapsedTime : Int
     , exercise : Exercise
     , saveStatus : String
@@ -26,7 +26,7 @@ type alias Model =
     }
 
 
-init : Session -> String -> String -> Model
+init : Session -> String -> String -> ExerciseModel
 init session filename exerciseText =
     { elapsedTime = 0
     , exercise = Exercise.init filename exerciseText
@@ -45,7 +45,7 @@ type Msg
     | Tick
 
 
-update : (Msg -> parentMsg) -> Msg -> Model -> ( Model, Cmd parentMsg )
+update : (Msg -> parentMsg) -> Msg -> ExerciseModel -> ( ExerciseModel, Cmd parentMsg )
 update toMsg msg model =
     case msg of
 
@@ -92,7 +92,7 @@ update toMsg msg model =
                 ( { model | elapsedTime = model.elapsedTime + 10 }, Cmd.none )
 
 
-consumeKeyEvent : KeyEvent -> Model -> Model
+consumeKeyEvent : KeyEvent -> ExerciseModel -> ExerciseModel
 consumeKeyEvent keyEvent model =
     let
         -- charToConsume : Maybe Char
@@ -137,7 +137,7 @@ saveResult exercise =
         ]
 
 
-handleCompletedKey : (Msg -> parentMsg) -> keyEvent -> Model -> ( Model, Cmd parentMsg )
+handleCompletedKey : (Msg -> parentMsg) -> keyEvent -> ExerciseModel -> ( ExerciseModel, Cmd parentMsg )
 handleCompletedKey toMsg keyEvent model =
     if keyEvent.kind == "char" && keyEvent.value == "r" then
         update toMsg Restart model
@@ -160,7 +160,7 @@ headerFooterPaddingLines =
 --
 -- VIEW
 --
-view : (Msg -> parentMsg) -> Model -> Element parentMsg
+view : (Msg -> parentMsg) -> ExerciseModel -> Element parentMsg
 view toMsg model =
     Ui.column
         [ Ui.padding 24
@@ -171,7 +171,7 @@ view toMsg model =
         [ viewHeading model, viewBody model, viewFooter model ]
 
 
-viewHeading : Model -> Element msg
+viewHeading : ExerciseModel -> Element msg
 viewHeading model =
     Ui.el
         [ Ui.width Ui.fill
@@ -188,7 +188,7 @@ viewHeading model =
                 ++ ")"))
 
 
-viewFooter : Model -> Element msg
+viewFooter : ExerciseModel -> Element msg
 viewFooter model =
     Ui.el
         [ Ui.width Ui.fill
@@ -222,7 +222,7 @@ formatFloat2dp f =
         String.fromInt whole ++ "." ++ fracStr
 
 
-viewBody : Model -> Element msg
+viewBody : ExerciseModel -> Element msg
 viewBody model =
     if Exercise.isComplete model.exercise then
         viewExerciseCompleted model
@@ -231,7 +231,7 @@ viewBody model =
         viewExercise model
 
 
-viewExercise : Model -> Element msg
+viewExercise : ExerciseModel -> Element msg
 viewExercise model =
     let
         visibleLineCount =
@@ -245,7 +245,7 @@ viewExercise model =
         Ui.column [ Ui.spacing 0 ] (List.map viewLine lines)
 
 
-viewExerciseCompleted : Model -> Element msg
+viewExerciseCompleted : ExerciseModel -> Element msg
 viewExerciseCompleted model =
     Ui.column
         [ Ui.spacing 8 ]

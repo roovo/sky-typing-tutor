@@ -50,7 +50,7 @@ resolveFullPath path =
 -- MODEL
 --
 type AppModel
-    = Exercise PageExercise.Model
+    = Exercise PageExercise.ExerciseModel
     | Exercises PageExercises.ExercisesModel
 
 --
