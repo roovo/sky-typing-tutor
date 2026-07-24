@@ -1,6 +1,0 @@
-name    = "bug-repro-adt-in-model"
-version = "0.1.0"
-entry   = "Main.sky"
-
-[source]
-root = "."
