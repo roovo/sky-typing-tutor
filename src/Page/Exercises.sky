@@ -69,7 +69,7 @@ type Msg
     = CompletedExercisesFetch (Result Error (List ExerciseDb))
 
 
--- COMPLIER BUG MEANS I CANNOT ANNOTATE THIS
+update : (Msg -> parentMsg) -> Msg -> ExercisesModel -> ( ExercisesModel, Cmd parentMsg )
 update toMsg msg model =
     case msg of
 
@@ -83,34 +83,18 @@ update toMsg msg model =
 --
 -- VIEW
 --
--- COMPLIER BUG MEANS I CANNOT ANNOTATE THIS
-view toMsg exercises =
+view : (Msg -> parentMsg) -> ExercisesModel -> Element parentMsg
+view toMsg model =
     Ui.column
         [ Ui.padding 24
         , Ui.spacing 16
         , Background.color (Ui.rgb 18 22 38)
         , Font.color (Ui.rgb 220 220 230)
         ]
-        [ viewHeading
-        , case exercises of
-
-              Loading ->
-                  Ui.text "Loading exercises..."
-
-              Failed err ->
-                  Ui.text ("Error: " ++ err)
-
-              Loaded exerciseList ->
-                  if List.isEmpty exerciseList then
-                      Ui.text "No exercises found."
-
-                  else
-                      Ui.text
-                          ("Found " ++ String.fromInt (List.length exerciseList)
-                              ++ " exercises")
-        ]
+        [ viewHeading, viewContent model ]
 
 
+viewHeading : Element msg
 viewHeading =
     Ui.el
         [ Ui.width Ui.fill
@@ -123,8 +107,9 @@ viewHeading =
         (Ui.el [] (Ui.text "Exercises"))
 
 
-viewContent exercises =
-    case exercises of
+viewContent : ExercisesModel -> Element msg
+viewContent model =
+    case model.exercises of
 
         Loading ->
             Ui.text "Loading exercises..."
@@ -142,6 +127,7 @@ viewContent exercises =
                     (List.map viewExerciseRow exerciseList)
 
 
+viewExerciseRow : ExerciseDb -> Element msg
 viewExerciseRow exercise =
     Ui.row
         [ Ui.spacing 16 ]

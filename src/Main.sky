@@ -151,8 +151,7 @@ subscriptions model =
 --
 -- VIEW
 --
--- COMPILER BUG WORKAROUND: No annotation on view because cross-module
--- Model types in ADT pattern matches can't be reconciled by HM inference.
+view : Model -> Element Msg
 view model =
     case model of
 
@@ -160,10 +159,4 @@ view model =
             PageExercise.view GotExerciseMsg exerciseModel
 
         Exercises exercisesModel ->
-            PageExercises.view GotExercisesMsg (exercisesStatus exercisesModel)
-
-
--- COMPLIER BUG MEANS THAT THIS IS NEEDED
-exercisesStatus : PageExercises.ExercisesModel -> PageExercises.Status
-exercisesStatus m =
-    m.exercises
+            PageExercises.view GotExercisesMsg exercisesModel
