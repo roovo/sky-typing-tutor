@@ -14,7 +14,7 @@ import Std.Ui.Font as Font
 -- MODEL
 --
 type alias ExercisesModel =
-    { exercises : Status
+    { exercises : Status (List ExerciseDb)
     , session : Session
     }
 
@@ -25,9 +25,9 @@ type alias ExerciseDb =
     , characterCount : Int
     }
 
-type Status
+type Status a
     = Loading
-    | Loaded (List ExerciseDb)
+    | Loaded a
     | Failed String
 
 
