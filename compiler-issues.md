@@ -636,6 +636,229 @@ Replace the parameterised ADT with primitive types in model fields:
 
 - Instead of `Status (List a)` → use `List a` + `String` (error message, empty = no error)
 
+Additionally, when doing record updates, explicitly include ALL fields that have non-zero values — not just the fields being changed. The codegen narrows the return type to only the fields mentioned in the update expression (see "Record update codegen" section below).
+
+### Record update codegen issue
+
+The codegen emits an anonymous struct containing only the fields mentioned in the record update as the tuple return type. For example:
+
+```elm
+( { model | newExercisePath = model.newExercisePath ++ keyEvent.value }, Cmd.none )
+```
+
+Generates a return type of:
+```go
+rt.T2[struct{ NewExercisePath any }, any]
+```
+
+Instead of:
+```go
+rt.T2[Page_Exercises_ExercisesModel_R, any]
+```
+
+The actual record update logic is correct (`_u := v_1; _u.NewExercisePath = ...; return _u` copies all fields), but the result is then coerced via `rt.Coerce` into the narrower anonymous struct — which drops all other fields (`exercises`, `exerciseError`, `isAdding`, `session`).
+
+This means every record update in a tuple return must explicitly re-set all fields that aren't their Go zero value, otherwise they are silently lost.
+
+**Note:** This could not be reproduced in a minimal standalone app — the generated Go in isolation correctly uses the full record type. The narrowed anonymous struct only appears in the full application. The trigger appears to depend on project size or module interaction. The behaviour can be observed in the `handleNewExerciseKeypresses` function in `src/Page/Exercises.sky` on the working branch by removing `isAdding = True` from the record update.
+
+---
+
+## Issue 6: Cross-module record type alias not recognised when extracted from ADT variant pattern match
+
+### Summary
+
+When a record type alias from another module is used as the payload of an ADT variant, extracting it via pattern matching results in a "type mismatch: SubModel vs record" error. The compiler sees the extracted value as a bare `record` instead of the named type alias, so passing it to functions that expect the named type fails.
+
+This is a regression — the previous compiler version accepted this pattern (with distinct type alias names as a workaround for Issue 4).
+
+### Reproduction
+
+Complete minimal app that fails `sky build`. Three files in one directory:
+
+**sky.toml:**
+```toml
+name    = "cross-module-adt-type-mismatch"
+version = "0.1.0"
+entry   = "Main.sky"
+
+[source]
+root = "."
+```
+
+**Page/Sub.sky:**
+```elm
+module Page.Sub exposing (SubModel, Msg(..), init, update, view)
+
+import Sky.Core.Prelude exposing (..)
+import Std.Cmd as Cmd
+import Std.Ui as Ui
+import Std.Ui exposing (Element)
+
+
+type alias KeyEvent =
+    { kind : String
+    , value : String
+    }
+
+
+type alias SubModel =
+    { counter : Int
+    , label : String
+    }
+
+
+type Msg
+    = KeyTyped KeyEvent
+
+
+init : (Msg -> parentMsg) -> ( SubModel, Cmd parentMsg )
+init toMsg =
+    ( { counter = 0, label = "hello" }, Cmd.none )
+
+
+update : (Msg -> parentMsg) -> Msg -> SubModel -> ( SubModel, Cmd parentMsg )
+update toMsg msg model =
+    case msg of
+
+        KeyTyped _ ->
+            ( { model | counter = model.counter + 1 }, Cmd.none )
+
+
+view : (Msg -> parentMsg) -> SubModel -> Element parentMsg
+view toMsg model =
+    Ui.column
+        [ Ui.padding 8, Ui.spacing 4 ]
+        [ Ui.text ("Counter: " ++ String.fromInt model.counter)
+        , Ui.text ("Label: " ++ model.label)
+        ]
+```
+
+**Main.sky:**
+```elm
+module Main exposing (main)
+
+import Page.Sub as PageSub
+import Sky.Core.Prelude exposing (..)
+import Std.Cmd as Cmd
+import Std.Sub as Sub
+import Std.Tui as Tui
+import Std.Ui as Ui
+import Std.Ui exposing (Element)
+
+
+type alias KeyEvent =
+    { kind : String
+    , value : String
+    }
+
+
+type AppModel
+    = Active PageSub.SubModel
+
+
+type Msg
+    = GotSubMsg PageSub.Msg
+    | KeyPressed KeyEvent
+    | Quit
+    | NoOp
+
+
+init : () -> ( AppModel, Cmd Msg )
+init _ =
+    let
+        ( subModel, cmd ) = PageSub.init GotSubMsg
+    in
+        ( Active subModel, cmd )
+
+
+update : Msg -> AppModel -> ( AppModel, Cmd Msg )
+update msg model =
+    case ( msg, model ) of
+
+        ( GotSubMsg subMsg, Active subModel ) ->
+            let
+                ( newSubModel, cmd ) =
+                    PageSub.update GotSubMsg subMsg subModel
+            in
+                ( Active newSubModel, cmd )
+
+        ( GotSubMsg _, _ ) ->
+            ( model, Cmd.none )
+
+        ( KeyPressed keyEvent, Active subModel ) ->
+            let
+                ( newSubModel, cmd ) =
+                    PageSub.update
+                        GotSubMsg
+                        (PageSub.KeyTyped keyEvent)
+                        subModel
+            in
+                ( Active newSubModel, cmd )
+
+        ( KeyPressed _, _ ) ->
+            ( model, Cmd.none )
+
+        ( Quit, _ ) ->
+            ( model, Cmd.perform (System.exit 0) (\_ -> NoOp) )
+
+        ( NoOp, _ ) ->
+            ( model, Cmd.none )
+
+
+view : AppModel -> Element Msg
+view model =
+    case model of
+
+        Active subModel ->
+            PageSub.view GotSubMsg subModel
+
+
+subscriptions : AppModel -> Sub Msg
+subscriptions _ =
+    Sub.none
+
+
+onKey : KeyEvent -> Msg
+onKey keyEvent =
+    if keyEvent.kind == "char" && keyEvent.value == "q" then
+        Quit
+
+    else if keyEvent.kind == "escape" then
+        Quit
+
+    else
+        KeyPressed keyEvent
+
+
+main =
+    Tui.app
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = subscriptions
+        , onKey = onKey
+        }
+```
+
+### Errors
+
+```
+[init] type mismatch: SubModel vs record
+[update] type mismatch: record vs SubModel
+[view] type mismatch: record vs SubModel
+```
+
+The compiler treats the value extracted from `Active subModel` as a bare `record` instead of `PageSub.SubModel`, so it can't be passed to `PageSub.update` or `PageSub.view` which expect `SubModel`.
+
+### Expected behaviour
+
+A cross-module record type alias used as an ADT variant payload should be recognised as that type when extracted via pattern matching. This is the standard nested TEA pattern.
+
+### Workaround
+
+None known at this time. The previous compiler version accepted this pattern.
+
 ---
 
 ## Environment

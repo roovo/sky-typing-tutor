@@ -106,7 +106,6 @@ update toMsg msg model =
             if model.isAdding then
                 handleNewExerciseKeypresses keyEvent model
             else
-              -- ( model, Cmd.none )
                 handleListingKeypresses keyEvent model
 
 
@@ -120,6 +119,12 @@ handleListingKeypresses keyEvent model =
 
 handleNewExerciseKeypresses : KeyEvent -> ExercisesModel -> ( ExercisesModel, Cmd msg )
 handleNewExerciseKeypresses keyEvent model =
+    if keyEvent.kind == "char" then
+        -- COMPILER BUG WORKAROUND (Issue 5): isAdding = True must be explicitly
+        -- included even though it's already True on the model. Without it, the Tui
+        -- runtime resets it to False after the serialisation round-trip.
+        ( { model | isAdding = True, newExercisePath = model.newExercisePath ++ keyEvent.value }, Cmd.none )
+    else
       ( model, Cmd.none )
 
 --
