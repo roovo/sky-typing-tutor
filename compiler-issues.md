@@ -255,6 +255,87 @@ Then reference as `PageExercises.ExercisesModel` in `Main.sky`.
 
 ---
 
+## Issue 5: Custom ADT in record field causes runtime panic after Tui model round-trip
+
+### Summary
+
+A custom ADT stored in a record field in the model panics at runtime after the first `update` cycle in a Sky.Tui app. The initial `view` renders correctly (proving the field is set properly by `init`), but after any key press triggers `update` → the model is serialised and deserialised by the Tui runtime, and the ADT field no longer matches any variant in a `case` expression, hitting `panic(rt.Unreachable("case"))`.
+
+### Reproduction
+
+```elm
+type PageMode
+    = Listing
+    | Adding String
+
+type alias ExercisesModel =
+    { exercises : Status (List ExerciseDb)
+    , pageMode : PageMode
+    , session : Session
+    }
+
+init toMsg session =
+    ( { exercises = ..., pageMode = Listing, session = session }, Cmd.none )
+
+view toMsg model =
+    case model.pageMode of
+        Listing -> ...
+        Adding input -> ...
+```
+
+The initial render works. After any key press (even one that returns the model unchanged), the next `view` call panics:
+
+```
+Sky panic: CompilerBug (ref 9d2df012) — Unreachable code path
+panicMsg=sky.Unreachable(case): sky: codegen reached an arm the exhaustiveness checker said was impossible
+```
+
+### Expected behaviour
+
+Custom ADTs stored in model record fields should survive the Tui runtime's gob encode/decode round-trip without corruption.
+
+### Workaround
+
+Use primitive types instead of custom ADTs in model fields. For example, use a `String` field where empty means one state and non-empty means another.
+
+---
+
+## Issue 6: `Maybe` value in record field corrupted after Tui model round-trip
+
+### Summary
+
+A `Maybe String` field set to `Nothing` in the model becomes `Just ""` after the first update cycle in a Sky.Tui app. The initial render sees `Nothing` correctly, but after the model passes through the Tui runtime's serialisation round-trip, the field reads as `Just ""`.
+
+### Reproduction
+
+```elm
+type alias ExercisesModel =
+    { adding : Maybe String
+    , exercises : Status (List ExerciseDb)
+    , session : Session
+    }
+
+init toMsg session =
+    ( { adding = Nothing, exercises = ..., session = session }, Cmd.none )
+
+view toMsg model =
+    case model.adding of
+        Nothing -> viewListing ...
+        Just input -> viewAddForm input ...
+```
+
+On startup, the list view shows correctly (`Nothing` branch). After any key press (even with `update` returning the model unchanged), the view switches to the add form (`Just ""` branch).
+
+### Expected behaviour
+
+`Nothing` should remain `Nothing` after the Tui runtime's model serialisation round-trip.
+
+### Workaround
+
+Use a plain `String` field where `""` represents the "nothing" state.
+
+---
+
 ## Environment
 
 - Compiler: Sky (Rust-based, new compiler)
