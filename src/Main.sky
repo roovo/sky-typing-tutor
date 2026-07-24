@@ -130,15 +130,7 @@ view model =
     case model of
 
         Exercise exerciseModel ->
-            viewExercise exerciseModel
+            PageExercise.view GotExerciseMsg exerciseModel
 
         Exercises exercisesModel ->
-            viewExercises exercisesModel
-
-
-viewExercise exerciseModel =
-    PageExercise.view GotExerciseMsg exerciseModel
-
-
-viewExercises exercisesModel =
-    PageExercises.view GotExercisesMsg exercisesModel
+            PageExercises.view GotExercisesMsg exercisesModel

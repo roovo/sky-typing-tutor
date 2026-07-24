@@ -51,7 +51,6 @@ update toMsg msg model =
 --
 -- VIEW
 --
-view : (Msg -> parentMsg) -> Model -> Element parentMsg
 view toMsg model =
     Ui.column
         [ Ui.padding 24
@@ -59,11 +58,10 @@ view toMsg model =
         , Background.color (Ui.rgb 18 22 38)
         , Font.color (Ui.rgb 220 220 230)
         ]
-        [ viewHeading ]
+        [ viewHeading model ]
 
 
-viewHeading : Element msg
-viewHeading =
+viewHeading model =
     Ui.el
         [ Ui.width Ui.fill
         , Ui.padding 1
