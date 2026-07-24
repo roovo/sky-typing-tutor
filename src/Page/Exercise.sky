@@ -18,6 +18,9 @@ import Std.Ui.Font as Font
 --
 -- MODEL
 --
+-- COMPILER BUG WORKAROUND (Issue 4): Named ExerciseModel instead of Model
+-- because two modules exposing the same type alias name are conflated by the
+-- type-checker, even when referenced via distinct qualified paths.
 type alias ExerciseModel =
     { elapsedTime : Int
     , exercise : Exercise

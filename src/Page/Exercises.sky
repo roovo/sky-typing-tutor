@@ -13,12 +13,14 @@ import Std.Ui.Font as Font
 --
 -- MODEL
 --
+-- COMPILER BUG WORKAROUND (Issue 4): Named ExercisesModel instead of Model
+-- because two modules exposing the same type alias name are conflated by the
+-- type-checker, even when referenced via distinct qualified paths.
 type alias ExercisesModel =
-    { -- COMPILER BUG WORKAROUND: This should be a PageMode ADT (Listing | Adding String)
-      -- but custom ADTs and Maybe values in model fields are corrupted by the Tui runtime's
-      -- serialisation round-trip. Using String (newExercisePath) and Bool (isAdding) instead.
-      -- Similarly, exercises/exerciseError should be a single Status ADT field
-      -- (Loading | Loaded (List ExerciseDb) | Failed String) but the same bug applies.
+    { -- COMPILER BUG WORKAROUND (Issue 5): exercises/exerciseError should be a
+      -- single Status ADT field (Loading | Loaded (List ExerciseDb) | Failed String)
+      -- but parameterised ADTs in model fields are corrupted by the Tui runtime's
+      -- serialisation round-trip when populated from a DB query.
       newExercisePath : String
     , exerciseError : String
     , exercises : List ExerciseDb

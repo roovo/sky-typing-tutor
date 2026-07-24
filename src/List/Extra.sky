@@ -22,6 +22,9 @@ intersperse sep xs =
 
 {-| Take elements in order as long as the predicate evaluates to `True`
 -}
+-- COMPILER BUG WORKAROUND (Issue 2): Uses a top-level helper instead of a
+-- recursive let-binding because the compiler generates an undefined variable
+-- reference for recursive closures inside let...in blocks.
 takeWhile : (a -> Bool) -> List a -> List a
 takeWhile predicate list =
     takeWhileHelper predicate [] list
