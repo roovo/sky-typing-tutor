@@ -1,6 +1,9 @@
 module Page.Exercises exposing (Model, Msg(..), init, update, view)
 
+import Database
 import Sky.Core.Error as Error exposing (Error)
+import Std.Cmd as Cmd
+import Std.Db as Db
 import Std.Ui as Ui
 import Std.Ui exposing (Element)
 import Std.Ui.Background as Background
@@ -13,6 +16,13 @@ import Std.Ui.Font as Font
 type alias Model =
     { exercises : Status
     , session : Session
+    }
+
+type alias Exercise =
+    { id : Int
+    , name : String
+    , language : String
+    , characterCount : Int
     }
 
 type Status
@@ -28,7 +38,20 @@ init toMsg session =
 
 fetchExercises : (Msg -> parentMsg) -> Session -> Cmd parentMsg
 fetchExercises toMsg session =
-    Cmd.none
+    Cmd.perform
+        (Db.query Database.db
+            "SELECT id, name, language, character_count FROM exercises ORDER BY name"
+            []
+            |> Task.map (List.map rowToExercise))
+        (\result -> toMsg (CompletedExercisesFetch result))
+
+
+rowToExercise row =
+    { id = Db.getInt "id" row
+    , name = Db.getString "name" row
+    , language = Db.getString "language" row
+    , characterCount = Db.getInt "character_count" row
+    }
 
 --
 -- UPDATE
