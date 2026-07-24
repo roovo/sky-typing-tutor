@@ -17,6 +17,9 @@ import Sky.Core.List as List
 --
 -- TYPE
 --
+-- COMPILER BUG WORKAROUND: Using type alias instead of parametric ADT
+-- (type Zipper a = Zipper (List a) a (List a)) because cross-module
+-- parametric ADTs emit unbound type parameters in generated Go. (Issue 1)
 type alias Zipper a =
     { ls : List a
     , focus : a

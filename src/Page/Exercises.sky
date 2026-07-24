@@ -35,14 +35,19 @@ init : (Msg -> parentMsg) -> Session -> ( ExercisesModel, Cmd parentMsg )
 init toMsg session =
     let
         exercises =
-            case Task.run (Db.query Database.db "SELECT id, name, language, character_count FROM exercises ORDER BY name" []) of
+            case Task.run
+                     (Db.query
+                         Database.db
+                         "SELECT id, name, language, character_count FROM exercises ORDER BY name"
+                         []) of
+
                 Ok rows ->
                     Loaded (List.map rowToExercise rows)
 
                 Err e ->
                     Failed (Error.toString e)
     in
-    ( { exercises = exercises, session = session }, Cmd.none )
+        ( { exercises = exercises, session = session }, Cmd.none )
 
 
 fetchExercises : (Msg -> parentMsg) -> Session -> Cmd parentMsg
@@ -64,6 +69,7 @@ type Msg
     = CompletedExercisesFetch (Result Error (List Exercise))
 
 
+-- COMPLIER BUG MEANS I CANNOT ANNOTATE THIS
 update toMsg msg model =
     case msg of
 
@@ -77,6 +83,7 @@ update toMsg msg model =
 --
 -- VIEW
 --
+-- COMPLIER BUG MEANS I CANNOT ANNOTATE THIS
 view toMsg exercises =
     Ui.column
         [ Ui.padding 24
@@ -85,20 +92,23 @@ view toMsg exercises =
         , Font.color (Ui.rgb 220 220 230)
         ]
         [ viewHeading
-    , case exercises of
-        Loading -> Ui.text "Loading exercises..."
-        Failed err -> Ui.text ("Error: " ++ err)
-        Loaded exerciseList ->
-            if List.isEmpty exerciseList then
-                Ui.text "No exercises found."
-            else
-                Ui.text ("Found " ++ String.fromInt (List.length exerciseList) ++ " exercises")
-    ]
+        , case exercises of
 
+              Loading ->
+                  Ui.text "Loading exercises..."
 
-getExercises : ExercisesModel -> Status
-getExercises m =
-    m.exercises
+              Failed err ->
+                  Ui.text ("Error: " ++ err)
+
+              Loaded exerciseList ->
+                  if List.isEmpty exerciseList then
+                      Ui.text "No exercises found."
+
+                  else
+                      Ui.text
+                          ("Found " ++ String.fromInt (List.length exerciseList)
+                              ++ " exercises")
+        ]
 
 
 viewHeading =
@@ -120,23 +130,27 @@ viewContent exercises =
             Ui.text "Loading exercises..."
 
         Failed err ->
-            Ui.el [ Font.color (Ui.rgb 180 50 50) ]
-                (Ui.text ("Error: " ++ err))
+            Ui.el [ Font.color (Ui.rgb 180 50 50) ] (Ui.text ("Error: " ++ err))
 
         Loaded exerciseList ->
             if List.isEmpty exerciseList then
                 Ui.text "No exercises found. Run an exercise first to add one."
 
             else
-                Ui.column [ Ui.spacing 4 ]
+                Ui.column
+                    [ Ui.spacing 4 ]
                     (List.map viewExerciseRow exerciseList)
 
 
 viewExerciseRow exercise =
-    Ui.row [ Ui.spacing 16 ]
-        [ Ui.el [ Font.color (Ui.rgb 120 120 140) ]
-            (Ui.text (String.padRight 12 ' ' exercise.language))
+    Ui.row
+        [ Ui.spacing 16 ]
+        [ Ui.el
+              [ Font.color (Ui.rgb 120 120 140) ]
+              (Ui.text (String.padRight 12 ' ' exercise.language))
         , Ui.text exercise.name
-        , Ui.el [ Font.color (Ui.rgb 120 120 140) ]
-            (Ui.text ("(" ++ String.fromInt exercise.characterCount ++ " chars)"))
+        , Ui.el
+              [ Font.color (Ui.rgb 120 120 140) ]
+              (Ui.text
+                  ("(" ++ String.fromInt exercise.characterCount ++ " chars)"))
         ]

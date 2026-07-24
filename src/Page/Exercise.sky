@@ -3,6 +3,7 @@ module Page.Exercise exposing (Model, Msg(..), init, view, update)
 import Analysis
 import Database
 import Exercise exposing (Exercise, Style(..))
+import KeyEvent exposing (KeyEvent)
 import Sky.Core.Error as Error exposing (Error)
 import Session
 import Sky.Core.Prelude exposing (..)
@@ -36,11 +37,6 @@ init session filename exerciseText =
 --
 -- UPDATE
 --
-type alias KeyEvent =
-    { kind : String
-    , value : String
-    }
-
 type Msg
     = KeyTyped KeyEvent
     | Restart

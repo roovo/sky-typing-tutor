@@ -22,6 +22,11 @@ import Zipper
 
 -- MODEL
 --
+-- COMPILER BUG WORKAROUND: Storing stepsBefore/stepsCurrent/stepsAfter
+-- as separate fields instead of a single `Zipper Step` field because
+-- parametric record aliases nested in another record fail codegen
+-- cross-module. (Issue 2) The `exerciseZipper` helper reconstructs
+-- the Zipper transiently when needed.
 type alias Exercise =
     { errorCount : Int
     , events : List Event
@@ -437,6 +442,9 @@ toInitialStep zippedSteps =
             zippedSteps
 
 
+-- COMPILER BUG WORKAROUND: Using qualified constructors (Step.End etc.)
+-- because unqualified constructors from imported modules without
+-- `exposing (..)` don't emit variable bindings in generated Go. (Issue 4)
 toPrintable : Style -> Step -> Printable
 toPrintable style step =
     case step of

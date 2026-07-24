@@ -1,0 +1,6 @@
+module KeyEvent exposing (KeyEvent)
+
+type alias KeyEvent =
+    { kind : String
+    , value : String
+    }
