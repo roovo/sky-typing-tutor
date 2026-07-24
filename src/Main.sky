@@ -112,6 +112,16 @@ handleKeyPressed keyEvent model =
             in
                 ( Exercise newSubModel, cmd )
 
+        Exercises exercisesModel ->
+            let
+                ( newSubModel, cmd ) =
+                    PageExercises.update
+                        GotExercisesMsg
+                        (PageExercises.KeyTyped keyEvent)
+                        exercisesModel
+            in
+                ( Exercises newSubModel, cmd )
+
         _ ->
             ( model, Cmd.none )
 

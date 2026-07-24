@@ -67,6 +67,7 @@ rowToExercise row =
 --
 type Msg
     = CompletedExercisesFetch (Result Error (List ExerciseDb))
+    | KeyTyped KeyEvent
 
 
 update : (Msg -> parentMsg) -> Msg -> ExercisesModel -> ( ExercisesModel, Cmd parentMsg )
@@ -78,6 +79,9 @@ update toMsg msg model =
 
         CompletedExercisesFetch (Err e) ->
             ( { model | exercises = Failed (Error.toString e) }, Cmd.none )
+
+        KeyTyped _ ->
+            ( model, Cmd.none )
 
 
 --
