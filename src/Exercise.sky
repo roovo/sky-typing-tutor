@@ -81,10 +81,10 @@ currentLineIndex exercise =
         newLineSteps step =
             case step of
 
-                Step.EnterChar ->
+                EnterChar ->
                     True
 
-                Step.EmptyLine ->
+                EmptyLine ->
                     True
 
                 _ ->
@@ -421,26 +421,23 @@ toInitialStep zippedSteps =
             zippedSteps
 
 
--- COMPILER BUG WORKAROUND: Using qualified constructors (Step.End etc.)
--- because unqualified constructors from imported modules without
--- `exposing (..)` don't emit variable bindings in generated Go. (Issue 4)
 toPrintable : Style -> Step -> Printable
 toPrintable style step =
     case step of
 
-        Step.End ->
+        End ->
             UnstyledEnd
 
-        Step.EnterChar ->
+        EnterChar ->
             StyledEnter style
 
-        Step.EmptyLine ->
+        EmptyLine ->
             UnstyledEmptyLine
 
-        Step.Skip st ->
+        Skip st ->
             Styled st Unstyled
 
-        Step.Typeable ch ->
+        Typeable ch ->
             Styled (String.fromChar ch) style
 
 

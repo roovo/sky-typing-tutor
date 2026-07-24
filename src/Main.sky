@@ -64,6 +64,7 @@ type Msg
     | NoOp
 
 
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
 
@@ -78,7 +79,11 @@ update msg model =
             ( model, Cmd.none )
 
         ( GotExercisesMsg subMsg, Exercises exercisesModel ) ->
-            handleExercisesMsg subMsg exercisesModel
+            let
+                ( newSubModel, cmd ) =
+                    PageExercises.update GotExercisesMsg subMsg exercisesModel
+            in
+                ( Exercises newSubModel, cmd )
 
         ( GotExercisesMsg _, _ ) ->
             ( model, Cmd.none )
@@ -91,15 +96,6 @@ update msg model =
 
         ( NoOp, _ ) ->
             ( model, Cmd.none )
-
-
--- COMPILER BUG WORKAROUND: Using fst/snd instead of tuple destructuring
--- because destructuring erases the cross-module type. (Issue 3 / Issue 6)
-handleExercisesMsg subMsg exercisesModel =
-    let
-        result = PageExercises.update GotExercisesMsg subMsg exercisesModel
-    in
-        ( Exercises (fst result), snd result )
 
 
 handleKeyPressed : KeyEvent -> Model -> ( Model, Cmd Msg )
