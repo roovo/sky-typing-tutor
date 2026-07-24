@@ -50,7 +50,7 @@ resolveFullPath path =
 --
 type AppModel
     = Exercise PageExercise.Model
-    | Exercises PageExercises.Model
+    | Exercises PageExercises.ExercisesModel
 
 --
 -- UPDATE
@@ -62,7 +62,6 @@ type Msg
     | NoOp
 
 
-update : Msg -> AppModel -> ( AppModel, Cmd Msg )
 update msg model =
     case ( msg, model ) of
 
@@ -138,4 +137,9 @@ view model =
             PageExercise.view GotExerciseMsg exerciseModel
 
         Exercises exercisesModel ->
-            PageExercises.view GotExercisesMsg exercisesModel
+            PageExercises.view GotExercisesMsg (exercisesStatus exercisesModel)
+
+
+exercisesStatus : PageExercises.ExercisesModel -> PageExercises.Status
+exercisesStatus m =
+    m.exercises

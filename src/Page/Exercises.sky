@@ -1,4 +1,4 @@
-module Page.Exercises exposing (Model, Msg(..), init, update, view)
+module Page.Exercises exposing (ExercisesModel, Msg(..), Status(..), init, update, view)
 
 import Database
 import Sky.Core.Error as Error exposing (Error)
@@ -13,7 +13,7 @@ import Std.Ui.Font as Font
 --
 -- MODEL
 --
-type alias Model =
+type alias ExercisesModel =
     { exercises : Status
     , session : Session
     }
@@ -31,19 +31,23 @@ type Status
     | Failed String
 
 
-init : (Msg -> parentMsg) -> Session -> ( Model, Cmd parentMsg )
+init : (Msg -> parentMsg) -> Session -> ( ExercisesModel, Cmd parentMsg )
 init toMsg session =
-    ( { exercises = Loading, session = session }, fetchExercises toMsg session )
+    let
+        exercises =
+            case Task.run (Db.query Database.db "SELECT id, name, language, character_count FROM exercises ORDER BY name" []) of
+                Ok rows ->
+                    Loaded (List.map rowToExercise rows)
+
+                Err e ->
+                    Failed (Error.toString e)
+    in
+    ( { exercises = exercises, session = session }, Cmd.none )
 
 
 fetchExercises : (Msg -> parentMsg) -> Session -> Cmd parentMsg
 fetchExercises toMsg session =
-    Cmd.perform
-        (Db.query Database.db
-            "SELECT id, name, language, character_count FROM exercises ORDER BY name"
-            []
-            |> Task.map (List.map rowToExercise))
-        (\result -> toMsg (CompletedExercisesFetch result))
+    Cmd.none
 
 
 rowToExercise row =
@@ -73,17 +77,26 @@ update toMsg msg model =
 --
 -- VIEW
 --
-view toMsg model =
+view toMsg exercises =
     Ui.column
         [ Ui.padding 24
         , Ui.spacing 16
         , Background.color (Ui.rgb 18 22 38)
         , Font.color (Ui.rgb 220 220 230)
         ]
-        [ viewHeading, viewContent (getExercises model) ]
+        [ viewHeading
+    , case exercises of
+        Loading -> Ui.text "Loading exercises..."
+        Failed err -> Ui.text ("Error: " ++ err)
+        Loaded exerciseList ->
+            if List.isEmpty exerciseList then
+                Ui.text "No exercises found."
+            else
+                Ui.text ("Found " ++ String.fromInt (List.length exerciseList) ++ " exercises")
+    ]
 
 
-getExercises : Model -> Status
+getExercises : ExercisesModel -> Status
 getExercises m =
     m.exercises
 
