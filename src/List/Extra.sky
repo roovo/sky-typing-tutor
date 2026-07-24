@@ -1,4 +1,4 @@
-module List.Extra exposing (dropWhile, dropWhileRight, intersperse, takeWhile)
+module List.Extra exposing (dropWhile, dropWhileRight, intersperse, takeWhile, takeWhileHelper)
 
 
 {-| Places the given value between all members of the given list.
@@ -24,21 +24,22 @@ intersperse sep xs =
 -}
 takeWhile : (a -> Bool) -> List a -> List a
 takeWhile predicate list =
-    let
-        takeWhileMemo memo list =
-            case list of
+    takeWhileHelper predicate [] list
 
-                [] ->
-                    List.reverse memo
 
-                x :: xs ->
-                    if predicate x then
-                        takeWhileMemo (x :: memo) xs
+takeWhileHelper : (a -> Bool) -> List a -> List a -> List a
+takeWhileHelper predicate memo list =
+    case list of
 
-                    else
-                        List.reverse memo
-    in
-        takeWhileMemo [] list
+        [] ->
+            List.reverse memo
+
+        x :: xs ->
+            if predicate x then
+                takeWhileHelper predicate (x :: memo) xs
+
+            else
+                List.reverse memo
 
 
 {-| Drop elements in order as long as the predicate evaluates to `True`

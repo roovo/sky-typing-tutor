@@ -36,12 +36,18 @@ init =
 --
 terminalLineHeight : Session -> Int
 terminalLineHeight session =
-    session |> config |> .terminalLineHeight
+    let
+        c = config session
+    in
+        c.terminalLineHeight
 
 
 wpmTarget : Session -> Int
 wpmTarget session =
-    session |> config |> .wpmTarget
+    let
+        c = config session
+    in
+        c.wpmTarget
 
 
 --

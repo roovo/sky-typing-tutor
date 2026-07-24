@@ -6,11 +6,17 @@ import List.Extra as LE
 
 toSteps : String -> List Step
 toSteps string =
-    string |> String.trimEnd |> String.lines |> List.map parseLine
-        |> List.concat
-        |> LE.dropWhile (\s -> s == EmptyLine)
-        |> LE.dropWhileRight (\s -> s == EnterChar || s == EmptyLine)
-        |> (\steps -> steps ++ [ Step.initEnd ])
+    let
+        allSteps =
+            string |> String.trimEnd |> String.lines |> List.map parseLine
+                |> List.concat
+
+        trimmedSteps =
+            allSteps
+                |> LE.dropWhile (\s -> s == EmptyLine)
+                |> LE.dropWhileRight (\s -> s == EnterChar || s == EmptyLine)
+    in
+        trimmedSteps ++ [ Step.initEnd ]
 
 
 parseLine : String -> List Step
