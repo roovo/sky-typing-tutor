@@ -16,8 +16,8 @@ import Std.Ui.Font as Font
 type alias ExercisesModel =
     { -- COMPILER BUG WORKAROUND: This should be a PageMode ADT (Listing | Adding String)
       -- but custom ADTs and Maybe values in model fields are corrupted by the Tui runtime's
-      -- serialisation round-trip. Using String (adding) and Bool (isAdding) instead.
-      adding : String
+      -- serialisation round-trip. Using String (newExercisePath) and Bool (isAdding) instead.
+      newExercisePath : String
     , exercises : Status (List ExerciseDb)
     , isAdding : Bool
     , session : Session
@@ -52,7 +52,7 @@ init toMsg session =
                 Err e ->
                     Failed (Error.toString e)
     in
-        ( { adding = "", exercises = exercises, isAdding = False, session = session }
+        ( { newExercisePath = "", exercises = exercises, isAdding = False, session = session }
         , Cmd.none
         )
 
@@ -87,8 +87,11 @@ update toMsg msg model =
         CompletedExercisesFetch (Err e) ->
             ( { model | exercises = Failed (Error.toString e) }, Cmd.none )
 
-        KeyTyped _ ->
-            ( model, Cmd.none )
+        KeyTyped keyEvent ->
+            if keyEvent.kind == "char" && keyEvent.value == "a" then
+              ( { model | isAdding = True, newExercisePath = "" }, Cmd.none )
+            else
+              ( model, Cmd.none )
 
 
 --
@@ -103,7 +106,7 @@ view toMsg model =
         , Font.color (Ui.rgb 220 220 230)
         ]
         (if model.isAdding then
-            [ viewHeading, viewAddExercise model.adding ]
+            [ viewHeading, viewAddExercise model.newExercisePath ]
 
          else
             [ viewHeading, viewContent model, viewHints ])
