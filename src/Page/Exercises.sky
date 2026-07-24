@@ -1,0 +1,75 @@
+module Page.Exercises exposing (Model, Msg(..), init, update, view)
+
+import Sky.Core.Error as Error exposing (Error)
+import Std.Ui as Ui
+import Std.Ui exposing (Element)
+import Std.Ui.Background as Background
+import Std.Ui.Border as Border
+import Std.Ui.Font as Font
+
+--
+-- MODEL
+--
+type alias Model =
+    { exercises : Status
+    , session : Session
+    }
+
+type Status
+    = Loading
+    | Loaded (List Exercise)
+    | Failed String
+
+
+init : (Msg -> parentMsg) -> Session -> ( Model, Cmd parentMsg )
+init toMsg session =
+    ( { exercises = Loading, session = session }, fetchExercises toMsg session )
+
+
+fetchExercises : (Msg -> parentMsg) -> Session -> Cmd parentMsg
+fetchExercises toMsg session =
+    Cmd.none
+
+--
+-- UPDATE
+--
+type Msg
+    = CompletedExercisesFetch (Result Error (List Exercise))
+
+
+update : (Msg -> parentMsg) -> Msg -> Model -> ( Model, Cmd parentMsg )
+update toMsg msg model =
+    case msg of
+
+        CompletedExercisesFetch (Ok exercises) ->
+            ( { model | exercises = Loaded exercises }, Cmd.none )
+
+        CompletedExercisesFetch (Err e) ->
+            ( { model | exercises = Failed (Error.toString e) }, Cmd.none )
+
+
+--
+-- VIEW
+--
+view : (Msg -> parentMsg) -> Model -> Element parentMsg
+view toMsg model =
+    Ui.column
+        [ Ui.padding 24
+        , Ui.spacing 16
+        , Background.color (Ui.rgb 18 22 38)
+        , Font.color (Ui.rgb 220 220 230)
+        ]
+        [ viewHeading ]
+
+
+viewHeading : Element msg
+viewHeading =
+    Ui.el
+        [ Ui.width Ui.fill
+        , Ui.padding 1
+        , Font.color (Ui.rgb 142 200 168)
+        , Border.width 1
+        , Border.color (Ui.rgb 142 200 168)
+        , Border.rounded 4
+        ]
+        (Ui.el [] (Ui.text "Exercises"))
