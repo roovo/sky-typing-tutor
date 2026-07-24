@@ -28,7 +28,7 @@ main =
         }
 
 
-init : () -> ( AppModel, Cmd Msg )
+init : () -> ( Model, Cmd Msg )
 init _ =
     let
         _ = Database.db
@@ -49,7 +49,7 @@ resolveFullPath path =
 --
 -- MODEL
 --
-type AppModel
+type Model
     = Exercise PageExercise.ExerciseModel
     | Exercises PageExercises.ExercisesModel
 
@@ -102,7 +102,7 @@ handleExercisesMsg subMsg exercisesModel =
         ( Exercises (fst result), snd result )
 
 
-handleKeyPressed : KeyEvent -> AppModel -> ( AppModel, Cmd Msg )
+handleKeyPressed : KeyEvent -> Model -> ( Model, Cmd Msg )
 handleKeyPressed keyEvent model =
     case model of
 
@@ -137,7 +137,7 @@ onKey keyEvent =
 --
 -- SUBSCRIPTIONS
 --
-subscriptions : AppModel -> Sub Msg
+subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
 
