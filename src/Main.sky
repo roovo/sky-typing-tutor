@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Database
+import KeyEvent exposing (KeyEvent)
 import Page.Exercise as PageExercise
 import Page.Exercises as PageExercises
 import Session
@@ -55,13 +56,10 @@ type AppModel
 --
 -- UPDATE
 --
--- COMPILER BUG WORKAROUND: Using `KeyPressed String String` instead of
--- `KeyPressed KeyEvent` because cross-module type aliases in ADT
--- constructors cause "type mismatch: KeyEvent vs KeyEvent". (Issue 6)
 type Msg
     = GotExerciseMsg PageExercise.Msg
     | GotExercisesMsg PageExercises.Msg
-    | KeyPressed String String
+    | KeyPressed KeyEvent
     | Quit
     | NoOp
 
@@ -85,8 +83,8 @@ update msg model =
         ( GotExercisesMsg _, _ ) ->
             ( model, Cmd.none )
 
-        ( KeyPressed kind value, _ ) ->
-            handleKeyPressed kind value model
+        ( KeyPressed keyEvent, _ ) ->
+            handleKeyPressed keyEvent model
 
         ( Quit, _ ) ->
             ( model, Cmd.perform (System.exit 0) (\_ -> NoOp) )
@@ -101,24 +99,22 @@ handleExercisesMsg subMsg exercisesModel =
     let
         result = PageExercises.update GotExercisesMsg subMsg exercisesModel
     in
-    ( Exercises (fst result), snd result )
+        ( Exercises (fst result), snd result )
 
 
--- COMPILER BUG WORKAROUND: Reconstructing KeyEvent from raw strings because
--- passing a KeyEvent extracted from Main's Msg ADT to a Page module function
--- causes "type mismatch: KeyEvent vs KeyEvent". (Issue 6)
-handleKeyPressed kind value model =
-    let
-        keyEvent = { kind = kind, value = value }
-    in
+handleKeyPressed : KeyEvent -> AppModel -> ( AppModel, Cmd Msg )
+handleKeyPressed keyEvent model =
     case model of
 
         Exercise exerciseModel ->
             let
                 ( newSubModel, cmd ) =
-                    PageExercise.update GotExerciseMsg (PageExercise.KeyTyped keyEvent) exerciseModel
+                    PageExercise.update
+                        GotExerciseMsg
+                        (PageExercise.KeyTyped keyEvent)
+                        exerciseModel
             in
-            ( Exercise newSubModel, cmd )
+                ( Exercise newSubModel, cmd )
 
         _ ->
             ( model, Cmd.none )
@@ -135,7 +131,7 @@ onKey keyEvent =
         Quit
 
     else
-        KeyPressed keyEvent.kind keyEvent.value
+        KeyPressed keyEvent
 
 
 --
