@@ -10,10 +10,9 @@ import Std.Log exposing (println)
 
 db =
     let
-        homeDir =
-            System.getenvOr "HOME" "."
+        homeDir = System.getenvOr "HOME" "."
         dir = homeDir ++ "/.typing-tutor"
-        path = dir ++ "/results.db"
+        path = dir ++ "/typing.db"
         _ = Task.run (File.mkdirAll dir)
     in
         case Task.run (Db.open "sqlite" path) of
@@ -35,7 +34,7 @@ db =
 initSchema conn =
     Db.execRaw
         conn
-        """CREATE TABLE IF NOT EXISTS results (
+        """CREATE TABLE IF NOT EXISTS attempts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             full_path TEXT NOT NULL,
             language TEXT NOT NULL,

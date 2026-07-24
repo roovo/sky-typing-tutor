@@ -12,7 +12,7 @@ overallAssessment wpmThreshold exercise =
         "Excellent! Try a harder exercise."
 
     else if Exercise.accuracy exercise >= 95.0 then
-        "Your accuracy is great. Try pushing your speed a little."
+        "Your accuracy is pretty good. Try pushing your speed a little."
 
     else
-        "Good progress. Focus on your problem characters before pushing speed."
+        "Good progress. Focus on any problem characters before pushing speed."

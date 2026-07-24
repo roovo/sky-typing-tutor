@@ -32,11 +32,11 @@ overallAssessmentTests =
                   |> String.left 9
                   |> Test.equal "Excellent")
     , Test.test
-          "overallAssessment returns 'Your accuracy is great' if accuracy = 100% & wpm is under threshold"
+          "overallAssessment returns 'Your accuracy is pretty good' if accuracy = 100% & wpm is under threshold"
           (\_ ->
               perfectAccuracyFastExercise |> Analysis.overallAssessment 90.0
-                  |> String.left 22
-                  |> Test.equal "Your accuracy is great")
+                  |> String.left 28
+                  |> Test.equal "Your accuracy is pretty good")
     ]
 
 

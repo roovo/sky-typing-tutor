@@ -131,7 +131,7 @@ saveResult : Exercise -> Task Error Int
 saveResult exercise =
     Db.exec
         Database.db
-        "INSERT INTO results (full_path, language, accuracy, wpm, character_count, events, completed_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))"
+        "INSERT INTO attempts (full_path, language, accuracy, wpm, character_count, events, completed_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))"
         [ Exercise.fullPath exercise
         , Exercise.language exercise
         , String.fromFloat (Exercise.accuracy exercise)
