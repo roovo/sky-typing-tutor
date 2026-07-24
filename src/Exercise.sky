@@ -39,7 +39,7 @@ type alias Exercise =
 
 type Style
     = Current
-    | Error
+    | Errored
     | Completed
     | Unstyled
     | Waiting
@@ -262,7 +262,7 @@ type Direction
 afterPrintable : Int -> Int -> Step -> Printable
 afterPrintable errorCount index step =
     if index < (errorCount - 1) then
-        toPrintable Error step
+        toPrintable Errored step
 
     else
         toPrintable Waiting step
@@ -279,7 +279,7 @@ currentStepStyle errorCount =
         Current
 
     else
-        Error
+        Errored
 
 
 exerciseZipper : Exercise -> Zipper Step

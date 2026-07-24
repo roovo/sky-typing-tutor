@@ -112,14 +112,14 @@ consumeTests =
                          , [ Styled "c" Current, UnstyledEnd ]
                          ])
     , Test.test
-          "consume styles with an Error if the wrong character is typed"
+          "consume styles with an Errored if the wrong character is typed"
           (\_ ->
               exerciseWithText "abc" |> Exercise.consume 'a' 0
                   |> Exercise.consume 'c' 0
                   |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
-                           , Styled "b" Error
+                           , Styled "b" Errored
                            , Styled "c" Waiting
                            , UnstyledEnd
                            ]
@@ -133,8 +133,8 @@ consumeTests =
                   |> allPrintableLines
                   |> Test.equal
                          [ [ Styled "a" Completed
-                           , Styled "b" Error
-                           , Styled "c" Error
+                           , Styled "b" Errored
+                           , Styled "c" Errored
                            , UnstyledEnd
                            ]
                          ])

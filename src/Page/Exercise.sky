@@ -339,7 +339,7 @@ styleAttrs style =
         Exercise.Completed ->
             [ Font.color (Ui.rgb 100 180 100) ]
 
-        Exercise.Error ->
+        Exercise.Errored ->
             [ Background.color (Ui.rgb 180 50 50)
             , Font.color (Ui.rgb 255 255 255)
             ]
