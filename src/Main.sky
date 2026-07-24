@@ -33,7 +33,7 @@ init _ =
         _ = Database.db
         ( subModel, cmd ) = PageExercises.init GotExercisesMsg Session.init
     in
-        ( Exercises subModel, Cmd.none )
+        ( Exercises subModel, cmd )
 
 
 getArg argList =
@@ -76,8 +76,12 @@ update msg model =
         ( GotExerciseMsg _, _ ) ->
             ( model, Cmd.none )
 
-        ( GotExercisesMsg subMsg, Exercise subModel ) ->
-            ( model, Cmd.none )
+        ( GotExercisesMsg subMsg, Exercises exercisesModel ) ->
+            let
+                ( newSubModel, cmd ) =
+                    PageExercises.update GotExercisesMsg subMsg exercisesModel
+            in
+            ( Exercises newSubModel, cmd )
 
         ( GotExercisesMsg _, _ ) ->
             ( model, Cmd.none )
@@ -87,6 +91,7 @@ update msg model =
 
         ( NoOp, _ ) ->
             ( model, Cmd.none )
+
 
 --
 -- ONKEY
