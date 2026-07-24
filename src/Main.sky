@@ -1,7 +1,8 @@
 module Main exposing (main)
 
 import Database
-import Page.Exercise as PageExercise exposing (Msg(..))
+import Page.Exercise as PageExercise
+import Page.Exercises as PageExercises
 import Session
 import Sky.Core.Prelude exposing (..)
 import Sky.Core.String as String
@@ -29,31 +30,10 @@ main =
 init : () -> ( AppModel, Cmd Msg )
 init _ =
     let
-        __ = Database.db
-        userArgs = System.args () |> Task.run |> Result.withDefault []
+        _ = Database.db
+        ( subModel, cmd ) = PageExercises.init GotExercisesMsg Session.init
     in
-        case getArg userArgs of
-
-            "" ->
-                ( NoFile Session.init, Cmd.none )
-
-            filename ->
-                let
-                    fullPath = resolveFullPath filename
-                in
-                    case Task.run (File.readFile fullPath) of
-
-                        Ok contents ->
-                            ( Exercise
-                                  (PageExercise.init
-                                      Session.init
-                                      fullPath
-                                      contents)
-                            , Cmd.none
-                            )
-
-                        Err _ ->
-                            ( NoFile Session.init, Cmd.none )
+        ( Exercises subModel, Cmd.none )
 
 
 getArg argList =
@@ -70,13 +50,14 @@ resolveFullPath path =
 --
 type AppModel
     = Exercise PageExercise.Model
-    | NoFile Session
+    | Exercises PageExercises.Model
 
 --
 -- UPDATE
 --
 type Msg
     = GotExerciseMsg PageExercise.Msg
+    | GotExercisesMsg PageExercises.Msg
     | Quit
     | NoOp
 
@@ -90,9 +71,15 @@ update msg model =
                 ( newSubModel, cmd ) =
                     PageExercise.update GotExerciseMsg subMsg subModel
             in
-            ( Exercise newSubModel, cmd )
+                ( Exercise newSubModel, cmd )
 
         ( GotExerciseMsg _, _ ) ->
+            ( model, Cmd.none )
+
+        ( GotExercisesMsg subMsg, Exercise subModel ) ->
+            ( model, Cmd.none )
+
+        ( GotExercisesMsg _, _ ) ->
             ( model, Cmd.none )
 
         ( Quit, _ ) ->
@@ -100,7 +87,6 @@ update msg model =
 
         ( NoOp, _ ) ->
             ( model, Cmd.none )
-
 
 --
 -- ONKEY
@@ -133,30 +119,26 @@ subscriptions model =
         Exercise _ ->
             Sub.every 10 (GotExerciseMsg PageExercise.Tick)
 
-        NoFile _ ->
+        _ ->
             Sub.none
 
 
 --
 -- VIEW
 --
-view : AppModel -> Element Msg
 view model =
     case model of
 
-        Exercise subModel ->
-            PageExercise.view GotExerciseMsg subModel
+        Exercise exerciseModel ->
+            viewExercise exerciseModel
 
-        NoFile _ ->
-            notFoundView
+        Exercises exercisesModel ->
+            viewExercises exercisesModel
 
 
-notFoundView : Element Msg
-notFoundView =
-    Ui.column
-        [ Ui.padding 24
-        , Ui.spacing 16
-        , Background.color (Ui.rgb 18 22 38)
-        , Font.color (Ui.rgb 220 220 230)
-        ]
-        [ Ui.el [ Font.color (Ui.rgb 142 200 168) ] (Ui.text "File Not Found") ]
+viewExercise exerciseModel =
+    PageExercise.view GotExerciseMsg exerciseModel
+
+
+viewExercises exercisesModel =
+    PageExercises.view GotExercisesMsg exercisesModel
