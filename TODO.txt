@@ -9,6 +9,7 @@
 - have a way to adjust the window size
 - do some other analysis: e.g. character most mistyped, slowest to type, isues with specific character combinations
 - generate drills based on performance
+- config file to hold targetWpm, language mappings, and default terminal height
 
 
 Desirable sky changes:
