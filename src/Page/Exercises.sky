@@ -114,6 +114,9 @@ handleNewExerciseKeypresses keyEvent model =
         , Cmd.none
         )
 
+    else if keyEvent.kind == "space" then
+        ( { model | newExercisePath = model.newExercisePath ++ " " }, Cmd.none )
+
     else if keyEvent.kind == "backspace" then
         ( { model | newExercisePath = String.dropRight 1 model.newExercisePath }
         , Cmd.none
