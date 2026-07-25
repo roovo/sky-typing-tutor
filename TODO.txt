@@ -13,7 +13,6 @@ Desirable sky changes:
 - Cmd.map
 - allow function definitions in let blocks
 - allow Page.Exercise to be used as Page.Exercise without having to alias it as PageExercise
-- point free notation
 - port Parser.elm (as it relies on Kernel modules)
 - 'sky test' will by default run all tests in the tests directory
 - "describe" is added to test for grouping tests (needs to be in the output too)

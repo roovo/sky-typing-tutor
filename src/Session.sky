@@ -34,23 +34,14 @@ init =
 --
 -- INFO
 --
--- COMPILER BUG WORKAROUND (Issue 1): Using let-binding + direct field access
--- instead of `.field` accessor in pipeline (e.g. `session |> config |> .terminalLineHeight`)
--- because the accessor generates untyped `rt.Field` without a type assertion.
 terminalLineHeight : Session -> Int
-terminalLineHeight session =
-    let
-        c = config session
-    in
-        c.terminalLineHeight
+terminalLineHeight =
+    .terminalLineHeight << config
 
 
 wpmTarget : Session -> Int
-wpmTarget session =
-    let
-        c = config session
-    in
-        c.wpmTarget
+wpmTarget =
+    .wpmTarget << config
 
 
 --
