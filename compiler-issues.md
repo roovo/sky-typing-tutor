@@ -564,6 +564,103 @@ type alias PageBModel =
 
 Then reference as `PageA.PageAModel` and `PageB.PageBModel` in `Main.sky`.
 
+### Update (2026-07-25): Partial fix
+
+The issue is partially fixed — two sub-modules can now both expose `Model` without being conflated with each other. However, if the **importing module** (e.g. `Main`) also defines a type with the same name `Model`, it still clashes with the imported modules' types.
+
+The remaining issue can be reproduced with this minimal example:
+
+**sky.toml:**
+```toml
+name    = "issue-4-partial-fix"
+version = "0.1.0"
+entry   = "Main.sky"
+
+[source]
+root = "."
+```
+
+**Page/A.sky:**
+```elm
+module Page.A exposing (Model, init, view)
+
+import Sky.Core.Prelude exposing (..)
+import Std.Ui as Ui
+import Std.Ui exposing (Element)
+
+
+type alias Model =
+    { name : String
+    }
+
+
+init : Model
+init =
+    { name = "Page A" }
+
+
+view : Model -> Element msg
+view model =
+    Ui.text model.name
+```
+
+**Main.sky:**
+```elm
+module Main exposing (main)
+
+import Page.A as PageA
+import Sky.Core.Prelude exposing (..)
+import Std.Tui as Tui
+import Std.Cmd as Cmd
+import Std.Sub as Sub
+import Std.Ui as Ui
+import Std.Ui exposing (Element)
+
+
+type Model
+    = Active PageA.Model
+
+
+type Msg
+    = NoOp
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( Active PageA.init, Cmd.none )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update _ model =
+    ( model, Cmd.none )
+
+
+view : Model -> Element Msg
+view model =
+    case model of
+
+        Active subModel ->
+            PageA.view subModel
+
+
+main =
+    Tui.app
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = \_ -> Sub.none
+        , onKey = \_ -> NoOp
+        }
+```
+
+**Errors:**
+```
+[init] type mismatch: Model vs record
+[view] type mismatch: Model vs record
+```
+
+**Workaround:** Rename the importing module's type to something different (e.g. `AppModel` instead of `Model`).
+
 ---
 
 ## Issue 5: Custom parameterised ADT in model record field corrupted after Tui runtime serialisation round-trip

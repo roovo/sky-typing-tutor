@@ -1,4 +1,4 @@
-module Page.Exercises exposing (ExercisesModel, Msg(..), init, update, view)
+module Page.Exercises exposing (Model, Msg(..), init, update, view)
 
 import Database
 import Sky.Core.Error as Error exposing (Error)
@@ -13,10 +13,7 @@ import Std.Ui.Font as Font
 --
 -- MODEL
 --
--- COMPILER BUG WORKAROUND (Issue 4): Named ExercisesModel instead of Model
--- because two modules exposing the same type alias name are conflated by the
--- type-checker, even when referenced via distinct qualified paths.
-type alias ExercisesModel =
+type alias Model =
     { -- COMPILER BUG WORKAROUND (Issue 5): exercises/exerciseError should be a
       -- single Status ADT field (Loading | Loaded (List ExerciseDb) | Failed String)
       -- but parameterised ADTs in model fields are corrupted by the Tui runtime's
@@ -36,7 +33,7 @@ type alias ExerciseDb =
     }
 
 
-init : (Msg -> parentMsg) -> Session -> ( ExercisesModel, Cmd parentMsg )
+init : (Msg -> parentMsg) -> Session -> ( Model, Cmd parentMsg )
 init toMsg session =
     let
         result =
@@ -92,7 +89,7 @@ type Msg
     | KeyTyped KeyEvent
 
 
-update : (Msg -> parentMsg) -> Msg -> ExercisesModel -> ( ExercisesModel, Cmd parentMsg )
+update : (Msg -> parentMsg) -> Msg -> Model -> ( Model, Cmd parentMsg )
 update toMsg msg model =
     case msg of
 
@@ -109,7 +106,7 @@ update toMsg msg model =
                 handleListingKeypresses keyEvent model
 
 
-handleListingKeypresses : KeyEvent -> ExercisesModel -> ( ExercisesModel, Cmd msg )
+handleListingKeypresses : KeyEvent -> Model -> ( Model, Cmd msg )
 handleListingKeypresses keyEvent model =
     if keyEvent.kind == "char" && keyEvent.value == "a" then
         ( { model | isAdding = True, newExercisePath = "" }, Cmd.none )
@@ -117,7 +114,7 @@ handleListingKeypresses keyEvent model =
         ( model, Cmd.none )
 
 
-handleNewExerciseKeypresses : KeyEvent -> ExercisesModel -> ( ExercisesModel, Cmd msg )
+handleNewExerciseKeypresses : KeyEvent -> Model -> ( Model, Cmd msg )
 handleNewExerciseKeypresses keyEvent model =
     if keyEvent.kind == "char" then
         -- COMPILER BUG WORKAROUND (Issue 5): isAdding = True must be explicitly
@@ -130,7 +127,7 @@ handleNewExerciseKeypresses keyEvent model =
 --
 -- VIEW
 --
-view : (Msg -> parentMsg) -> ExercisesModel -> Element parentMsg
+view : (Msg -> parentMsg) -> Model -> Element parentMsg
 view toMsg model =
     Ui.column
         [ Ui.padding 24
@@ -158,7 +155,7 @@ viewHeading =
         (Ui.el [] (Ui.text "Exercises"))
 
 
-viewContent : ExercisesModel -> Element msg
+viewContent : Model -> Element msg
 viewContent model =
     if model.exerciseError /= "" then
         Ui.el [ Font.color (Ui.rgb 180 50 50) ] (Ui.text ("Error: " ++ model.exerciseError))
