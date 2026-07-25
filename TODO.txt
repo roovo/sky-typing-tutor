@@ -1,25 +1,22 @@
 - add exercises page (with the exercise text stored in the database)
-- add a attempts page
-- don't allow the same attempts to be saved more than once (gray out the option too)
+- add an attempts page
+- don't allow the same attempt to be saved more than once (gray out the option too)
 - maintain the 20 line height for content at all times
   - even for shorter files
   - also when getting to the end of an exercise
 - show progress in the footer (lines and/or characters remaining - completed when finished)
 - have some way of tracking with keyboard is being used
 - have a way to adjust the window size
+- do some other analysis: e.g. character most mistyped, slowest to type, isues with specific character combinations
+- generate drills based on performance
+
 
 Desirable sky changes:
 - Debug.log
-- Cmd.map
 - allow function definitions in let blocks
 - allow Page.Exercise to be used as Page.Exercise without having to alias it as PageExercise
 - port Parser.elm (as it relies on Kernel modules)
-- 'sky test' will by default run all tests in the tests directory
-- "describe" is added to test for grouping tests (needs to be in the output too)
+- 'sky test' by default could/should run all tests in the tests directory
+- "describe" added to test for grouping tests (needs to be in the output too)
 - toFloat (having to do String.fromInt n |> String.toFloat |> Maybe.withDefault 0.0)
-- Tui - able to determine how many rows high it is
-
-sky bugs:
-- timeTaken events = events |> List.map .timeTaken |> List.foldl (\n acc -> n + acc) 0
-  The .timeTaken field accessor is causing the runtime type mismatch. This is a codegen issue with field accessors used as first-class functions in List.map. 
-
+- Tui - able to determine how many rows high the terminal is (and track if it changes)
