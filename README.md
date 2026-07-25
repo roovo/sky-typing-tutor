@@ -11,11 +11,11 @@ using elm a while ago
 brew install go
 
 # needed if building from source
-brew install ghc
+brew install rust
 
 # to buld from souce
 git clone https://github.com/anzellai/sky
-cd sky && cabal install --installdir=$HOME/.local/bin exe:sky
+cd sky && cargo install --path rust/crates/sky --root ~/.local --locked
 ```
 
 ## Develpment
@@ -27,8 +27,10 @@ cd sky && cabal install --installdir=$HOME/.local/bin exe:sky
 # run individual test file
 sky test tests/ExerciseTests.sky
 
-
 # build & run
 sky build
 ./sky-out/app src/Main.sky   # path to file to use in exercise
+
+# or just run
+sky run
 ```
