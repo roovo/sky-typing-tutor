@@ -109,7 +109,7 @@ handleListingKeypresses keyEvent model =
 
 handleNewExerciseKeypresses : KeyEvent -> Model -> ( Model, Cmd msg )
 handleNewExerciseKeypresses keyEvent model =
-    if keyEvent.kind == "char" then
+    if keyEvent.kind == "char" || keyEvent.kind == "paste" then
         ( { model | newExercisePath = model.newExercisePath ++ keyEvent.value }
         , Cmd.none
         )
