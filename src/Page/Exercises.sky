@@ -14,16 +14,16 @@ import Std.Ui.Font as Font
 -- MODEL
 --
 type alias Model =
-    { -- COMPILER BUG WORKAROUND (Issue 5): exercises/exerciseError should be a
-      -- single Status ADT field (Loading | Loaded (List ExerciseDb) | Failed String)
-      -- but parameterised ADTs in model fields are corrupted by the Tui runtime's
-      -- serialisation round-trip when populated from a DB query.
-      newExercisePath : String
-    , exerciseError : String
-    , exercises : List ExerciseDb
+    { newExercisePath : String
+    , exercises : Status (List ExerciseDb)
     , isAdding : Bool
     , session : Session
     }
+
+type Status a
+    = Loading
+    | Loaded a
+    | Failed String
 
 type alias ExerciseDb =
     { id : Int
@@ -42,25 +42,16 @@ init toMsg session =
                     Database.db
                     "SELECT id, name, language, character_count FROM exercises ORDER BY name"
                     [])
-
         exercises =
             case result of
+
                 Ok rows ->
-                    List.map rowToExercise rows
-
-                Err _ ->
-                    []
-
-        exerciseError =
-            case result of
-                Ok _ ->
-                    ""
+                    Loaded (List.map rowToExercise rows)
 
                 Err e ->
-                    Error.toString e
+                    Failed (Error.toString e)
     in
         ( { newExercisePath = ""
-          , exerciseError = exerciseError
           , exercises = exercises
           , isAdding = False
           , session = session
@@ -94,14 +85,15 @@ update toMsg msg model =
     case msg of
 
         CompletedExercisesFetch (Ok exercises) ->
-            ( { model | exercises = exercises }, Cmd.none )
+            ( { model | exercises = Loaded exercises }, Cmd.none )
 
         CompletedExercisesFetch (Err e) ->
-            ( { model | exerciseError = Error.toString e }, Cmd.none )
+            ( { model | exercises = Failed (Error.toString e) }, Cmd.none )
 
         KeyTyped keyEvent ->
             if model.isAdding then
                 handleNewExerciseKeypresses keyEvent model
+
             else
                 handleListingKeypresses keyEvent model
 
@@ -110,6 +102,7 @@ handleListingKeypresses : KeyEvent -> Model -> ( Model, Cmd msg )
 handleListingKeypresses keyEvent model =
     if keyEvent.kind == "char" && keyEvent.value == "a" then
         ( { model | isAdding = True, newExercisePath = "" }, Cmd.none )
+
     else
         ( model, Cmd.none )
 
@@ -117,12 +110,13 @@ handleListingKeypresses keyEvent model =
 handleNewExerciseKeypresses : KeyEvent -> Model -> ( Model, Cmd msg )
 handleNewExerciseKeypresses keyEvent model =
     if keyEvent.kind == "char" then
-        -- COMPILER BUG WORKAROUND (Issue 5): isAdding = True must be explicitly
-        -- included even though it's already True on the model. Without it, the Tui
-        -- runtime resets it to False after the serialisation round-trip.
-        ( { model | isAdding = True, newExercisePath = model.newExercisePath ++ keyEvent.value }, Cmd.none )
+        ( { model | newExercisePath = model.newExercisePath ++ keyEvent.value }
+        , Cmd.none
+        )
+
     else
-      ( model, Cmd.none )
+        ( model, Cmd.none )
+
 
 --
 -- VIEW
@@ -138,7 +132,7 @@ view toMsg model =
         (if model.isAdding then
             [ viewHeading, viewAddExercise model.newExercisePath ]
 
-         else
+        else
             [ viewHeading, viewContent model, viewHints ])
 
 
@@ -157,16 +151,21 @@ viewHeading =
 
 viewContent : Model -> Element msg
 viewContent model =
-    if model.exerciseError /= "" then
-        Ui.el [ Font.color (Ui.rgb 180 50 50) ] (Ui.text ("Error: " ++ model.exerciseError))
+    case model.exercises of
 
-    else if List.isEmpty model.exercises then
-        Ui.text "No exercises found. Run an exercise first to add one."
+        Failed exerciseError ->
+            Ui.el
+                [ Font.color (Ui.rgb 180 50 50) ]
+                (Ui.text ("Error: " ++ exerciseError))
 
-    else
-        Ui.column
-            [ Ui.spacing 4 ]
-            (List.map viewExerciseRow model.exercises)
+        Loading ->
+            Ui.text "Exercises loading"
+
+        Loaded [] ->
+            Ui.text "No exercises found. Run an exercise first to add one."
+
+        Loaded exercises ->
+            Ui.column [ Ui.spacing 4 ] (List.map viewExerciseRow exercises)
 
 
 viewExerciseRow : ExerciseDb -> Element msg
