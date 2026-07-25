@@ -1,4 +1,4 @@
-module List.Extra exposing (dropWhile, dropWhileRight, intersperse, takeWhile, takeWhileHelper)
+module List.Extra exposing (dropWhile, dropWhileRight, intersperse, takeWhile)
 
 
 {-| Places the given value between all members of the given list.
@@ -22,27 +22,23 @@ intersperse sep xs =
 
 {-| Take elements in order as long as the predicate evaluates to `True`
 -}
--- COMPILER BUG WORKAROUND (Issue 2): Uses a top-level helper instead of a
--- recursive let-binding because the compiler generates an undefined variable
--- reference for recursive closures inside let...in blocks.
 takeWhile : (a -> Bool) -> List a -> List a
 takeWhile predicate list =
-    takeWhileHelper predicate [] list
+    let
+        takeWhileMemo memo list =
+            case list of
 
+                [] ->
+                    List.reverse memo
 
-takeWhileHelper : (a -> Bool) -> List a -> List a -> List a
-takeWhileHelper predicate memo list =
-    case list of
+                x :: xs ->
+                    if predicate x then
+                        takeWhileMemo (x :: memo) xs
 
-        [] ->
-            List.reverse memo
-
-        x :: xs ->
-            if predicate x then
-                takeWhileHelper predicate (x :: memo) xs
-
-            else
-                List.reverse memo
+                    else
+                        List.reverse memo
+    in
+        takeWhileMemo [] list
 
 
 {-| Drop elements in order as long as the predicate evaluates to `True`

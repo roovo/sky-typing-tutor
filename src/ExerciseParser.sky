@@ -4,23 +4,13 @@ import Step exposing (Step(..))
 import List.Extra as LE
 
 
--- COMPILER BUG WORKAROUND (Issue 3): Uses let-bindings instead of piping
--- dropWhile/dropWhileRight directly into an anonymous lambda, because the
--- compiler loses the concrete list element type at the lambda boundary
--- (generates []any where []Step is expected).
 toSteps : String -> List Step
 toSteps string =
-    let
-        allSteps =
-            string |> String.trimEnd |> String.lines |> List.map parseLine
-                |> List.concat
-
-        trimmedSteps =
-            allSteps
-                |> LE.dropWhile (\s -> s == EmptyLine)
-                |> LE.dropWhileRight (\s -> s == EnterChar || s == EmptyLine)
-    in
-        trimmedSteps ++ [ Step.initEnd ]
+    string |> String.trimEnd |> String.lines |> List.map parseLine
+        |> List.concat
+        |> LE.dropWhile (\s -> s == EmptyLine)
+        |> LE.dropWhileRight (\s -> s == EnterChar || s == EmptyLine)
+        |> (\steps -> steps ++ [ Step.initEnd ])
 
 
 parseLine : String -> List Step
