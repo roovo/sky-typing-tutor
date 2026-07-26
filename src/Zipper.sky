@@ -5,6 +5,7 @@ module Zipper exposing
     , current
     , first
     , fromList
+    , last
     , next
     , previous
     , singleton
@@ -52,6 +53,17 @@ first ((Zipper ls x rs) as zipper) =
 
         y :: ys ->
             Zipper [] y (ys ++ [ x ] ++ rs)
+
+
+last : Zipper a -> Zipper a
+last ((Zipper ls x rs) as zipper) =
+    case List.reverse rs of
+
+        [] ->
+            zipper
+
+        y :: ys ->
+            Zipper (ys ++ [ x ] ++ ls) y []
 
 
 next : Zipper a -> Zipper a

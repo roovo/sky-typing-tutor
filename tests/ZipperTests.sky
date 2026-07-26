@@ -11,6 +11,7 @@ tests : List Test
 tests =
     afterTests ++ beforeTests ++ combinationTests ++ currentTests ++ firstTests
         ++ fromListTests
+        ++ lastTests
         ++ nextTests
         ++ previousTests
         ++ singletonTests
@@ -139,6 +140,43 @@ fromListTests =
                   z = makeZipper [ 1, 2, 3 ]
               in
                   Test.equal [ 2, 3 ] (Zipper.after z))
+    ]
+
+
+lastTests : List Test
+lastTests =
+    [ Test.test
+          "last from middle focuses on last element"
+          (\_ ->
+              makeZipper [ 1, 2, 3, 4 ] |> Zipper.next |> Zipper.next
+                  |> Zipper.last
+                  |> Zipper.current
+                  |> Test.equal 4)
+    , Test.test
+          "last from middle has empty after"
+          (\_ ->
+              makeZipper [ 1, 2, 3, 4 ] |> Zipper.next |> Zipper.next
+                  |> Zipper.last
+                  |> Zipper.after
+                  |> Test.equal [])
+    , Test.test
+          "last from middle has all others before"
+          (\_ ->
+              makeZipper [ 1, 2, 3, 4 ] |> Zipper.next |> Zipper.next
+                  |> Zipper.last
+                  |> Zipper.before
+                  |> Test.equal [ 1, 2, 3 ])
+    , Test.test
+          "last when already at last is no-op"
+          (\_ ->
+              makeZipper [ 1, 2, 3 ] |> Zipper.last |> Zipper.last
+                  |> Zipper.current
+                  |> Test.equal 3)
+    , Test.test
+          "last on singleton stays put"
+          (\_ ->
+              Zipper.singleton 1 |> Zipper.last |> Zipper.current
+                  |> Test.equal 1)
     ]
 
 
