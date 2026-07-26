@@ -13,12 +13,13 @@ import Std.Ui exposing (Element)
 import Std.Ui.Background as Background
 import Std.Ui.Border as Border
 import Std.Ui.Font as Font
+import Zipper
 
 --
 -- MODEL
 --
 type alias Model =
-    { exercises : Status (List ExerciseDb)
+    { exercises : Status (Maybe (Zipper ExerciseDb))
     , newExercise : NewExerciseStatus
     , session : Session
     }
@@ -54,15 +55,12 @@ init toMsg session =
             case result of
 
                 Ok rows ->
-                    Loaded (List.map rowToExercise rows)
+                    Loaded (List.map rowToExercise rows |> Zipper.fromList)
 
                 Err e ->
                     Failed (Error.toString e)
     in
-        ( { exercises = exercises
-          , newExercise = Dormant
-          , session = session
-          }
+        ( { exercises = exercises, newExercise = Dormant, session = session }
         , Cmd.none
         )
 
@@ -93,7 +91,9 @@ update toMsg msg model =
     case msg of
 
         CompletedExercisesFetch (Ok exercises) ->
-            ( { model | exercises = Loaded exercises }, Cmd.none )
+            ( { model | exercises = Loaded (Zipper.fromList exercises) }
+            , Cmd.none
+            )
 
         CompletedExercisesFetch (Err e) ->
             ( { model | exercises = Failed (Error.toString e) }, Cmd.none )
@@ -144,10 +144,13 @@ handleNewExerciseKeypresses toMsg keyEvent model =
             )
 
         else if keyEvent.kind == "space" then
-            ( { model | newExercise = IsAdding (currentPath ++ " ") }, Cmd.none )
+            ( { model | newExercise = IsAdding (currentPath ++ " ") }
+            , Cmd.none
+            )
 
         else if keyEvent.kind == "backspace" then
-            ( { model | newExercise = IsAdding (String.dropRight 1 currentPath) }
+            ( { model | newExercise = IsAdding (String.dropRight 1 currentPath)
+              }
             , Cmd.none
             )
 
@@ -171,7 +174,8 @@ handleNewExerciseKeypresses toMsg keyEvent model =
                         )
 
                 Err e ->
-                    ( { model | newExercise = NewExerciseFailed (Error.toString e) currentPath }
+                    ( { model | newExercise = NewExerciseFailed (Error.toString e) currentPath
+                      }
                     , Cmd.none
                     )
 
@@ -199,8 +203,7 @@ view toMsg model =
                 [ viewHeading, viewAddExercise path "" ]
 
             NewExerciseFailed err path ->
-                [ viewHeading, viewAddExercise path err ]
-        )
+                [ viewHeading, viewAddExercise path err ])
 
 
 viewHeading : Element msg
@@ -228,20 +231,23 @@ viewContent model =
         Loading ->
             Ui.text "Exercises loading"
 
-        Loaded [] ->
-            Ui.text "No exercises found."
+        Loaded zippedExercises ->
+            case zippedExercises of
 
-        Loaded exercises ->
-            Ui.column [ Ui.spacing 4 ] (List.map viewExerciseRow exercises)
+                Nothing ->
+                    Ui.text "No exercises found."
+
+                Just exercises ->
+                    Ui.column
+                        [ Ui.spacing 4 ]
+                        (List.map viewExerciseRow (Zipper.toList exercises))
 
 
 viewExerciseRow : ExerciseDb -> Element msg
 viewExerciseRow exercise =
     let
         filename =
-            String.split "/" exercise.fullPath
-                |> List.reverse
-                |> List.head
+            String.split "/" exercise.fullPath |> List.reverse |> List.head
                 |> Maybe.withDefault exercise.fullPath
     in
         Ui.row
