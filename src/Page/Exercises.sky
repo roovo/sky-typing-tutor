@@ -26,10 +26,9 @@ type Status a
     | Failed String
 
 type alias ExerciseDb =
-    { id : Int
-    , name : String
-    , language : String
+    { fullPath : String
     , characterCount : Int
+    , language : String
     }
 
 
@@ -40,7 +39,7 @@ init toMsg session =
             Task.run
                 (Db.query
                     Database.db
-                    "SELECT id, name, language, character_count FROM exercises ORDER BY name"
+                    "SELECT id, full_path, character_count, language FROM attempts ORDER BY completed_at"
                     [])
         exercises =
             case result of
@@ -66,10 +65,9 @@ fetchExercises toMsg session =
 
 
 rowToExercise row =
-    { id = Db.getInt "id" row
-    , name = Db.getString "name" row
-    , language = Db.getString "language" row
+    { fullPath = Db.getString "full_path" row
     , characterCount = Db.getInt "character_count" row
+    , language = Db.getString "language" row
     }
 
 --
@@ -183,7 +181,7 @@ viewExerciseRow exercise =
         [ Ui.el
               [ Font.color (Ui.rgb 120 120 140) ]
               (Ui.text (String.padRight 12 ' ' exercise.language))
-        , Ui.text exercise.name
+        , Ui.text exercise.fullPath
         , Ui.el
               [ Font.color (Ui.rgb 120 120 140) ]
               (Ui.text
