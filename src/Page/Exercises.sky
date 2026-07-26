@@ -84,6 +84,7 @@ rowToExercise row =
 type Msg
     = CompletedExercisesFetch (Result Error (List ExerciseDb))
     | KeyTyped KeyEvent
+    | Quit
     | StartExercise String String
 
 
@@ -99,9 +100,6 @@ update toMsg msg model =
         CompletedExercisesFetch (Err e) ->
             ( { model | exercises = LoadFailed (Error.toString e) }, Cmd.none )
 
-        StartExercise _ _ ->
-            ( model, Cmd.none )
-
         KeyTyped keyEvent ->
             case model.newExercise of
 
@@ -114,11 +112,20 @@ update toMsg msg model =
                 NewExerciseFailed _ _ ->
                     handleNewExerciseKeypresses toMsg keyEvent model
 
+        Quit ->
+            ( model, Cmd.perform (Task.succeed ()) (\_ -> toMsg Quit) )
+
+        StartExercise _ _ ->
+            ( model, Cmd.none )
+
 
 handleListingKeypresses : (Msg -> parentMsg) -> KeyEvent -> Model -> ( Model, Cmd parentMsg )
 handleListingKeypresses toMsg keyEvent model =
     if keyEvent.kind == "char" && keyEvent.value == "n" then
         ( { model | newExercise = IsAdding "" }, Cmd.none )
+
+    else if keyEvent.kind == "char" && keyEvent.value == "q" then
+        update toMsg Quit model
 
     else if (keyEvent.kind == "char" && keyEvent.value == "j") || keyEvent.kind
         == "down" then
@@ -382,6 +389,7 @@ viewHints =
         , Ui.text "  k/↑   - previous exercise"
         , Ui.text "  enter - start exercise"
         , Ui.text "  n     - new exercise (from file)"
+        , Ui.text "  q     - quit"
         ]
 
 
