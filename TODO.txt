@@ -1,4 +1,6 @@
-- add exercises page (with the exercise text stored in the database)
+- add exercises page
+  - change of tack: don't store exercises in the database, just use the file system
+    - a list of exercises can be derived from attempts (which will be stored in the database)
 - add an attempts page
 - don't allow the same attempt to be saved more than once (gray out the option too)
 - maintain the 20 line height for content at all times
