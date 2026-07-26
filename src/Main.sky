@@ -28,7 +28,7 @@ main =
         }
 
 
-init : () -> ( AppModel, Cmd Msg )
+init : () -> ( Model, Cmd Msg )
 init _ =
     let
         _ = Database.db
@@ -49,10 +49,7 @@ resolveFullPath path =
 --
 -- MODEL
 --
---- COMPILER BUG WORKAROUND (Issue 4): Named AppModel instead of Model
---- because using Model whilst importing another module that also uses
---- Moel causes the issue
-type AppModel
+type Model
     = Exercise PageExercise.Model
     | Exercises PageExercises.Model
 
@@ -67,7 +64,7 @@ type Msg
     | NoOp
 
 
-update : Msg -> AppModel -> ( AppModel, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
 
@@ -101,7 +98,7 @@ update msg model =
             ( model, Cmd.none )
 
 
-handleKeyPressed : KeyEvent -> AppModel -> ( AppModel, Cmd Msg )
+handleKeyPressed : KeyEvent -> Model -> ( Model, Cmd Msg )
 handleKeyPressed keyEvent model =
     case model of
 
@@ -146,7 +143,7 @@ onKey keyEvent =
 --
 -- SUBSCRIPTIONS
 --
-subscriptions : AppModel -> Sub Msg
+subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
 
@@ -160,7 +157,7 @@ subscriptions model =
 --
 -- VIEW
 --
-view : AppModel -> Element Msg
+view : Model -> Element Msg
 view model =
     case model of
 
