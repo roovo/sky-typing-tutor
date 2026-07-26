@@ -1,11 +1,11 @@
-- don't allow the same attempt to be saved more than once (gray out the option too)
 - maintain the 20 line height for content at all times
   - even for shorter files
   - also when getting to the end of an exercise
 - show progress in the footer (lines and/or characters remaining - completed when finished)
-- add an attempts page
+- allow exercise to be deleted
 - do some other analysis: e.g. character most mistyped, slowest to type, isues with specific character combinations
-  store events in attempts
+- add an attempts page
+- store events in attempts
 - have some way of tracking with keyboard is being used
 - have a way to adjust the window size
 - generate drills based on performance

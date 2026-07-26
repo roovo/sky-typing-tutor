@@ -326,17 +326,6 @@ viewExerciseCompleted : Model -> Element msg
 viewExerciseCompleted model =
     let
         ex = exercise model
-        saveStatusText =
-            case model.exerciseState of
-
-                Saved _ ->
-                    "✓ Saved"
-
-                SaveFailed _ e ->
-                    "✗ Save failed: " ++ Error.toString e
-
-                _ ->
-                    ""
     in
         Ui.column
             [ Ui.spacing 8 ]
@@ -375,11 +364,35 @@ viewExerciseCompleted model =
             , Ui.column
                   [ Ui.spacing 0 ]
                   [ Ui.text "  r - re-run this exercise"
-                  , Ui.text ("  s - save results  " ++ saveStatusText)
+                  , viewSaveHint model.exerciseState
                   , Ui.text "  b - back to exersies list"
                   , Ui.text "  q - quit"
                   ]
             ]
+
+
+viewSaveHint : ExerciseState -> Element msg
+viewSaveHint state =
+    case state of
+
+        Saved _ ->
+            Ui.row
+                []
+                [ Ui.el
+                      [ Font.color (Ui.rgb 80 80 100) ]
+                      (Ui.text "  s - save results  ")
+                , Ui.el
+                      [ Font.color (Ui.rgb 100 180 100) ]
+                      (Ui.text "✓ Saved")
+                ]
+
+        SaveFailed _ e ->
+            Ui.el
+                [ Font.color (Ui.rgb 180 50 50) ]
+                (Ui.text ("  s - save results  ✗ Save failed: " ++ Error.toString e))
+
+        _ ->
+            Ui.text "  s - save results"
 
 
 hr =
