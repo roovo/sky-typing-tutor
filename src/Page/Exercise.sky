@@ -39,15 +39,20 @@ init session filename exerciseText =
 --
 type Msg
     = KeyTyped KeyEvent
+    | Quit
     | Restart
     | SaveComplete (Result Error Int)
     | SaveResults
+    | ShowExercises
     | Tick
 
 
 update : (Msg -> parentMsg) -> Msg -> Model -> ( Model, Cmd parentMsg )
 update toMsg msg model =
     case msg of
+
+        Quit ->
+            ( model, Cmd.none )
 
         KeyTyped keyEvent ->
             if Exercise.isComplete model.exercise then
@@ -83,6 +88,9 @@ update toMsg msg model =
                   (saveResult model.exercise)
                   (\r -> toMsg (SaveComplete r))
             )
+
+        ShowExercises ->
+            ( model, Cmd.none )
 
         Tick ->
             if List.isEmpty model.exercise.events then
@@ -144,6 +152,12 @@ handleCompletedKey toMsg keyEvent model =
 
     else if keyEvent.kind == "char" && keyEvent.value == "s" then
         update toMsg SaveResults model
+
+    else if keyEvent.kind == "char" && keyEvent.value == "b" then
+        update toMsg ShowExercises model
+
+    else if keyEvent.kind == "char" && keyEvent.value == "q" then
+        update toMsg Quit model
 
     else
         ( model, Cmd.none )
@@ -291,6 +305,8 @@ viewExerciseCompleted model =
               [ Ui.spacing 0 ]
               [ Ui.text "  r - re-run this exercise"
               , Ui.text ("  s - save results  " ++ model.saveStatus)
+              , Ui.text "  b - back to exersies list"
+              , Ui.text "  q - quit"
               ]
         ]
 
