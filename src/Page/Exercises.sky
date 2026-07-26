@@ -202,6 +202,15 @@ moveZipper fn status =
                 Nothing ->
                     status
 
+        OpenFailed _ maybeZipper ->
+            case maybeZipper of
+
+                Just zipper ->
+                    Loaded (Just (fn zipper))
+
+                Nothing ->
+                    status
+
         _ ->
             status
 
@@ -305,7 +314,8 @@ viewContent model =
                 (Ui.text ("Error: " ++ exerciseError))
 
         OpenFailed exerciseError zippedExercises ->
-            Ui.column []
+            Ui.column
+                []
                 [ foo zippedExercises
                 , Ui.el
                       [ Font.color (Ui.rgb 180 50 50) ]
