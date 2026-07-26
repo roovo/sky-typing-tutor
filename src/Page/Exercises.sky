@@ -127,6 +127,12 @@ handleListingKeypresses toMsg keyEvent model =
     else if keyEvent.kind == "char" && keyEvent.value == "q" then
         update toMsg Quit model
 
+    else if (keyEvent.kind == "char" && keyEvent.value == "h") || keyEvent.kind
+        == "left" then
+        ( { model | exercises = moveZipper Zipper.first model.exercises }
+        , Cmd.none
+        )
+
     else if (keyEvent.kind == "char" && keyEvent.value == "j") || keyEvent.kind
         == "down" then
         ( { model | exercises = moveZipper Zipper.next model.exercises }
@@ -135,6 +141,12 @@ handleListingKeypresses toMsg keyEvent model =
 
     else if (keyEvent.kind == "char" && keyEvent.value == "k") || keyEvent.kind == "up" then
         ( { model | exercises = moveZipper Zipper.previous model.exercises }
+        , Cmd.none
+        )
+
+    else if (keyEvent.kind == "char" && keyEvent.value == "l") || keyEvent.kind
+        == "right" then
+        ( { model | exercises = moveZipper Zipper.last model.exercises }
         , Cmd.none
         )
 
@@ -385,8 +397,10 @@ viewHints : Element msg
 viewHints =
     Ui.column
         [ Font.color (Ui.rgb 120 120 140), Ui.spacing 0 ]
-        [ Ui.text "  j/↓   - next exercise"
+        [ Ui.text "  h/←   - first exercise"
+        , Ui.text "  j/↓   - next exercise"
         , Ui.text "  k/↑   - previous exercise"
+        , Ui.text "  l/→   - last exercise"
         , Ui.text "  enter - start exercise"
         , Ui.text "  n     - new exercise (from file)"
         , Ui.text "  q     - quit"
