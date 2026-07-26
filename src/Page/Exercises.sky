@@ -235,17 +235,24 @@ viewContent model =
 
 viewExerciseRow : ExerciseDb -> Element msg
 viewExerciseRow exercise =
-    Ui.row
-        [ Ui.spacing 16 ]
-        [ Ui.el
-              [ Font.color (Ui.rgb 120 120 140) ]
-              (Ui.text (String.padRight 12 ' ' exercise.language))
-        , Ui.text exercise.fullPath
-        , Ui.el
-              [ Font.color (Ui.rgb 120 120 140) ]
-              (Ui.text
-                  ("(" ++ String.fromInt exercise.characterCount ++ " chars)"))
-        ]
+    let
+        filename =
+            String.split "/" exercise.fullPath
+                |> List.reverse
+                |> List.head
+                |> Maybe.withDefault exercise.fullPath
+    in
+        Ui.row
+            [ Ui.spacing 16 ]
+            [ Ui.text filename
+            , Ui.el
+                  [ Font.color (Ui.rgb 120 120 140) ]
+                  (Ui.text exercise.language)
+            , Ui.el
+                  [ Font.color (Ui.rgb 120 120 140) ]
+                  (Ui.text
+                      ("(" ++ String.fromInt exercise.characterCount ++ " chars)"))
+            ]
 
 
 viewHints : Element msg
