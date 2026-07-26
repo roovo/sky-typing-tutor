@@ -14,9 +14,8 @@ import Std.Ui.Font as Font
 -- MODEL
 --
 type alias Model =
-    { newExercisePath : String
-    , exercises : Status (List ExerciseDb)
-    , isAdding : Bool
+    { exercises : Status (List ExerciseDb)
+    , newExercise : NewExerciseStatus
     , session : Session
     }
 
@@ -24,6 +23,11 @@ type Status a
     = Loading
     | Loaded a
     | Failed String
+
+type NewExerciseStatus
+    = Dormant
+    | IsAdding String
+    | NewExerciseFailed String String
 
 type alias ExerciseDb =
     { fullPath : String
@@ -50,9 +54,8 @@ init toMsg session =
                 Err e ->
                     Failed (Error.toString e)
     in
-        ( { newExercisePath = ""
-          , exercises = exercises
-          , isAdding = False
+        ( { exercises = exercises
+          , newExercise = Dormant
           , session = session
           }
         , Cmd.none
@@ -89,17 +92,22 @@ update toMsg msg model =
             ( { model | exercises = Failed (Error.toString e) }, Cmd.none )
 
         KeyTyped keyEvent ->
-            if model.isAdding then
-                handleNewExerciseKeypresses keyEvent model
+            case model.newExercise of
 
-            else
-                handleListingKeypresses keyEvent model
+                Dormant ->
+                    handleListingKeypresses keyEvent model
+
+                IsAdding _ ->
+                    handleNewExerciseKeypresses keyEvent model
+
+                NewExerciseFailed _ _ ->
+                    handleNewExerciseKeypresses keyEvent model
 
 
 handleListingKeypresses : KeyEvent -> Model -> ( Model, Cmd msg )
 handleListingKeypresses keyEvent model =
     if keyEvent.kind == "char" && keyEvent.value == "n" then
-        ( { model | isAdding = True, newExercisePath = "" }, Cmd.none )
+        ( { model | newExercise = IsAdding "" }, Cmd.none )
 
     else
         ( model, Cmd.none )
@@ -107,24 +115,37 @@ handleListingKeypresses keyEvent model =
 
 handleNewExerciseKeypresses : KeyEvent -> Model -> ( Model, Cmd msg )
 handleNewExerciseKeypresses keyEvent model =
-    if keyEvent.kind == "char" || keyEvent.kind == "paste" then
-        ( { model | newExercisePath = model.newExercisePath ++ keyEvent.value }
-        , Cmd.none
-        )
+    let
+        currentPath =
+            case model.newExercise of
 
-    else if keyEvent.kind == "space" then
-        ( { model | newExercisePath = model.newExercisePath ++ " " }, Cmd.none )
+                IsAdding path ->
+                    path
 
-    else if keyEvent.kind == "backspace" then
-        ( { model | newExercisePath = String.dropRight 1 model.newExercisePath }
-        , Cmd.none
-        )
+                NewExerciseFailed _ path ->
+                    path
 
-    else if keyEvent.kind == "escape" then
-        ( { model | isAdding = False, newExercisePath = "" }, Cmd.none )
+                _ ->
+                    ""
+    in
+        if keyEvent.kind == "char" || keyEvent.kind == "paste" then
+            ( { model | newExercise = IsAdding (currentPath ++ keyEvent.value) }
+            , Cmd.none
+            )
 
-    else
-        ( model, Cmd.none )
+        else if keyEvent.kind == "space" then
+            ( { model | newExercise = IsAdding (currentPath ++ " ") }, Cmd.none )
+
+        else if keyEvent.kind == "backspace" then
+            ( { model | newExercise = IsAdding (String.dropRight 1 currentPath) }
+            , Cmd.none
+            )
+
+        else if keyEvent.kind == "escape" then
+            ( { model | newExercise = Dormant }, Cmd.none )
+
+        else
+            ( model, Cmd.none )
 
 
 --
@@ -138,11 +159,17 @@ view toMsg model =
         , Background.color (Ui.rgb 18 22 38)
         , Font.color (Ui.rgb 220 220 230)
         ]
-        (if model.isAdding then
-            [ viewHeading, viewAddExercise model.newExercisePath ]
+        (case model.newExercise of
 
-        else
-            [ viewHeading, viewContent model, viewHints ])
+            Dormant ->
+                [ viewHeading, viewContent model, viewHints ]
+
+            IsAdding path ->
+                [ viewHeading, viewAddExercise path "" ]
+
+            NewExerciseFailed err path ->
+                [ viewHeading, viewAddExercise path err ]
+        )
 
 
 viewHeading : Element msg
@@ -199,8 +226,8 @@ viewHints =
         (Ui.text "  n - new exercise (from file)")
 
 
-viewAddExercise : String -> Element msg
-viewAddExercise input =
+viewAddExercise : String -> String -> Element msg
+viewAddExercise input error =
     Ui.column
         [ Ui.spacing 8 ]
         [ Ui.text "New exercise (from file)"
@@ -210,7 +237,13 @@ viewAddExercise input =
               , Ui.text input
               , Ui.el [ Font.color (Ui.rgb 142 200 168) ] (Ui.text "▌")
               ]
-        , Ui.el
-              [ Font.color (Ui.rgb 120 120 140) ]
-              (Ui.text "  Enter to confirm · Escape to cancel")
+        , if error == "" then
+              Ui.el
+                  [ Font.color (Ui.rgb 120 120 140) ]
+                  (Ui.text "  Enter to confirm · Escape to cancel")
+
+          else
+              Ui.el
+                  [ Font.color (Ui.rgb 180 50 50) ]
+                  (Ui.text ("  Error: " ++ error))
         ]
