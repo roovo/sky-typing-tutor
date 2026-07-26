@@ -39,6 +39,8 @@ type alias ExerciseDb =
     { fullPath : String
     , characterCount : Int
     , language : String
+    , lastAccuracy : Float
+    , lastWpm : Float
     , lastAttempted : String
     }
 
@@ -75,6 +77,8 @@ rowToExercise row =
     { fullPath = Db.getString "full_path" row
     , characterCount = Db.getInt "character_count" row
     , language = Db.getString "language" row
+    , lastAccuracy = Db.getFloat "last_accuracy" row
+    , lastWpm = Db.getFloat "last_wpm" row
     , lastAttempted = Db.getString "last_attempted" row
     }
 
