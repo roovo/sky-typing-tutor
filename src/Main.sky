@@ -78,6 +78,9 @@ update msg model =
                     in
                         ( Exercises exercisesModel, cmd )
 
+                PageExercise.Quit ->
+                    ( model, Cmd.perform (System.exit 0) (\_ -> NoOp) )
+
                 _ ->
                     let
                         ( newSubModel, cmd ) =
