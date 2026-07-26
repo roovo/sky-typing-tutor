@@ -37,6 +37,7 @@ type alias ExerciseDb =
     { fullPath : String
     , characterCount : Int
     , language : String
+    , lastAttempted : String
     }
 
 
@@ -75,6 +76,7 @@ rowToExercise row =
     { fullPath = Db.getString "full_path" row
     , characterCount = Db.getInt "character_count" row
     , language = Db.getString "language" row
+    , lastAttempted = Db.getString "last_attempted" row
     }
 
 --
@@ -252,6 +254,9 @@ viewExerciseRow exercise =
                   [ Font.color (Ui.rgb 120 120 140) ]
                   (Ui.text
                       ("(" ++ String.fromInt exercise.characterCount ++ " chars)"))
+            , Ui.el
+                  [ Font.color (Ui.rgb 120 120 140) ]
+                  (Ui.text exercise.lastAttempted)
             ]
 
 
