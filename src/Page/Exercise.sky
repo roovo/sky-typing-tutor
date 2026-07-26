@@ -21,8 +21,7 @@ import Std.Ui.Font as Font
 --
 type alias Model =
     { elapsedTime : Int
-    , exercise : Exercise
-    , saveStatus : String
+    , exerciseState : ExerciseState
     , session : Session
     }
 
@@ -36,8 +35,7 @@ type ExerciseState
 init : Session -> String -> String -> Model
 init session filename exerciseText =
     { elapsedTime = 0
-    , exercise = Exercise.init filename exerciseText
-    , saveStatus = ""
+    , exerciseState = Running (Exercise.init filename exerciseText)
     , session = session
     }
 
@@ -54,6 +52,23 @@ type Msg
     | Tick
 
 
+exercise : Model -> Exercise
+exercise model =
+    case model.exerciseState of
+
+        Running ex ->
+            ex
+
+        Completed ex ->
+            ex
+
+        Saved ex ->
+            ex
+
+        SaveFailed ex _ ->
+            ex
+
+
 update : (Msg -> parentMsg) -> Msg -> Model -> ( Model, Cmd parentMsg )
 update toMsg msg model =
     case msg of
@@ -65,55 +80,87 @@ update toMsg msg model =
             if keyEvent.kind == "escape" then
                 update toMsg ShowExercises model
 
-            else if Exercise.isComplete model.exercise then
-                handleCompletedKey toMsg keyEvent model
-
             else
-                ( consumeKeyEvent keyEvent model, Cmd.none )
+                case model.exerciseState of
+
+                    Running ex ->
+                        let
+                            newModel = consumeKeyEvent keyEvent model
+                            newEx = exercise newModel
+                        in
+                            if Exercise.isComplete newEx then
+                                ( { newModel | exerciseState = Completed newEx }
+                                , Cmd.none
+                                )
+
+                            else
+                                ( newModel, Cmd.none )
+
+                    Completed _ ->
+                        handleCompletedKey toMsg keyEvent model
+
+                    Saved _ ->
+                        handleCompletedKey toMsg keyEvent model
+
+                    SaveFailed _ _ ->
+                        handleCompletedKey toMsg keyEvent model
 
         Restart ->
-            ( init
-                  model.session
-                  (Exercise.fullPath model.exercise)
-                  model.exercise.text
-            , Cmd.none
-            )
+            let
+                ex = exercise model
+            in
+                ( init model.session (Exercise.fullPath ex) ex.text, Cmd.none )
 
         SaveComplete result ->
             let
-                status =
-                    case result of
-
-                        Ok _ ->
-                            "✓ Saved"
-
-                        Err e ->
-                            "✗ Save failed: " ++ Error.toString e
+                ex = exercise model
             in
-                ( { model | saveStatus = status }, Cmd.none )
+                case result of
+
+                    Ok _ ->
+                        ( { model | exerciseState = Saved ex }, Cmd.none )
+
+                    Err e ->
+                        ( { model | exerciseState = SaveFailed ex e }
+                        , Cmd.none
+                        )
 
         SaveResults ->
-            ( model
-            , Cmd.perform
-                  (saveResult model.exercise)
-                  (\r -> toMsg (SaveComplete r))
-            )
+            case model.exerciseState of
+
+                Saved _ ->
+                    ( model, Cmd.none )
+
+                _ ->
+                    ( model
+                    , Cmd.perform
+                          (saveResult (exercise model))
+                          (\r -> toMsg (SaveComplete r))
+                    )
 
         ShowExercises ->
             ( model, Cmd.perform (Task.succeed ()) (\_ -> toMsg ShowExercises) )
 
         Tick ->
-            if List.isEmpty model.exercise.events then
-                ( model, Cmd.none )
+            case model.exerciseState of
 
-            else
-                ( { model | elapsedTime = model.elapsedTime + 10 }, Cmd.none )
+                Running ex ->
+                    if List.isEmpty ex.events then
+                        ( model, Cmd.none )
+
+                    else
+                        ( { model | elapsedTime = model.elapsedTime + 10 }
+                        , Cmd.none
+                        )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 consumeKeyEvent : KeyEvent -> Model -> Model
 consumeKeyEvent keyEvent model =
     let
-        -- charToConsume : Maybe Char
+        ex = exercise model
         charToConsume =
             if keyEvent.kind == "char" then
                 keyEvent.value |> String.toList |> List.head
@@ -133,12 +180,12 @@ consumeKeyEvent keyEvent model =
             case charToConsume of
 
                 Just ch ->
-                    Exercise.consume ch model.elapsedTime model.exercise
+                    Exercise.consume ch model.elapsedTime ex
 
                 Nothing ->
-                    model.exercise
+                    ex
     in
-        { model | exercise = newExercise, elapsedTime = 0 }
+        { model | exerciseState = Running newExercise, elapsedTime = 0 }
 
 
 saveResult : Exercise -> Task Error Int
@@ -197,37 +244,41 @@ view toMsg model =
 
 viewHeading : Model -> Element msg
 viewHeading model =
-    Ui.el
-        [ Ui.width Ui.fill
-        , Ui.padding 1
-        , Font.color (Ui.rgb 142 200 168)
-        , Border.width 1
-        , Border.color (Ui.rgb 142 200 168)
-        , Border.rounded 4
-        ]
-        (Ui.el
-            []
-            (Ui.text <| Exercise.fullPath model.exercise ++ " ("
-                ++ Exercise.language model.exercise
-                ++ ")"))
+    let
+        ex = exercise model
+    in
+        Ui.el
+            [ Ui.width Ui.fill
+            , Ui.padding 1
+            , Font.color (Ui.rgb 142 200 168)
+            , Border.width 1
+            , Border.color (Ui.rgb 142 200 168)
+            , Border.rounded 4
+            ]
+            (Ui.el
+                []
+                (Ui.text <| Exercise.fullPath ex ++ " (" ++ Exercise.language ex
+                    ++ ")"))
 
 
 viewFooter : Model -> Element msg
 viewFooter model =
-    Ui.el
-        [ Ui.width Ui.fill
-        , Ui.padding 1
-        , Font.color (Ui.rgb 142 200 168)
-        , Border.width 1
-        , Border.color (Ui.rgb 142 200 168)
-        , Border.rounded 4
-        ]
-        (Ui.el
-            []
-            (Ui.text <| "Accuracy: "
-                ++ formatFloat2dp (Exercise.accuracy model.exercise)
-                ++ "%    wpm: "
-                ++ formatFloat2dp (Exercise.wpm model.exercise)))
+    let
+        ex = exercise model
+    in
+        Ui.el
+            [ Ui.width Ui.fill
+            , Ui.padding 1
+            , Font.color (Ui.rgb 142 200 168)
+            , Border.width 1
+            , Border.color (Ui.rgb 142 200 168)
+            , Border.rounded 4
+            ]
+            (Ui.el
+                []
+                (Ui.text <| "Accuracy: " ++ formatFloat2dp (Exercise.accuracy ex)
+                    ++ "%    wpm: "
+                    ++ formatFloat2dp (Exercise.wpm ex)))
 
 
 formatFloat2dp : Float -> String
@@ -248,77 +299,87 @@ formatFloat2dp f =
 
 viewBody : Model -> Element msg
 viewBody model =
-    if Exercise.isComplete model.exercise then
-        viewExerciseCompleted model
+    case model.exerciseState of
 
-    else
-        viewExercise model
+        Running _ ->
+            viewExercise model
+
+        _ ->
+            viewExerciseCompleted model
 
 
 viewExercise : Model -> Element msg
 viewExercise model =
     let
+        ex = exercise model
         visibleLineCount =
             (Session.terminalLineHeight model.session)
                 - headerFooterPaddingLines
         linesBefore = visibleLineCount // 3
         linesAfter = visibleLineCount - linesBefore - 1
-        lines =
-            Exercise.printableLines linesBefore linesAfter model.exercise
+        lines = Exercise.printableLines linesBefore linesAfter ex
     in
         Ui.column [ Ui.spacing 0 ] (List.map viewLine lines)
 
 
 viewExerciseCompleted : Model -> Element msg
 viewExerciseCompleted model =
-    Ui.column
-        [ Ui.spacing 8 ]
-        [ Ui.column
-              [ Ui.spacing 4
-              , Ui.padding 16
-              , Border.width 1
-              , Border.color (Ui.rgb 142 200 168)
-              , Border.rounded 4
-              ]
-              [ Ui.el
-                    [ Font.bold, Font.color (Ui.rgb 142 200 168) ]
-                    (Ui.text "Exercise Completed!")
-              , Ui.column
-                    [ Ui.spacing 0 ]
-                    [ Ui.text
-                          ("Title:           "
-                              ++ Exercise.fullPath model.exercise)
-                    , Ui.text
-                          ("Language:        "
-                              ++ Exercise.language model.exercise)
-                    , Ui.text
-                          ("Character Count: "
-                              ++ (String.fromInt
-                                     <| Exercise.typeableCharacterCount
-                                            model.exercise))
-                    , Ui.text
-                          ("Accuracy:        "
-                              ++ formatFloat2dp
-                                     (Exercise.accuracy model.exercise)
-                              ++ "%")
-                    , Ui.text
-                          ("WPM:             "
-                              ++ formatFloat2dp (Exercise.wpm model.exercise))
-                    , Ui.text ""
-                    , Ui.text
-                          (Analysis.overallAssessment
-                              (toFloat <| Session.wpmTarget model.session)
-                              model.exercise)
-                    ]
-              ]
-        , Ui.column
-              [ Ui.spacing 0 ]
-              [ Ui.text "  r - re-run this exercise"
-              , Ui.text ("  s - save results  " ++ model.saveStatus)
-              , Ui.text "  b - back to exersies list"
-              , Ui.text "  q - quit"
-              ]
-        ]
+    let
+        ex = exercise model
+        saveStatusText =
+            case model.exerciseState of
+
+                Saved _ ->
+                    "✓ Saved"
+
+                SaveFailed _ e ->
+                    "✗ Save failed: " ++ Error.toString e
+
+                _ ->
+                    ""
+    in
+        Ui.column
+            [ Ui.spacing 8 ]
+            [ Ui.column
+                  [ Ui.spacing 4
+                  , Ui.padding 16
+                  , Border.width 1
+                  , Border.color (Ui.rgb 142 200 168)
+                  , Border.rounded 4
+                  ]
+                  [ Ui.el
+                        [ Font.bold, Font.color (Ui.rgb 142 200 168) ]
+                        (Ui.text "Exercise Completed!")
+                  , Ui.column
+                        [ Ui.spacing 0 ]
+                        [ Ui.text ("Title:           " ++ Exercise.fullPath ex)
+                        , Ui.text ("Language:        " ++ Exercise.language ex)
+                        , Ui.text
+                              ("Character Count: "
+                                  ++ (String.fromInt
+                                         <| Exercise.typeableCharacterCount ex))
+                        , Ui.text
+                              ("Accuracy:        "
+                                  ++ formatFloat2dp (Exercise.accuracy ex)
+                                  ++ "%")
+                        , Ui.text
+                              ("WPM:             "
+                                  ++ formatFloat2dp (Exercise.wpm ex))
+                        , Ui.text ""
+                        , Ui.text
+                              (Analysis.overallAssessment
+                                  (toFloat <| Session.wpmTarget model.session)
+                                  ex)
+                        ]
+                  ]
+            , Ui.column
+                  [ Ui.spacing 0 ]
+                  [ Ui.text "  r - re-run this exercise"
+                  , Ui.text ("  s - save results  " ++ saveStatusText)
+                  , Ui.text "  b - back to exersies list"
+                  , Ui.text "  q - quit"
+                  ]
+            ]
 
 
 hr =
