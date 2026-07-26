@@ -3,6 +3,8 @@ module Page.Exercises exposing (Model, Msg(..), init, update, view)
 import Database
 import Sky.Core.Error as Error exposing (Error)
 import Sky.Core.File as File
+import Sky.Core.Process as Process
+import Sky.Core.String as String
 import Sky.Core.Task as Task
 import Std.Cmd as Cmd
 import Std.Db as Db
@@ -154,11 +156,17 @@ handleNewExerciseKeypresses toMsg keyEvent model =
             case Task.run (File.readFile currentPath) of
 
                 Ok content ->
-                    ( { model | newExercise = Dormant }
-                    , Cmd.perform
-                          (Task.succeed ())
-                          (\_ -> toMsg (StartExercise currentPath content))
-                    )
+                    let
+                        fullPath =
+                            Task.run (Process.run "realpath" [ currentPath ])
+                                |> Result.withDefault currentPath
+                                |> String.trim
+                    in
+                        ( { model | newExercise = Dormant }
+                        , Cmd.perform
+                              (Task.succeed ())
+                              (\_ -> toMsg (StartExercise fullPath content))
+                        )
 
                 Err e ->
                     ( { model | newExercise = NewExerciseFailed (Error.toString e) currentPath }
