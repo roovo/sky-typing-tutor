@@ -345,7 +345,7 @@ foo zippedExercises =
 
         Just exercises ->
             Ui.column
-                [ Ui.spacing 4 ]
+                [ Ui.spacing 0 ]
                 (List.map (viewExerciseRow False) (Zipper.before exercises)
                     ++ [ viewExerciseRow True (Zipper.current exercises) ]
                     ++ List.map (viewExerciseRow False) (Zipper.after exercises))
