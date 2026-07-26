@@ -69,11 +69,21 @@ update msg model =
     case ( msg, model ) of
 
         ( GotExerciseMsg subMsg, Exercise subModel ) ->
-            let
-                ( newSubModel, cmd ) =
-                    PageExercise.update GotExerciseMsg subMsg subModel
-            in
-                ( Exercise newSubModel, cmd )
+            case subMsg of
+
+                PageExercise.ShowExercises ->
+                    let
+                        ( exercisesModel, cmd ) =
+                            PageExercises.init GotExercisesMsg subModel.session
+                    in
+                        ( Exercises exercisesModel, cmd )
+
+                _ ->
+                    let
+                        ( newSubModel, cmd ) =
+                            PageExercise.update GotExerciseMsg subMsg subModel
+                    in
+                        ( Exercise newSubModel, cmd )
 
         ( GotExerciseMsg _, _ ) ->
             ( model, Cmd.none )
@@ -90,7 +100,10 @@ update msg model =
                 _ ->
                     let
                         ( newSubModel, cmd ) =
-                            PageExercises.update GotExercisesMsg subMsg exercisesModel
+                            PageExercises.update
+                                GotExercisesMsg
+                                subMsg
+                                exercisesModel
                     in
                         ( Exercises newSubModel, cmd )
 
