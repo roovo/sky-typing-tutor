@@ -27,7 +27,7 @@ type alias Model =
 type Status a
     = Loading
     | Loaded a
-    | Failed String
+    | LoadFailed String
 
 type NewExerciseStatus
     = Dormant
@@ -58,7 +58,7 @@ init toMsg session =
                     Loaded (List.map rowToExercise rows |> Zipper.fromList)
 
                 Err e ->
-                    Failed (Error.toString e)
+                    LoadFailed (Error.toString e)
     in
         ( { exercises = exercises, newExercise = Dormant, session = session }
         , Cmd.none
@@ -96,7 +96,7 @@ update toMsg msg model =
             )
 
         CompletedExercisesFetch (Err e) ->
-            ( { model | exercises = Failed (Error.toString e) }, Cmd.none )
+            ( { model | exercises = LoadFailed (Error.toString e) }, Cmd.none )
 
         StartExercise _ _ ->
             ( model, Cmd.none )
@@ -154,11 +154,14 @@ handleOpenExercise toMsg model =
                                 ( model
                                 , Cmd.perform
                                       (Task.succeed ())
-                                      (\_ -> toMsg (StartExercise fullPath content))
+                                      (\_ ->
+                                          toMsg (StartExercise fullPath content))
                                 )
 
                             Err e ->
-                                ( { model | exercises = Failed e }, Cmd.none )
+                                ( { model | exercises = LoadFailed e }
+                                , Cmd.none
+                                )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -246,8 +249,7 @@ handleNewExerciseKeypresses toMsg keyEvent model =
                     )
 
                 Err e ->
-                    ( { model | newExercise = NewExerciseFailed e currentPath
-                      }
+                    ( { model | newExercise = NewExerciseFailed e currentPath }
                     , Cmd.none
                     )
 
@@ -295,7 +297,7 @@ viewContent : Model -> Element msg
 viewContent model =
     case model.exercises of
 
-        Failed exerciseError ->
+        LoadFailed exerciseError ->
             Ui.el
                 [ Font.color (Ui.rgb 180 50 50) ]
                 (Ui.text ("Error: " ++ exerciseError))

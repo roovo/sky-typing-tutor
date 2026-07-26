@@ -1,5 +1,6 @@
 - make the exercises selectable
 - add q to quit from the exercises page
+- add ability to go back to the Exercises page if Exercise has not started
 - make the exercises view a table with aligned columns (and a header)
 - don't allow the same attempt to be saved more than once (gray out the option too)
 - maintain the 20 line height for content at all times
