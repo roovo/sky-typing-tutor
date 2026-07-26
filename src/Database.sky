@@ -19,7 +19,7 @@ db =
 
             Ok conn ->
                 let
-                    _ = initSchema conn
+                    _ = Task.run (initSchema conn)
                 in
                     conn
 
@@ -34,25 +34,13 @@ db =
 initSchema conn =
     Db.execRaw
         conn
-        """CREATE TABLE IF NOT EXISTS exercises (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            language TEXT NOT NULL,
-            text TEXT NOT NULL,
-            character_count INTEGER NOT NULL,
-            completed_at TEXT NOT NULL,
-            UNIQUE (name, language)
-        )"""
-        |> Task.andThen
-               (\_ ->
-                   Db.execRaw
-                       conn
-                       """CREATE TABLE IF NOT EXISTS attempts (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    exercise_id INTEGER NOT NULL,
-                    accuracy REAL NOT NULL,
-                    wpm REAL NOT NULL,
-                    events TEXT NOT NULL,
-                    completed_at TEXT NOT NULL,
-                    FOREIGN KEY (exercise_id) REFERENCES exercises(id)
-                )""")
+        """CREATE TABLE IF NOT EXISTS attempts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          full_path TEXT NOT NULL,
+          character_count INTEGER NOT NULL,
+          language TEXT NOT NULL,
+          accuracy REAL NOT NULL,
+          wpm REAL NOT NULL,
+          events TEXT NOT NULL,
+          completed_at TEXT NOT NULL
+      )"""
