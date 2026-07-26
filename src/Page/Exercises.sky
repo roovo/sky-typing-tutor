@@ -335,7 +335,7 @@ viewContent model =
         OpenFailed exerciseError zippedExercises ->
             Ui.column
                 []
-                [ foo zippedExercises
+                [ viewExerciseTable zippedExercises
                 , Ui.el
                       [ Font.color (Ui.rgb 180 50 50) ]
                       (Ui.text ("Error: " ++ exerciseError))
@@ -345,30 +345,75 @@ viewContent model =
             Ui.text "Exercises loading"
 
         Loaded zippedExercises ->
-            foo zippedExercises
+            viewExerciseTable zippedExercises
 
 
-foo : Maybe (Zipper ExerciseDb) -> Element msg
-foo zippedExercises =
+viewExerciseTable : Maybe (Zipper ExerciseDb) -> Element msg
+viewExerciseTable zippedExercises =
     case zippedExercises of
 
         Nothing ->
             Ui.text "No exercises found."
 
         Just exercises ->
-            Ui.column
-                [ Ui.spacing 0 ]
-                (List.map (viewExerciseRow False) (Zipper.before exercises)
-                    ++ [ viewExerciseRow True (Zipper.current exercises) ]
-                    ++ List.map (viewExerciseRow False) (Zipper.after exercises))
+            let
+                allExercises = Zipper.toList exercises
+                widths = columnWidths allExercises
+            in
+                Ui.column
+                    [ Ui.spacing 0 ]
+                    (List.map
+                        (viewExerciseRow widths False)
+                        (Zipper.before exercises)
+                        ++ [ viewExerciseRow
+                                 widths
+                                 True
+                                 (Zipper.current exercises)
+                           ]
+                        ++ List.map
+                               (viewExerciseRow widths False)
+                               (Zipper.after exercises))
+
+type alias ColumnWidths =
+    { filename : Int
+    , language : Int
+    , chars : Int
+    }
 
 
-viewExerciseRow : Bool -> ExerciseDb -> Element msg
-viewExerciseRow isCurrent exercise =
+columnWidths : List ExerciseDb -> ColumnWidths
+columnWidths exercises =
+    { filename = maxLength (List.map exerciseFilename exercises)
+    , language = maxLength (List.map .language exercises)
+    , chars = maxLength (List.map charsLabel exercises)
+    }
+
+
+maxLength : List String -> Int
+maxLength strings =
+    List.foldl (\s acc -> Math.max (String.length s) acc) 0 strings
+
+
+exerciseFilename : ExerciseDb -> String
+exerciseFilename exercise =
+    String.split "/" exercise.fullPath |> List.reverse |> List.head
+        |> Maybe.withDefault exercise.fullPath
+
+
+charsLabel : ExerciseDb -> String
+charsLabel exercise =
+    String.fromInt exercise.characterCount ++ " chars"
+
+
+columnGap : Int
+columnGap =
+    3
+
+
+viewExerciseRow : ColumnWidths -> Bool -> ExerciseDb -> Element msg
+viewExerciseRow widths isCurrent exercise =
     let
-        filename =
-            String.split "/" exercise.fullPath |> List.reverse |> List.head
-                |> Maybe.withDefault exercise.fullPath
+        filename = exerciseFilename exercise
         cursor =
             if isCurrent then
                 "▶ "
@@ -377,19 +422,25 @@ viewExerciseRow isCurrent exercise =
                 "  "
     in
         Ui.row
-            [ Ui.spacing 16 ]
+            [ Ui.spacing 0 ]
             [ Ui.el [ Font.color (Ui.rgb 142 200 168) ] (Ui.text cursor)
-            , Ui.text filename
-            , Ui.el
-                  [ Font.color (Ui.rgb 120 120 140) ]
-                  (Ui.text exercise.language)
+            , Ui.text
+                  (String.padRight (widths.filename + columnGap) ' ' filename)
             , Ui.el
                   [ Font.color (Ui.rgb 120 120 140) ]
                   (Ui.text
-                      ("(" ++ String.fromInt exercise.characterCount ++ " chars)"))
+                      (String.padRight
+                          (widths.language + columnGap)
+                          ' '
+                          exercise.language))
             , Ui.el
                   [ Font.color (Ui.rgb 120 120 140) ]
-                  (Ui.text exercise.lastAttempted)
+                  (Ui.text
+                      ((charsLabel exercise) |> String.padLeft (widths.chars) ' '
+                          |> String.padRight (widths.chars + columnGap) ' '))
+            , Ui.el
+                  [ Font.color (Ui.rgb 120 120 140) ]
+                  (Ui.text <| String.dropRight 3 exercise.lastAttempted)
             ]
 
 
@@ -397,10 +448,10 @@ viewHints : Element msg
 viewHints =
     Ui.column
         [ Font.color (Ui.rgb 120 120 140), Ui.spacing 0 ]
-        [ Ui.text "  h/←   - first exercise"
-        , Ui.text "  j/↓   - next exercise"
-        , Ui.text "  k/↑   - previous exercise"
-        , Ui.text "  l/→   - last exercise"
+        [ Ui.text "  h/←   - top"
+        , Ui.text "  j/↓   - down"
+        , Ui.text "  k/↑   - up"
+        , Ui.text "  l/→   - bottom"
         , Ui.text "  enter - start exercise"
         , Ui.text "  n     - new exercise (from file)"
         , Ui.text "  q     - quit"
