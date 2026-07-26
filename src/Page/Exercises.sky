@@ -310,9 +310,12 @@ viewExerciseRow isCurrent exercise =
 
 viewHints : Element msg
 viewHints =
-    Ui.el
-        [ Font.color (Ui.rgb 120 120 140) ]
-        (Ui.text "  n - new exercise (from file)")
+    Ui.column
+        [ Font.color (Ui.rgb 120 120 140), Ui.spacing 0 ]
+        [ Ui.text "  j/↓ - next exercise"
+        , Ui.text "  k/↑ - previous exercise"
+        , Ui.text "  n   - new exercise (from file)"
+        ]
 
 
 viewAddExercise : String -> String -> Element msg
