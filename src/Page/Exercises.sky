@@ -119,12 +119,13 @@ handleListingKeypresses keyEvent model =
     if keyEvent.kind == "char" && keyEvent.value == "n" then
         ( { model | newExercise = IsAdding "" }, Cmd.none )
 
-    else if keyEvent.kind == "char" && keyEvent.value == "j" then
+    else if (keyEvent.kind == "char" && keyEvent.value == "j") || keyEvent.kind
+        == "down" then
         ( { model | exercises = moveZipper Zipper.next model.exercises }
         , Cmd.none
         )
 
-    else if keyEvent.kind == "char" && keyEvent.value == "k" then
+    else if (keyEvent.kind == "char" && keyEvent.value == "k") || keyEvent.kind == "up" then
         ( { model | exercises = moveZipper Zipper.previous model.exercises }
         , Cmd.none
         )
