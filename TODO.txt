@@ -2,6 +2,7 @@
   - even for shorter files
   - also when getting to the end of an exercise
 - show progress in the footer (lines and/or characters remaining - completed when finished)
+- 'pause' the exercise if there has been no input for a few seconds
 - allow exercise to be deleted
 - do some other analysis: e.g. character most mistyped, slowest to type, isues with specific character combinations
 - add an attempts page

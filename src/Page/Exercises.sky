@@ -50,7 +50,7 @@ init toMsg session =
             Task.run
                 (Db.query
                     Database.db
-                    "SELECT full_path, character_count, language, datetime(MAX(completed_at), 'localtime') as last_attempted FROM attempts GROUP BY full_path ORDER BY last_attempted DESC"
+                    "SELECT full_path, character_count, language, accuracy AS last_accuracy, wpm AS last_wpm, datetime(MAX(completed_at), 'localtime') AS last_attempted FROM attempts GROUP BY full_path ORDER BY last_attempted DESC"
                     [])
         exercises =
             case result of
