@@ -2,6 +2,8 @@ module Page.Exercises exposing (Model, Msg(..), init, update, view)
 
 import Database
 import Sky.Core.Error as Error exposing (Error)
+import Sky.Core.File as File
+import Sky.Core.Task as Task
 import Std.Cmd as Cmd
 import Std.Db as Db
 import Std.Ui as Ui
@@ -79,6 +81,7 @@ rowToExercise row =
 type Msg
     = CompletedExercisesFetch (Result Error (List ExerciseDb))
     | KeyTyped KeyEvent
+    | StartExercise String String
 
 
 update : (Msg -> parentMsg) -> Msg -> Model -> ( Model, Cmd parentMsg )
@@ -91,6 +94,9 @@ update toMsg msg model =
         CompletedExercisesFetch (Err e) ->
             ( { model | exercises = Failed (Error.toString e) }, Cmd.none )
 
+        StartExercise _ _ ->
+            ( model, Cmd.none )
+
         KeyTyped keyEvent ->
             case model.newExercise of
 
@@ -98,13 +104,13 @@ update toMsg msg model =
                     handleListingKeypresses keyEvent model
 
                 IsAdding _ ->
-                    handleNewExerciseKeypresses keyEvent model
+                    handleNewExerciseKeypresses toMsg keyEvent model
 
                 NewExerciseFailed _ _ ->
-                    handleNewExerciseKeypresses keyEvent model
+                    handleNewExerciseKeypresses toMsg keyEvent model
 
 
-handleListingKeypresses : KeyEvent -> Model -> ( Model, Cmd msg )
+handleListingKeypresses : KeyEvent -> Model -> ( Model, Cmd parentMsg )
 handleListingKeypresses keyEvent model =
     if keyEvent.kind == "char" && keyEvent.value == "n" then
         ( { model | newExercise = IsAdding "" }, Cmd.none )
@@ -113,8 +119,8 @@ handleListingKeypresses keyEvent model =
         ( model, Cmd.none )
 
 
-handleNewExerciseKeypresses : KeyEvent -> Model -> ( Model, Cmd msg )
-handleNewExerciseKeypresses keyEvent model =
+handleNewExerciseKeypresses : (Msg -> parentMsg) -> KeyEvent -> Model -> ( Model, Cmd parentMsg )
+handleNewExerciseKeypresses toMsg keyEvent model =
     let
         currentPath =
             case model.newExercise of
@@ -143,6 +149,21 @@ handleNewExerciseKeypresses keyEvent model =
 
         else if keyEvent.kind == "escape" then
             ( { model | newExercise = Dormant }, Cmd.none )
+
+        else if keyEvent.kind == "enter" then
+            case Task.run (File.readFile currentPath) of
+
+                Ok content ->
+                    ( { model | newExercise = Dormant }
+                    , Cmd.perform
+                          (Task.succeed ())
+                          (\_ -> toMsg (StartExercise currentPath content))
+                    )
+
+                Err e ->
+                    ( { model | newExercise = NewExerciseFailed (Error.toString e) currentPath }
+                    , Cmd.none
+                    )
 
         else
             ( model, Cmd.none )
