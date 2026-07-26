@@ -105,7 +105,7 @@ update toMsg msg model =
             case model.newExercise of
 
                 Dormant ->
-                    handleListingKeypresses keyEvent model
+                    handleListingKeypresses toMsg keyEvent model
 
                 IsAdding _ ->
                     handleNewExerciseKeypresses toMsg keyEvent model
@@ -114,8 +114,8 @@ update toMsg msg model =
                     handleNewExerciseKeypresses toMsg keyEvent model
 
 
-handleListingKeypresses : KeyEvent -> Model -> ( Model, Cmd parentMsg )
-handleListingKeypresses keyEvent model =
+handleListingKeypresses : (Msg -> parentMsg) -> KeyEvent -> Model -> ( Model, Cmd parentMsg )
+handleListingKeypresses toMsg keyEvent model =
     if keyEvent.kind == "char" && keyEvent.value == "n" then
         ( { model | newExercise = IsAdding "" }, Cmd.none )
 
@@ -130,8 +130,43 @@ handleListingKeypresses keyEvent model =
         , Cmd.none
         )
 
+    else if keyEvent.kind == "enter" then
+        handleOpenExercise toMsg model
+
     else
         ( model, Cmd.none )
+
+
+handleOpenExercise : (Msg -> parentMsg) -> Model -> ( Model, Cmd parentMsg )
+handleOpenExercise toMsg model =
+    case model.exercises of
+
+        Loaded maybeExercises ->
+            case maybeExercises of
+
+                Just exercises ->
+                    let
+                        exercise = Zipper.current exercises
+                    in
+                        case Task.run (File.readFile exercise.fullPath) of
+
+                            Ok content ->
+                                ( model
+                                , Cmd.perform
+                                      (Task.succeed ())
+                                      (\_ -> toMsg (StartExercise exercise.fullPath content))
+                                )
+
+                            Err e ->
+                                ( { model | exercises = Failed (Error.toString e) }
+                                , Cmd.none
+                                )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        _ ->
+            ( model, Cmd.none )
 
 
 moveZipper : (Zipper ExerciseDb -> Zipper ExerciseDb) -> Status (Maybe (Zipper ExerciseDb)) -> Status (Maybe (Zipper ExerciseDb))
@@ -312,9 +347,10 @@ viewHints : Element msg
 viewHints =
     Ui.column
         [ Font.color (Ui.rgb 120 120 140), Ui.spacing 0 ]
-        [ Ui.text "  j/↓ - next exercise"
-        , Ui.text "  k/↑ - previous exercise"
-        , Ui.text "  n   - new exercise (from file)"
+        [ Ui.text "  j/↓   - next exercise"
+        , Ui.text "  k/↑   - previous exercise"
+        , Ui.text "  enter - start exercise"
+        , Ui.text "  n     - new exercise (from file)"
         ]
 
 
