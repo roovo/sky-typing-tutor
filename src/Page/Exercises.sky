@@ -98,7 +98,7 @@ update toMsg msg model =
 
 handleListingKeypresses : KeyEvent -> Model -> ( Model, Cmd msg )
 handleListingKeypresses keyEvent model =
-    if keyEvent.kind == "char" && keyEvent.value == "a" then
+    if keyEvent.kind == "char" && keyEvent.value == "n" then
         ( { model | isAdding = True, newExercisePath = "" }, Cmd.none )
 
     else
@@ -168,7 +168,7 @@ viewContent model =
             Ui.text "Exercises loading"
 
         Loaded [] ->
-            Ui.text "No exercises found. Run an exercise first to add one."
+            Ui.text "No exercises found."
 
         Loaded exercises ->
             Ui.column [ Ui.spacing 4 ] (List.map viewExerciseRow exercises)
@@ -193,14 +193,14 @@ viewHints : Element msg
 viewHints =
     Ui.el
         [ Font.color (Ui.rgb 120 120 140) ]
-        (Ui.text "  a - add exercise from file")
+        (Ui.text "  n - new exercise (from file)")
 
 
 viewAddExercise : String -> Element msg
 viewAddExercise input =
     Ui.column
         [ Ui.spacing 8 ]
-        [ Ui.text "Add exercise from file"
+        [ Ui.text "New exercise (from file)"
         , Ui.row
               []
               [ Ui.el [ Font.color (Ui.rgb 142 200 168) ] (Ui.text "Path: ")
