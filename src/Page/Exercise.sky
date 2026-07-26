@@ -26,6 +26,12 @@ type alias Model =
     , session : Session
     }
 
+type ExerciseState
+    = Running Exercise
+    | Completed Exercise
+    | Saved Exercise
+    | SaveFailed Exercise Error
+
 
 init : Session -> String -> String -> Model
 init session filename exerciseText =
@@ -53,11 +59,7 @@ update toMsg msg model =
     case msg of
 
         Quit ->
-            ( model
-            , Cmd.perform
-                  (Task.succeed ())
-                  (\_ -> toMsg Quit)
-            )
+            ( model, Cmd.perform (Task.succeed ()) (\_ -> toMsg Quit) )
 
         KeyTyped keyEvent ->
             if keyEvent.kind == "escape" then
@@ -98,11 +100,7 @@ update toMsg msg model =
             )
 
         ShowExercises ->
-            ( model
-            , Cmd.perform
-                  (Task.succeed ())
-                  (\_ -> toMsg ShowExercises)
-            )
+            ( model, Cmd.perform (Task.succeed ()) (\_ -> toMsg ShowExercises) )
 
         Tick ->
             if List.isEmpty model.exercise.events then
