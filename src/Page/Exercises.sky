@@ -240,19 +240,33 @@ viewContent model =
                 Just exercises ->
                     Ui.column
                         [ Ui.spacing 4 ]
-                        (List.map viewExerciseRow (Zipper.toList exercises))
+                        (List.map
+                            (viewExerciseRow False)
+                            (Zipper.before exercises)
+                            ++ [ viewExerciseRow True (Zipper.current exercises)
+                               ]
+                            ++ List.map
+                                   (viewExerciseRow False)
+                                   (Zipper.after exercises))
 
 
-viewExerciseRow : ExerciseDb -> Element msg
-viewExerciseRow exercise =
+viewExerciseRow : Bool -> ExerciseDb -> Element msg
+viewExerciseRow isCurrent exercise =
     let
         filename =
             String.split "/" exercise.fullPath |> List.reverse |> List.head
                 |> Maybe.withDefault exercise.fullPath
+        cursor =
+            if isCurrent then
+                "▶ "
+
+            else
+                "  "
     in
         Ui.row
             [ Ui.spacing 16 ]
-            [ Ui.text filename
+            [ Ui.el [ Font.color (Ui.rgb 142 200 168) ] (Ui.text cursor)
+            , Ui.text filename
             , Ui.el
                   [ Font.color (Ui.rgb 120 120 140) ]
                   (Ui.text exercise.language)
