@@ -146,27 +146,42 @@ handleOpenExercise toMsg model =
 
                 Just exercises ->
                     let
-                        exercise = Zipper.current exercises
+                        path = (Zipper.current exercises).fullPath
                     in
-                        case Task.run (File.readFile exercise.fullPath) of
+                        case readExerciseFile path of
 
-                            Ok content ->
+                            Ok ( fullPath, content ) ->
                                 ( model
                                 , Cmd.perform
                                       (Task.succeed ())
-                                      (\_ -> toMsg (StartExercise exercise.fullPath content))
+                                      (\_ -> toMsg (StartExercise fullPath content))
                                 )
 
                             Err e ->
-                                ( { model | exercises = Failed (Error.toString e) }
-                                , Cmd.none
-                                )
+                                ( { model | exercises = Failed e }, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
+
+
+readExerciseFile : String -> Result String ( String, String )
+readExerciseFile path =
+    case Task.run (File.readFile path) of
+
+        Ok content ->
+            let
+                fullPath =
+                    Task.run (Process.run "realpath" [ path ])
+                        |> Result.withDefault path
+                        |> String.trim
+            in
+                Ok ( fullPath, content )
+
+        Err e ->
+            Err (Error.toString e)
 
 
 moveZipper : (Zipper ExerciseDb -> Zipper ExerciseDb) -> Status (Maybe (Zipper ExerciseDb)) -> Status (Maybe (Zipper ExerciseDb))
@@ -221,23 +236,17 @@ handleNewExerciseKeypresses toMsg keyEvent model =
             ( { model | newExercise = Dormant }, Cmd.none )
 
         else if keyEvent.kind == "enter" then
-            case Task.run (File.readFile currentPath) of
+            case readExerciseFile currentPath of
 
-                Ok content ->
-                    let
-                        fullPath =
-                            Task.run (Process.run "realpath" [ currentPath ])
-                                |> Result.withDefault currentPath
-                                |> String.trim
-                    in
-                        ( { model | newExercise = Dormant }
-                        , Cmd.perform
-                              (Task.succeed ())
-                              (\_ -> toMsg (StartExercise fullPath content))
-                        )
+                Ok ( fullPath, content ) ->
+                    ( { model | newExercise = Dormant }
+                    , Cmd.perform
+                          (Task.succeed ())
+                          (\_ -> toMsg (StartExercise fullPath content))
+                    )
 
                 Err e ->
-                    ( { model | newExercise = NewExerciseFailed (Error.toString e) currentPath
+                    ( { model | newExercise = NewExerciseFailed e currentPath
                       }
                     , Cmd.none
                     )
