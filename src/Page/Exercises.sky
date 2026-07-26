@@ -124,6 +124,11 @@ handleListingKeypresses keyEvent model =
         , Cmd.none
         )
 
+    else if keyEvent.kind == "char" && keyEvent.value == "k" then
+        ( { model | exercises = moveZipper Zipper.previous model.exercises }
+        , Cmd.none
+        )
+
     else
         ( model, Cmd.none )
 
