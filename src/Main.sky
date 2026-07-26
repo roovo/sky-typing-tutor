@@ -130,10 +130,7 @@ handleKeyPressed keyEvent model =
 -- ONKEY
 --
 onKey keyEvent =
-    if keyEvent.kind == "escape" then
-        Quit
-
-    else if keyEvent.kind == "ctrl" && keyEvent.value == "c" then
+    if keyEvent.kind == "ctrl" && keyEvent.value == "c" then
         Quit
 
     else

@@ -120,6 +120,9 @@ handleNewExerciseKeypresses keyEvent model =
         , Cmd.none
         )
 
+    else if keyEvent.kind == "escape" then
+        ( { model | isAdding = False, newExercisePath = "" }, Cmd.none )
+
     else
         ( model, Cmd.none )
 
