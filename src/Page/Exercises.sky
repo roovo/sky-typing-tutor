@@ -28,6 +28,7 @@ type Status a
     = Loading
     | Loaded a
     | LoadFailed String
+    | OpenFailed String a
 
 type NewExerciseStatus
     = Dormant
@@ -159,7 +160,8 @@ handleOpenExercise toMsg model =
                                 )
 
                             Err e ->
-                                ( { model | exercises = LoadFailed e }
+                                ( { model | exercises = OpenFailed e maybeExercises
+                                  }
                                 , Cmd.none
                                 )
 
@@ -302,26 +304,34 @@ viewContent model =
                 [ Font.color (Ui.rgb 180 50 50) ]
                 (Ui.text ("Error: " ++ exerciseError))
 
+        OpenFailed exerciseError zippedExercises ->
+            Ui.column []
+                [ foo zippedExercises
+                , Ui.el
+                      [ Font.color (Ui.rgb 180 50 50) ]
+                      (Ui.text ("Error: " ++ exerciseError))
+                ]
+
         Loading ->
             Ui.text "Exercises loading"
 
         Loaded zippedExercises ->
-            case zippedExercises of
+            foo zippedExercises
 
-                Nothing ->
-                    Ui.text "No exercises found."
 
-                Just exercises ->
-                    Ui.column
-                        [ Ui.spacing 4 ]
-                        (List.map
-                            (viewExerciseRow False)
-                            (Zipper.before exercises)
-                            ++ [ viewExerciseRow True (Zipper.current exercises)
-                               ]
-                            ++ List.map
-                                   (viewExerciseRow False)
-                                   (Zipper.after exercises))
+foo : Maybe (Zipper ExerciseDb) -> Element msg
+foo zippedExercises =
+    case zippedExercises of
+
+        Nothing ->
+            Ui.text "No exercises found."
+
+        Just exercises ->
+            Ui.column
+                [ Ui.spacing 4 ]
+                (List.map (viewExerciseRow False) (Zipper.before exercises)
+                    ++ [ viewExerciseRow True (Zipper.current exercises) ]
+                    ++ List.map (viewExerciseRow False) (Zipper.after exercises))
 
 
 viewExerciseRow : Bool -> ExerciseDb -> Element msg
