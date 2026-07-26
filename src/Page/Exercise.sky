@@ -60,7 +60,10 @@ update toMsg msg model =
             )
 
         KeyTyped keyEvent ->
-            if Exercise.isComplete model.exercise then
+            if keyEvent.kind == "escape" then
+                update toMsg ShowExercises model
+
+            else if Exercise.isComplete model.exercise then
                 handleCompletedKey toMsg keyEvent model
 
             else
