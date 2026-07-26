@@ -119,8 +119,30 @@ handleListingKeypresses keyEvent model =
     if keyEvent.kind == "char" && keyEvent.value == "n" then
         ( { model | newExercise = IsAdding "" }, Cmd.none )
 
+    else if keyEvent.kind == "char" && keyEvent.value == "j" then
+        ( { model | exercises = moveZipper Zipper.next model.exercises }
+        , Cmd.none
+        )
+
     else
         ( model, Cmd.none )
+
+
+moveZipper : (Zipper ExerciseDb -> Zipper ExerciseDb) -> Status (Maybe (Zipper ExerciseDb)) -> Status (Maybe (Zipper ExerciseDb))
+moveZipper fn status =
+    case status of
+
+        Loaded maybeZipper ->
+            case maybeZipper of
+
+                Just zipper ->
+                    Loaded (Just (fn zipper))
+
+                Nothing ->
+                    status
+
+        _ ->
+            status
 
 
 handleNewExerciseKeypresses : (Msg -> parentMsg) -> KeyEvent -> Model -> ( Model, Cmd parentMsg )
