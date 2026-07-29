@@ -16,16 +16,31 @@ windowedZipperTests =
     [ Test.test
           "windowedZipper returns beforeCurrentLineCount of 0 for a singleton"
           (\_ ->
-              TuiElements.windowedZipper 20 1 1 |> .beforeCurrentLineCount
+              TuiElements.windowedZipper 20 0 1 |> .beforeCurrentLineCount
                   |> Test.equal 0)
     , Test.test
           "windowedZipper returns afterCurrentLineCount of 0 for a singleton"
           (\_ ->
-              TuiElements.windowedZipper 20 1 1 |> .afterCurrentLineCount
+              TuiElements.windowedZipper 20 0 1 |> .afterCurrentLineCount
                   |> Test.equal 0)
     , Test.test
           "windowedZipper returns blankLineCount of 19 for a singleton when the totalLines is 20"
           (\_ ->
-              TuiElements.windowedZipper 20 1 1 |> .blankLineCount
+              TuiElements.windowedZipper 20 0 1 |> .blankLineCount
                   |> Test.equal 19)
+    , Test.test
+          "windowedZipper returns beforeCurrentLineCount of 0 for a 2 liner"
+          (\_ ->
+              TuiElements.windowedZipper 20 0 2 |> .beforeCurrentLineCount
+                  |> Test.equal 0)
+    , Test.test
+          "windowedZipper returns afterCurrentLineCount of 1 for a 2 liner"
+          (\_ ->
+              TuiElements.windowedZipper 20 0 2 |> .afterCurrentLineCount
+                  |> Test.equal 1)
+    , Test.test
+          "windowedZipper returns blankLineCount of 18 for 2 liner when the totalLines is 20"
+          (\_ ->
+              TuiElements.windowedZipper 20 0 2 |> .blankLineCount
+                  |> Test.equal 18)
     ]
