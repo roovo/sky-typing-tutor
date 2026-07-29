@@ -9,7 +9,7 @@ type alias WindowNumbers =
 
 windowedZipper : Int -> Int -> Int -> WindowNumbers
 windowedZipper windowLineCount currentLineIndex contentLineCount =
-    { beforeCurrentLineCount = 0
-    , afterCurrentLineCount = contentLineCount - 1
+    { beforeCurrentLineCount = currentLineIndex
+    , afterCurrentLineCount = contentLineCount - currentLineIndex - 1
     , blankLineCount = windowLineCount - contentLineCount
     }

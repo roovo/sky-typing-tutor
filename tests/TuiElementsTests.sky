@@ -29,18 +29,33 @@ windowedZipperTests =
               TuiElements.windowedZipper 20 0 1 |> .blankLineCount
                   |> Test.equal 19)
     , Test.test
-          "windowedZipper returns beforeCurrentLineCount of 0 for a 2 liner"
+          "windowedZipper returns beforeCurrentLineCount of 0 for being on line index 0 of a 2 liner"
           (\_ ->
               TuiElements.windowedZipper 20 0 2 |> .beforeCurrentLineCount
                   |> Test.equal 0)
     , Test.test
-          "windowedZipper returns afterCurrentLineCount of 1 for a 2 liner"
+          "windowedZipper returns afterCurrentLineCount of 1 for being on line index 0 of a 2 liner"
           (\_ ->
               TuiElements.windowedZipper 20 0 2 |> .afterCurrentLineCount
                   |> Test.equal 1)
     , Test.test
-          "windowedZipper returns blankLineCount of 18 for 2 liner when the totalLines is 20"
+          "windowedZipper returns blankLineCount of 18 for being on line index 0 of 2 liner when the totalLines is 20"
           (\_ ->
               TuiElements.windowedZipper 20 0 2 |> .blankLineCount
+                  |> Test.equal 18)
+    , Test.test
+          "windowedZipper returns beforeCurrentLineCount of 1 for being on line index 1 of a 2 liner"
+          (\_ ->
+              TuiElements.windowedZipper 20 1 2 |> .beforeCurrentLineCount
+                  |> Test.equal 1)
+    , Test.test
+          "windowedZipper returns afterCurrentLineCount of 0 for being on line index 1 of a 2 liner"
+          (\_ ->
+              TuiElements.windowedZipper 20 1 2 |> .afterCurrentLineCount
+                  |> Test.equal 0)
+    , Test.test
+          "windowedZipper returns blankLineCount of 18 for being on line index 1 of 2 liner when the totalLines is 20"
+          (\_ ->
+              TuiElements.windowedZipper 20 1 2 |> .blankLineCount
                   |> Test.equal 18)
     ]
