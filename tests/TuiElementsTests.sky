@@ -1,0 +1,31 @@
+module TuiElementsTests exposing (tests)
+
+import Sky.Core.Prelude exposing (..)
+import Sky.Test as Test exposing (Test)
+import TuiElements
+import Zipper
+
+
+tests : List Test
+tests =
+    windowedZipperTests
+
+
+windowedZipperTests : List Test
+windowedZipperTests =
+    [ Test.test
+          "windowedZipper returns beforeCurrentLineCount of 0 for a singleton"
+          (\_ ->
+              TuiElements.windowedZipper 20 1 1 |> .beforeCurrentLineCount
+                  |> Test.equal 0)
+    , Test.test
+          "windowedZipper returns afterCurrentLineCount of 0 for a singleton"
+          (\_ ->
+              TuiElements.windowedZipper 20 1 1 |> .afterCurrentLineCount
+                  |> Test.equal 0)
+    , Test.test
+          "windowedZipper returns blankLineCount of 19 for a singleton when the totalLines is 20"
+          (\_ ->
+              TuiElements.windowedZipper 20 1 1 |> .blankLineCount
+                  |> Test.equal 19)
+    ]

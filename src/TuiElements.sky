@@ -1,0 +1,15 @@
+module TuiElements exposing (WindowNumbers, windowedZipper)
+
+type alias WindowNumbers =
+    { beforeCurrentLineCount : Int
+    , afterCurrentLineCount : Int
+    , blankLineCount : Int
+    }
+
+
+windowedZipper : Int -> Int -> Int -> WindowNumbers
+windowedZipper displayLineCount currentLineIndex totalLines =
+    { beforeCurrentLineCount = 0
+    , afterCurrentLineCount = 0
+    , blankLineCount = 19
+    }
