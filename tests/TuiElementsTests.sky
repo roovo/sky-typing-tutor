@@ -88,4 +88,19 @@ windowedZipperTests =
           (\_ ->
               TuiElements.windowedZipper 10 3 10 |> .blankLineCount
                   |> Test.equal 0)
+    , Test.test
+          "windowedZipper returns beforeCurrentLineCount of 3 for being on line index 4 of a 10 liner"
+          (\_ ->
+              TuiElements.windowedZipper 10 4 10 |> .beforeCurrentLineCount
+                  |> Test.equal 3)
+    , Test.test
+          "windowedZipper returns afterCurrentLineCount of 5 for being on line index 4 of a 10 liner"
+          (\_ ->
+              TuiElements.windowedZipper 10 4 10 |> .afterCurrentLineCount
+                  |> Test.equal 5)
+    , Test.test
+          "windowedZipper returns blankLineCount of 1 for being on line index 4 of 10 liner when the totalLines is 10"
+          (\_ ->
+              TuiElements.windowedZipper 10 4 10 |> .blankLineCount
+                  |> Test.equal 1)
     ]

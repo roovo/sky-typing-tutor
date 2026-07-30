@@ -8,8 +8,18 @@ type alias WindowNumbers =
 
 
 windowedZipper : Int -> Int -> Int -> WindowNumbers
-windowedZipper windowLineCount currentLineIndex contentLineCount =
-    { beforeCurrentLineCount = currentLineIndex
-    , afterCurrentLineCount = contentLineCount - currentLineIndex - 1
-    , blankLineCount = windowLineCount - contentLineCount
-    }
+windowedZipper windowLineCount contentCurrentLineIndex contentLineCount =
+    let
+        windowMaxBeforeRowCount = windowLineCount // 3
+        windowCurrentLineIndex =
+            (Math.min contentCurrentLineIndex windowMaxBeforeRowCount)
+        contentAfterLineCount =
+            contentLineCount - contentCurrentLineIndex - 1
+        windowAfterLineCount = windowLineCount - windowCurrentLineIndex
+        afterCurrentLineCount =
+            Math.min contentAfterLineCount windowAfterLineCount
+    in
+        { beforeCurrentLineCount = windowCurrentLineIndex
+        , afterCurrentLineCount = afterCurrentLineCount
+        , blankLineCount = windowAfterLineCount - contentAfterLineCount - 1
+        }
