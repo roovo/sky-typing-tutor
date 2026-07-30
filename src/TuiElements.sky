@@ -15,11 +15,11 @@ windowedZipper windowLineCount contentCurrentLineIndex contentLineCount =
             (Math.min contentCurrentLineIndex windowMaxBeforeRowCount)
         contentAfterLineCount =
             contentLineCount - contentCurrentLineIndex - 1
-        windowAfterLineCount = windowLineCount - windowCurrentLineIndex
+        windowAfterLineCount = windowLineCount - windowCurrentLineIndex - 1
         afterCurrentLineCount =
             Math.min contentAfterLineCount windowAfterLineCount
     in
         { beforeCurrentLineCount = windowCurrentLineIndex
         , afterCurrentLineCount = afterCurrentLineCount
-        , blankLineCount = windowAfterLineCount - contentAfterLineCount - 1
+        , blankLineCount = Math.max (windowAfterLineCount - contentAfterLineCount) 0
         }
