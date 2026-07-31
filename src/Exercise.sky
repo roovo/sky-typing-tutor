@@ -323,7 +323,13 @@ splitIntoLines printables currentLine acc =
     case printables of
 
         [] ->
-            List.reverse (List.reverse currentLine :: acc)
+            case currentLine of
+
+                [] ->
+                    List.reverse acc
+
+                _ ->
+                    List.reverse (List.reverse currentLine :: acc)
 
         p :: rest ->
             case p of
@@ -348,60 +354,74 @@ splitIntoLines printables currentLine acc =
                     splitIntoLines rest (p :: currentLine) acc
 
 
-takeFirstNLines : Int -> List Step -> List Step
-takeFirstNLines n steps1 =
-    takeFirstNLinesHelper n steps1 0 []
+takeFirstNLines : Int -> Step -> List Step -> List Step
+takeFirstNLines n currentStep steps =
+    let
+        takeFirstNLinesHelper : Int -> List Step -> Int -> List Step -> List Step
+        takeFirstNLinesHelper n steps lineCount acc =
+            case steps of
 
+                [] ->
+                    List.reverse acc
 
-takeFirstNLinesHelper : Int -> List Step -> Int -> List Step -> List Step
-takeFirstNLinesHelper n steps1 lineCount acc =
-    case steps1 of
+                step :: rest ->
+                    if lineCount >= n then
+                        List.reverse acc
 
-        [] ->
-            List.reverse acc
+                    else
+                        let
+                            newLineCount =
+                                if isNewLineStep step then
+                                    lineCount + 1
 
-        step :: rest ->
-            if lineCount >= n then
-                List.reverse acc
+                                else
+                                    lineCount
+                        in
+                            takeFirstNLinesHelper
+                                n
+                                rest
+                                newLineCount
+                                (step :: acc)
+        wantedLineCount =
+            if isNewLineStep currentStep then
+                n
 
             else
-                let
-                    newLineCount =
-                        if isNewLineStep step then
-                            lineCount + 1
-
-                        else
-                            lineCount
-                in
-                    takeFirstNLinesHelper n rest newLineCount (step :: acc)
+                n + 1
+    in
+        takeFirstNLinesHelper wantedLineCount steps 0 []
 
 
 takeLastNLines : Int -> List Step -> List Step
-takeLastNLines n steps1 =
-    takeLastNLinesHelper n (List.reverse steps1) 0 []
+takeLastNLines n steps =
+    let
+        takeLastNLinesHelper : Int -> List Step -> Int -> List Step -> List Step
+        takeLastNLinesHelper n steps lineCount acc =
+            case steps of
 
+                [] ->
+                    acc
 
-takeLastNLinesHelper : Int -> List Step -> Int -> List Step -> List Step
-takeLastNLinesHelper n steps1 lineCount acc =
-    case steps1 of
+                step :: rest ->
+                    if lineCount >= n then
+                        acc |> List.drop 1
 
-        [] ->
-            acc
+                    else
+                        let
+                            newLineCount =
+                                if isNewLineStep step then
+                                    lineCount + 1
 
-        step :: rest ->
-            if lineCount >= n then
-                acc
-
-            else
-                let
-                    newLineCount =
-                        if isNewLineStep step then
-                            lineCount + 1
-
-                        else
-                            lineCount
-                in
-                    takeLastNLinesHelper n rest newLineCount (step :: acc)
+                                else
+                                    lineCount
+                        in
+                            takeLastNLinesHelper
+                                n
+                                rest
+                                newLineCount
+                                (step :: acc)
+    in
+        takeLastNLinesHelper (n + 1) (List.reverse steps) 0 []
 
 
 toFloat : Int -> Float
@@ -447,7 +467,10 @@ windowedPrintables linesBefore linesAfter exercise =
         windowedBefore =
             takeLastNLines linesBefore (Zipper.before exercise.steps)
         windowedAfter =
-            takeFirstNLines linesAfter (Zipper.after exercise.steps)
+            takeFirstNLines
+                linesAfter
+                (Zipper.current exercise.steps)
+                (Zipper.after exercise.steps)
         beforePrintables = List.map (toPrintable Completed) windowedBefore
         currentPrintable =
             [ toPrintable

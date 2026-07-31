@@ -533,6 +533,56 @@ printableLinesTests =
                            , UnstyledEnd
                            ]
                          ])
+    , Test.test
+          "printableLines handles windowing when at start of a line"
+          (\_ ->
+              exerciseWithText "ab\ncd\nef\ngh\nij" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'b' 0
+                  |> Exercise.consume enterChar 0
+                  |> Exercise.consume 'c' 0
+                  |> Exercise.consume 'd' 0
+                  |> Exercise.consume enterChar 0
+                  |> Exercise.printableLines 1 1
+                  |> Test.equal
+                         [ [ Styled "c" Completed
+                           , Styled "d" Completed
+                           , StyledEnter Completed
+                           ]
+                         , [ Styled "e" Current
+                           , Styled "f" Waiting
+                           , StyledEnter Waiting
+                           ]
+                         , [ Styled "g" Waiting
+                           , Styled "h" Waiting
+                           , StyledEnter Waiting
+                           ]
+                         ])
+    , Test.test
+          "printableLines handles windowing when at end of a line"
+          (\_ ->
+              exerciseWithText "ab\ncd\nef\ngh\nij" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'b' 0
+                  |> Exercise.consume enterChar 0
+                  |> Exercise.consume 'c' 0
+                  |> Exercise.consume 'd' 0
+                  |> Exercise.consume enterChar 0
+                  |> Exercise.consume 'e' 0
+                  |> Exercise.consume 'f' 0
+                  |> Exercise.printableLines 1 1
+                  |> Test.equal
+                         [ [ Styled "c" Completed
+                           , Styled "d" Completed
+                           , StyledEnter Completed
+                           ]
+                         , [ Styled "e" Completed
+                           , Styled "f" Completed
+                           , StyledEnter Current
+                           ]
+                         , [ Styled "g" Waiting
+                           , Styled "h" Waiting
+                           , StyledEnter Waiting
+                           ]
+                         ])
     ]
 
 
