@@ -9,6 +9,7 @@ module Exercise exposing
     , isComplete
     , language
     , printableLines
+    , printableLineCount
     , fullPath
     , typeableCharacterCount
     , wpm
@@ -167,6 +168,11 @@ language exercise =
 
         _ ->
             "unknown"
+
+
+printableLineCount : Exercise -> Int
+printableLineCount exercise =
+    0
 
 
 printableLines : Int -> Int -> Exercise -> List (List Printable)
