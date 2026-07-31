@@ -6,6 +6,7 @@ module Step exposing
     , initEmptyLine
     , initSkip
     , isEnd
+    , isEnter
     , isSkipable
     , isTypeable
     , matchesTyped
@@ -53,6 +54,28 @@ initSkip string =
 --
 -- PREDICATES
 --
+isEnd : Step -> Bool
+isEnd step =
+    case step of
+
+        End ->
+            True
+
+        _ ->
+            False
+
+
+isEnter : Step -> Bool
+isEnter step =
+    case step of
+
+        EnterChar ->
+            True
+
+        _ ->
+            False
+
+
 isSkipable : Step -> Bool
 isSkipable step =
     case step of
@@ -75,17 +98,6 @@ isTypeable step =
             True
 
         Typeable _ ->
-            True
-
-        _ ->
-            False
-
-
-isEnd : Step -> Bool
-isEnd step =
-    case step of
-
-        End ->
             True
 
         _ ->

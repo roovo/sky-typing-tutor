@@ -7,7 +7,8 @@ import Step
 
 tests : List Test
 tests =
-    isEndTests ++ isSkipableTests ++ isTypeableTests ++ matchesTypedTests
+    isEndTests ++ isEnterTests ++ isSkipableTests ++ isTypeableTests
+        ++ matchesTypedTests
 
 
 isEndTests : List Test
@@ -27,6 +28,26 @@ isEndTests =
     , Test.test
           "isEnd returns True for an End Step"
           (\_ -> Step.initEnd |> Step.isEnd |> Test.equal True)
+    ]
+
+
+isEnterTests : List Test
+isEnterTests =
+    [ Test.test
+          "isEnter returns False for a normal Step"
+          (\_ -> Step.init 'f' |> Step.isEnter |> Test.equal False)
+    , Test.test
+          "isEnter returns True for an EnterChar"
+          (\_ -> Step.initEnterChar |> Step.isEnter |> Test.equal True)
+    , Test.test
+          "isEnter returns False for an EmptyLine"
+          (\_ -> Step.initEmptyLine |> Step.isEnter |> Test.equal False)
+    , Test.test
+          "isEnter returns False for a Skip Step"
+          (\_ -> Step.initSkip "a" |> Step.isEnter |> Test.equal False)
+    , Test.test
+          "isEnter returns False for an End Step"
+          (\_ -> Step.initEnd |> Step.isEnter |> Test.equal False)
     ]
 
 
