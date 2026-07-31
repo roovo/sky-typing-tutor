@@ -125,4 +125,7 @@ splitIntoLinesTests =
     [ Test.test
           "splitIntoLines returns [] for an empty list of steps"
           (\_ -> [] |> Step.splitIntoLines |> Test.equal [])
+    , Test.test
+          "splitIntoLines returns [] for a singleton [ End ]"
+          (\_ -> [ Step.End ] |> Step.splitIntoLines |> Test.equal [])
     ]
