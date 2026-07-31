@@ -9,6 +9,7 @@ tests : List Test
 tests =
     isEndTests ++ isEnterTests ++ isSkipableTests ++ isTypeableTests
         ++ matchesTypedTests
+        ++ splitIntoLinesTests
 
 
 isEndTests : List Test
@@ -116,4 +117,12 @@ matchesTypedTests =
     , Test.test
           "matchesTyped returns False for an End Step"
           (\_ -> Step.initEnd |> Step.matchesTyped 'x' |> Test.equal False)
+    ]
+
+
+splitIntoLinesTests : List Test
+splitIntoLinesTests =
+    [ Test.test
+          "splitIntoLines returns [] for an empty list of steps"
+          (\_ -> [] |> Step.splitIntoLines |> Test.equal [])
     ]

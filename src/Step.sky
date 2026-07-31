@@ -10,6 +10,7 @@ module Step exposing
     , isSkipable
     , isTypeable
     , matchesTyped
+    , splitIntoLines
     )
 
 --
@@ -116,3 +117,11 @@ matchesTyped ch step =
 
         _ ->
             False
+
+
+--
+-- Step Lists
+--
+splitIntoLines : List Step -> List (List Step)
+splitIntoLines steps =
+    []
