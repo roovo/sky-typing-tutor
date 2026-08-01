@@ -13,6 +13,7 @@
 - have a way to adjust the window size
 - generate drills based on performance e
 - config file to hold targetWpm, language mappings, and default terminal height
+- factor out database stuff (look at new sky database stuff too)
 
 
 Desirable sky changes:

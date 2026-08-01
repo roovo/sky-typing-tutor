@@ -3,6 +3,7 @@ module Page.Exercise exposing (Model, Msg(..), init, view, update)
 import Analysis
 import Database
 import Exercise exposing (Exercise, Style(..))
+import Float.Extra as FE
 import KeyEvent exposing (KeyEvent)
 import Sky.Core.Error as Error exposing (Error)
 import Sky.Core.Task as Task
@@ -15,6 +16,14 @@ import Std.Ui exposing (Element)
 import Std.Ui.Background as Background
 import Std.Ui.Border as Border
 import Std.Ui.Font as Font
+
+
+init : Session -> String -> String -> Model
+init session filename exerciseText =
+    { elapsedTime = 0
+    , exerciseState = Running (Exercise.init filename exerciseText)
+    , session = session
+    }
 
 --
 -- MODEL
@@ -32,26 +41,6 @@ type ExerciseState
     | SaveFailed Exercise Error
 
 
-init : Session -> String -> String -> Model
-init session filename exerciseText =
-    { elapsedTime = 0
-    , exerciseState = Running (Exercise.init filename exerciseText)
-    , session = session
-    }
-
---
--- UPDATE
---
-type Msg
-    = KeyTyped KeyEvent
-    | Quit
-    | Restart
-    | SaveComplete (Result Error Int)
-    | SaveResults
-    | ShowExercises
-    | Tick
-
-
 exercise : Model -> Exercise
 exercise model =
     case model.exerciseState of
@@ -67,6 +56,18 @@ exercise model =
 
         SaveFailed ex _ ->
             ex
+
+--
+-- UPDATE
+--
+type Msg
+    = KeyTyped KeyEvent
+    | Quit
+    | Restart
+    | SaveComplete (Result Error Int)
+    | SaveResults
+    | ShowExercises
+    | Tick
 
 
 update : (Msg -> parentMsg) -> Msg -> Model -> ( Model, Cmd parentMsg )
@@ -221,16 +222,13 @@ handleCompletedKey toMsg keyEvent model =
 
 
 --
--- CONSTANTS
+-- VIEW
 --
 headerFooterPaddingLines : Int
 headerFooterPaddingLines =
     16
 
 
---
--- VIEW
---
 view : (Msg -> parentMsg) -> Model -> Element parentMsg
 view toMsg model =
     Ui.column
@@ -276,25 +274,9 @@ viewFooter model =
             ]
             (Ui.el
                 []
-                (Ui.text <| "Accuracy: " ++ formatFloat2dp (Exercise.accuracy ex)
+                (Ui.text <| "Accuracy: " ++ FE.toString 2 (Exercise.accuracy ex)
                     ++ "%    wpm: "
-                    ++ formatFloat2dp (Exercise.wpm ex)))
-
-
-formatFloat2dp : Float -> String
-formatFloat2dp f =
-    let
-        rounded = Math.round (f * 100.0)
-        whole = rounded // 100
-        frac = Math.abs (rounded - whole * 100)
-        fracStr =
-            if frac < 10 then
-                "0" ++ String.fromInt frac
-
-            else
-                String.fromInt frac
-    in
-        String.fromInt whole ++ "." ++ fracStr
+                    ++ FE.toString 2 (Exercise.wpm ex)))
 
 
 viewBody : Model -> Element msg
@@ -349,15 +331,15 @@ viewExerciseCompleted model =
                                          <| Exercise.typeableCharacterCount ex))
                         , Ui.text
                               ("Accuracy:        "
-                                  ++ formatFloat2dp (Exercise.accuracy ex)
+                                  ++ FE.toString 2 (Exercise.accuracy ex)
                                   ++ "%")
                         , Ui.text
                               ("WPM:             "
-                                  ++ formatFloat2dp (Exercise.wpm ex))
+                                  ++ FE.toString 2 (Exercise.wpm ex))
                         , Ui.text ""
                         , Ui.text
                               (Analysis.overallAssessment
-                                  (toFloat <| Session.wpmTarget model.session)
+                                  (FE.fromInt <| Session.wpmTarget model.session)
                                   ex)
                         ]
                   ]
@@ -381,15 +363,14 @@ viewSaveHint state =
                 [ Ui.el
                       [ Font.color (Ui.rgb 80 80 100) ]
                       (Ui.text "  s - save results  ")
-                , Ui.el
-                      [ Font.color (Ui.rgb 100 180 100) ]
-                      (Ui.text "✓ Saved")
+                , Ui.el [ Font.color (Ui.rgb 100 180 100) ] (Ui.text "✓ Saved")
                 ]
 
         SaveFailed _ e ->
             Ui.el
                 [ Font.color (Ui.rgb 180 50 50) ]
-                (Ui.text ("  s - save results  ✗ Save failed: " ++ Error.toString e))
+                (Ui.text
+                    ("  s - save results  ✗ Save failed: " ++ Error.toString e))
 
         _ ->
             Ui.text "  s - save results"
@@ -449,11 +430,3 @@ styleAttrs style =
 
         Exercise.Unstyled ->
             []
-
-
---
--- PRIVATE
---
-toFloat : Int -> Float
-toFloat n =
-    String.fromInt n |> String.toFloat |> Maybe.withDefault 0.0
