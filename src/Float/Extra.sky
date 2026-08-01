@@ -13,4 +13,8 @@ toString decimalPlaces float =
         frac = Math.abs (rounded - whole * Math.round factor)
         fracStr = String.padLeft decimalPlaces '0' (String.fromInt frac)
     in
-        String.fromInt whole ++ "." ++ fracStr
+        if decimalPlaces > 0 then
+            String.fromInt whole ++ "." ++ fracStr
+
+        else
+            String.fromInt whole
