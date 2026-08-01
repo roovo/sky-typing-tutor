@@ -33,6 +33,7 @@ type Status a
 type SelectedExerciseStatus
     = Dormant
     | IsAdding String
+    | IsDeleting
     | NewExerciseFailed String String
 
 type alias ExerciseDb =
@@ -115,6 +116,9 @@ update toMsg msg model =
 
                 IsAdding _ ->
                     handleNewExerciseKeypresses toMsg keyEvent model
+
+                IsDeleting ->
+                    ( model, Cmd.none )
 
                 NewExerciseFailed _ _ ->
                     handleNewExerciseKeypresses toMsg keyEvent model
@@ -314,6 +318,9 @@ view toMsg model =
 
             IsAdding path ->
                 [ viewHeading, viewAddExercise path "" ]
+
+            IsDeleting ->
+                [ viewHeading, Ui.text "Delete exercise requested" ]
 
             NewExerciseFailed err path ->
                 [ viewHeading, viewAddExercise path err ])
