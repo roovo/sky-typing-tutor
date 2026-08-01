@@ -41,7 +41,10 @@ timeTakenTests =
     , Test.test
           "timeTaken returns the sum of the times for all consumed chars (including backspaces)"
           (\_ ->
-              eventsWithCorrectedMistake |> Event.timeTaken |> Test.equal 120000)
+              eventsWithCorrectedMistake |> Event.timeTaken |> Test.equal 12000)
+    , Test.test
+          "timeTaken ignores steps that take more than 3 seconds"
+          (\_ -> eventsWithLongStep |> Event.timeTaken |> Test.equal 10000)
     ]
 
 
@@ -60,16 +63,31 @@ enterChar =
 
 eventsWithCorrectedMistake : List Event
 eventsWithCorrectedMistake =
-    [ Event 'a' 10000
-    , Event 'b' 10000
-    , Event 'c' 10000
-    , Event ' ' 10000
-    , Event 'd' 10000
-    , Event 'd' 10000
-    , Event backspaceChar 10000
-    , Event 'e' 10000
-    , Event 'f' 10000
-    , Event ' ' 10000
-    , Event 'g' 10000
-    , Event 'h' 10000
+    [ Event 'a' 1000
+    , Event 'b' 1000
+    , Event 'c' 1000
+    , Event ' ' 1000
+    , Event 'd' 1000
+    , Event 'd' 1000
+    , Event backspaceChar 1000
+    , Event 'e' 1000
+    , Event 'f' 1000
+    , Event ' ' 1000
+    , Event 'g' 1000
+    , Event 'h' 1000
+    ]
+
+
+eventsWithLongStep : List Event
+eventsWithLongStep =
+    [ Event 'a' 1000
+    , Event 'b' 1000
+    , Event 'c' 1000
+    , Event ' ' 1000
+    , Event 'd' 3000
+    , Event 'e' 2000
+    , Event 'f' 1000
+    , Event ' ' 1000
+    , Event 'g' 1000
+    , Event 'h' 1000
     ]

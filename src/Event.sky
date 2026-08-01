@@ -13,7 +13,8 @@ howManyTyped events =
 
 timeTaken : List Event -> Int
 timeTaken events =
-    List.foldl (\e acc -> e.timeTaken + acc) 0 events
+    events |> List.filter (\e -> e.timeTaken < 3000)
+        |> List.foldl (\e acc -> e.timeTaken + acc) 0
 
 
 --

@@ -680,6 +680,16 @@ wpmTests =
                   |> Exercise.consume 'e' 100
                   |> Exercise.wpm
                   |> Test.equal 60.0)
+    , Test.test
+          "wpm ignores steps that take 3 seconds or more to complete"
+          (\_ ->
+              exerciseWithText "abcde" |> Exercise.consume 'a' 0
+                  |> Exercise.consume 'b' 400
+                  |> Exercise.consume 'c' 3000
+                  |> Exercise.consume 'd' 400
+                  |> Exercise.consume 'e' 200
+                  |> Exercise.wpm
+                  |> Test.equal 60.0)
     ]
 
 

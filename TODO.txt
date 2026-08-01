@@ -1,8 +1,8 @@
-- 'pause' the exercise if there has been no input for a few seconds
 - allow exercise to be deleted
+- add windowing for the Exercise list on Page.Exercises
 - do some other analysis: e.g. character most mistyped, slowest to type, isues with specific character combinations
-- add an attempts page
 - store events in attempts
+- add an attempts page
 - factor out database stuff (look at new sky database stuff too)
 - have some way of tracking with keyboard is being used
 - have a way to adjust the window size
