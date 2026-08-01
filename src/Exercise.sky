@@ -166,9 +166,9 @@ printableLineCount exercise =
 
 
 printableLines : Int -> Int -> Exercise -> List (List Printable)
-printableLines linesBefore linesAfter exercise =
+printableLines beforeLineCount afterLineCount exercise =
     Printable.splitIntoLines
-        (windowedPrintables linesBefore linesAfter exercise)
+        (windowedPrintables beforeLineCount afterLineCount exercise)
 
 
 fullPath : Exercise -> String
@@ -315,76 +315,6 @@ skipOver direction steps1 =
             newSteps
 
 
-takeFirstNLines : Int -> Step -> List Step -> List Step
-takeFirstNLines n currentStep steps =
-    let
-        takeFirstNLinesHelper : Int -> List Step -> Int -> List Step -> List Step
-        takeFirstNLinesHelper n steps lineCount acc =
-            case steps of
-
-                [] ->
-                    List.reverse acc
-
-                step :: rest ->
-                    if lineCount >= n then
-                        List.reverse acc
-
-                    else
-                        let
-                            newLineCount =
-                                if isNewLineStep step then
-                                    lineCount + 1
-
-                                else
-                                    lineCount
-                        in
-                            takeFirstNLinesHelper
-                                n
-                                rest
-                                newLineCount
-                                (step :: acc)
-        wantedLineCount =
-            if isNewLineStep currentStep then
-                n
-
-            else
-                n + 1
-    in
-        takeFirstNLinesHelper wantedLineCount steps 0 []
-
-
-takeLastNLines : Int -> List Step -> List Step
-takeLastNLines n steps =
-    let
-        takeLastNLinesHelper : Int -> List Step -> Int -> List Step -> List Step
-        takeLastNLinesHelper n steps lineCount acc =
-            case steps of
-
-                [] ->
-                    acc
-
-                step :: rest ->
-                    if lineCount >= n then
-                        acc |> List.drop 1
-
-                    else
-                        let
-                            newLineCount =
-                                if isNewLineStep step then
-                                    lineCount + 1
-
-                                else
-                                    lineCount
-                        in
-                            takeLastNLinesHelper
-                                n
-                                rest
-                                newLineCount
-                                (step :: acc)
-    in
-        takeLastNLinesHelper (n + 1) (List.reverse steps) 0 []
-
-
 toInitialStep : Zipper Step -> Zipper Step
 toInitialStep zippedSteps =
     let
@@ -398,26 +328,22 @@ toInitialStep zippedSteps =
 
 
 windowedPrintables : Int -> Int -> Exercise -> List Printable
-windowedPrintables linesBefore linesAfter exercise =
+windowedPrintables beforeLineCount afterLineCount exercise =
     let
         windowedBefore =
-            takeLastNLines linesBefore (Zipper.before exercise.steps)
+            exercise.steps |> Zipper.before
+                |> List.map (Printable.fromStep Printable.Completed)
+                |> Printable.takeLastLines beforeLineCount
         windowedAfter =
-            takeFirstNLines
-                linesAfter
-                (Zipper.current exercise.steps)
-                (Zipper.after exercise.steps)
-        beforePrintables =
-            List.map (Printable.fromStep Printable.Completed) windowedBefore
+            exercise.steps |> Zipper.after
+                |> List.indexedMap (afterPrintable exercise.errorCount)
+                |> Printable.takeFirstLines afterLineCount currentPrintable
         currentPrintable =
-            [ Printable.fromStep
-                  (currentStepStyle exercise.errorCount)
-                  (Zipper.current exercise.steps)
-            ]
-        afterPrintables =
-            List.indexedMap (afterPrintable exercise.errorCount) windowedAfter
+            Printable.fromStep
+                (currentStepStyle exercise.errorCount)
+                (Zipper.current exercise.steps)
     in
-        beforePrintables ++ currentPrintable ++ afterPrintables
+        windowedBefore ++ [ currentPrintable ] ++ windowedAfter
 
 
 zipperMover : Direction -> Zipper Step -> Zipper Step
