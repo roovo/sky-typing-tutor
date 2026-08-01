@@ -20,7 +20,7 @@ import Zipper
 --
 type alias Model =
     { exercises : Status (Maybe (Zipper ExerciseDb))
-    , newExercise : NewExerciseStatus
+    , selectedExerciseStatus : SelectedExerciseStatus
     , session : Session
     }
 
@@ -30,7 +30,7 @@ type Status a
     | LoadFailed String
     | OpenFailed String a
 
-type NewExerciseStatus
+type SelectedExerciseStatus
     = Dormant
     | IsAdding String
     | NewExerciseFailed String String
@@ -63,7 +63,10 @@ init toMsg session =
                 Err e ->
                     LoadFailed (Error.toString e)
     in
-        ( { exercises = exercises, newExercise = Dormant, session = session }
+        ( { exercises = exercises
+          , selectedExerciseStatus = Dormant
+          , session = session
+          }
         , Cmd.none
         )
 
@@ -105,7 +108,7 @@ update toMsg msg model =
             ( { model | exercises = LoadFailed (Error.toString e) }, Cmd.none )
 
         KeyTyped keyEvent ->
-            case model.newExercise of
+            case model.selectedExerciseStatus of
 
                 Dormant ->
                     handleListingKeypresses toMsg keyEvent model
@@ -126,7 +129,7 @@ update toMsg msg model =
 handleListingKeypresses : (Msg -> parentMsg) -> KeyEvent -> Model -> ( Model, Cmd parentMsg )
 handleListingKeypresses toMsg keyEvent model =
     if keyEvent.kind == "char" && keyEvent.value == "n" then
-        ( { model | newExercise = IsAdding "" }, Cmd.none )
+        ( { model | selectedExerciseStatus = IsAdding "" }, Cmd.none )
 
     else if keyEvent.kind == "char" && keyEvent.value == "q" then
         update toMsg Quit model
@@ -242,7 +245,7 @@ handleNewExerciseKeypresses : (Msg -> parentMsg) -> KeyEvent -> Model -> ( Model
 handleNewExerciseKeypresses toMsg keyEvent model =
     let
         currentPath =
-            case model.newExercise of
+            case model.selectedExerciseStatus of
 
                 IsAdding path ->
                     path
@@ -254,36 +257,38 @@ handleNewExerciseKeypresses toMsg keyEvent model =
                     ""
     in
         if keyEvent.kind == "char" || keyEvent.kind == "paste" then
-            ( { model | newExercise = IsAdding (currentPath ++ keyEvent.value) }
+            ( { model | selectedExerciseStatus = IsAdding (currentPath ++ keyEvent.value)
+              }
             , Cmd.none
             )
 
         else if keyEvent.kind == "space" then
-            ( { model | newExercise = IsAdding (currentPath ++ " ") }
+            ( { model | selectedExerciseStatus = IsAdding (currentPath ++ " ") }
             , Cmd.none
             )
 
         else if keyEvent.kind == "backspace" then
-            ( { model | newExercise = IsAdding (String.dropRight 1 currentPath)
+            ( { model | selectedExerciseStatus = IsAdding (String.dropRight 1 currentPath)
               }
             , Cmd.none
             )
 
         else if keyEvent.kind == "escape" then
-            ( { model | newExercise = Dormant }, Cmd.none )
+            ( { model | selectedExerciseStatus = Dormant }, Cmd.none )
 
         else if keyEvent.kind == "enter" then
             case readExerciseFile currentPath of
 
                 Ok ( fullPath, content ) ->
-                    ( { model | newExercise = Dormant }
+                    ( { model | selectedExerciseStatus = Dormant }
                     , Cmd.perform
                           (Task.succeed ())
                           (\_ -> toMsg (StartExercise fullPath content))
                     )
 
                 Err e ->
-                    ( { model | newExercise = NewExerciseFailed e currentPath }
+                    ( { model | selectedExerciseStatus = NewExerciseFailed e currentPath
+                      }
                     , Cmd.none
                     )
 
@@ -302,7 +307,7 @@ view toMsg model =
         , Background.color (Ui.rgb 18 22 38)
         , Font.color (Ui.rgb 220 220 230)
         ]
-        (case model.newExercise of
+        (case model.selectedExerciseStatus of
 
             Dormant ->
                 [ viewHeading, viewContent model, viewHints ]
