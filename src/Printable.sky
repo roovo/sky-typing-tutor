@@ -37,3 +37,38 @@ fromStep style step =
 splitIntoLines : List Printable -> List (List Preintable)
 splitIntoLines printables =
     []
+
+-- splitIntoLines : List Printable -> List Printable -> List (List Printable) -> List (List Printable)
+-- splitIntoLines printables currentLine acc =
+--     case printables of
+--
+--         [] ->
+--             case currentLine of
+--
+--                 [] ->
+--                     List.reverse acc
+--
+--                 _ ->
+--                     List.reverse (List.reverse currentLine :: acc)
+--
+--         p :: rest ->
+--             case p of
+--
+--                 StyledEnter _ ->
+--                     splitIntoLines
+--                         rest
+--                         []
+--                         (List.reverse (p :: currentLine) :: acc)
+--
+--                 UnstyledEmptyLine ->
+--                     if List.isEmpty currentLine then
+--                         splitIntoLines rest [] ([ p ] :: acc)
+--
+--                     else
+--                         splitIntoLines
+--                             rest
+--                             []
+--                             ([ p ] :: List.reverse currentLine :: acc)
+--
+--                 _ ->
+--                     splitIntoLines rest (p :: currentLine) acc
