@@ -18,6 +18,7 @@ module Exercise exposing
 import Sky.Core.Debug as Debug
 import Event exposing (Event)
 import ExerciseParser
+import Float.Extra as FE
 import Step
 import Zipper
 
@@ -73,7 +74,8 @@ accuracy exercise =
             0.0
 
         n ->
-            (toFloat <| howManyCharactersSoFar exercise) / toFloat n * 100.0
+            (FE.fromInt <| howManyCharactersSoFar exercise) / FE.fromInt n
+                * 100.0
 
 
 currentLineIndex : Exercise -> Int
@@ -200,7 +202,7 @@ wpm exercise =
             0.0
 
         else
-            howManyWordsSoFar exercise / (toFloat timeTaken) * 60000.0
+            howManyWordsSoFar exercise / (FE.fromInt timeTaken) * 60000.0
 
 
 --
@@ -282,7 +284,7 @@ howManyCharactersSoFar exercise =
 
 howManyWordsSoFar : Exercise -> Float
 howManyWordsSoFar exercise =
-    (toFloat <| howManyCharactersSoFar exercise) / lettersPerWord
+    (FE.fromInt <| howManyCharactersSoFar exercise) / lettersPerWord
 
 
 isNewLineStep : Step -> Bool
@@ -428,11 +430,6 @@ takeLastNLines n steps =
                                 (step :: acc)
     in
         takeLastNLinesHelper (n + 1) (List.reverse steps) 0 []
-
-
-toFloat : Int -> Float
-toFloat n =
-    String.fromInt n |> String.toFloat |> Maybe.withDefault 0.0
 
 
 toInitialStep : Zipper Step -> Zipper Step
