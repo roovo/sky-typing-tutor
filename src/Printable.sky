@@ -1,4 +1,11 @@
-module Printable exposing (Printable(..), Style(..), fromStep, splitIntoLines, takeFirstLines)
+module Printable exposing
+    ( Printable(..)
+    , Style(..)
+    , fromStep
+    , splitIntoLines
+    , takeFirstLines
+    , takeLastLines
+    )
 
 type Style
     = Current
@@ -75,27 +82,27 @@ splitIntoLines printables =
 takeFirstLines : Int -> Printable -> List Printable -> List Printable
 takeFirstLines n current printables =
     let
-        helper : Int -> List Step -> Int -> List Step -> List Step
+        helper : Int -> List Printable -> Int -> List Printable -> List Printable
         helper n printables lineCount acc =
             case printables of
 
                 [] ->
                     List.reverse acc
 
-                step :: rest ->
+                printable :: rest ->
                     if lineCount >= n then
                         List.reverse acc
 
                     else
                         let
                             newLineCount =
-                                if isNewLinePrintable step then
+                                if isNewLinePrintable printable then
                                     lineCount + 1
 
                                 else
                                     lineCount
                         in
-                            helper n rest newLineCount (step :: acc)
+                            helper n rest newLineCount (printable :: acc)
         wantedLineCount =
             if isNewLinePrintable current then
                 n
@@ -106,12 +113,40 @@ takeFirstLines n current printables =
         helper wantedLineCount printables 0 []
 
 
+takeLastLines : Int -> List Printable -> List Printable
+takeLastLines n steps =
+    let
+        helper : Int -> List Printable -> Int -> List Printable -> List Printable
+        helper n steps lineCount acc =
+            case steps of
+
+                [] ->
+                    acc
+
+                printable :: rest ->
+                    if lineCount >= n then
+                        acc |> List.drop 1
+
+                    else
+                        let
+                            newLineCount =
+                                if isNewLinePrintable printable then
+                                    lineCount + 1
+
+                                else
+                                    lineCount
+                        in
+                            helper n rest newLineCount (printable :: acc)
+    in
+        helper (n + 1) (List.reverse steps) 0 []
+
+
 --
 -- PRIVATE
 --
 isNewLinePrintable : Printable -> Bool
-isNewLinePrintable step =
-    case step of
+isNewLinePrintable printable =
+    case printable of
 
         StyledEnter _ ->
             True

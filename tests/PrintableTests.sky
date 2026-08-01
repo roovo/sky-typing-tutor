@@ -9,6 +9,7 @@ import Step
 tests : List Test
 tests =
     fromStepTests ++ splitIntoLinesTests ++ takeFirstLinesTests
+        ++ takeLastLinesTests
 
 
 fromStepTests : List Test
@@ -90,50 +91,278 @@ takeFirstLinesTests =
               [] |> Printable.takeFirstLines 3 (StyledEnter Completed)
                   |> Test.equal [])
     , Test.test
-          "takeFirstLines returns [] if I am on a line end and there are lines but I have asked for none"
+          "takeFirstLines returns [] if asked for 0 and current is at the end of a line"
           (\_ ->
-              [ Styled "a" Waiting ]
+              [ Styled "c" Errored
+              , Styled "d" Errored
+              , StyledEnter Completed
+              , Styled "e" Errored
+              , Styled "f" Errored
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "g" Errored
+              ]
                   |> Printable.takeFirstLines 0 (StyledEnter Completed)
                   |> Test.equal [])
     , Test.test
-          "takeFirstLines returns the 'current line' if I am NOT on a line end and I have asked for no lines"
+          "takeFirstLines returns the rest of the current line if asked for 0 and current is at the start of aline"
           (\_ ->
-              [ Styled "a" Waiting ]
-                  |> Printable.takeFirstLines 0 (Styled "a" Completed)
-                  |> Test.equal [ Styled "a" Waiting ])
-    , Test.test
-          "takeFirstLines does not take anything from the next line"
-          (\_ ->
-              [ Styled "a" Waiting, StyledEnter Completed, Styled "b" Errored ]
-                  |> Printable.takeFirstLines 0 (Styled "a" Completed)
-                  |> Test.equal [ Styled "a" Waiting, StyledEnter Completed ])
-    , Test.test
-          "takeFirstLines takes blank lines"
-          (\_ ->
-              [ Styled "a" Waiting
+              [ Styled "d" Errored
+              , StyledEnter Completed
+              , Styled "e" Errored
+              , Styled "f" Errored
               , StyledEnter Completed
               , UnstyledEmptyLine
-              , Styled "b" Errored
+              , Styled "g" Errored
               ]
-                  |> Printable.takeFirstLines 2 (StyledEnter Completed)
+                  |> Printable.takeFirstLines 0 (Styled "c" Completed)
+                  |> Test.equal [ Styled "d" Errored, StyledEnter Completed ])
+    , Test.test
+          "takeFirstLines returns the rest of the current line if asked for 0 and current is just before the end of line"
+          (\_ ->
+              [ StyledEnter Completed
+              , Styled "e" Errored
+              , Styled "f" Errored
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "g" Errored
+              ]
+                  |> Printable.takeFirstLines 0 (Styled "d" Completed)
+                  |> Test.equal [ StyledEnter Completed ])
+    , Test.test
+          "takeFirstLines returns the next line if asked for 1 and current is at the end of a line"
+          (\_ ->
+              [ Styled "c" Errored
+              , Styled "d" Errored
+              , StyledEnter Completed
+              , Styled "e" Errored
+              , Styled "f" Errored
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "g" Errored
+              ]
+                  |> Printable.takeFirstLines 1 (StyledEnter Completed)
                   |> Test.equal
-                         [ Styled "a" Waiting
+                         [ Styled "c" Errored
+                         , Styled "d" Errored
+                         , StyledEnter Completed
+                         ])
+    , Test.test
+          "takeFirstLines returns the rest of the current line and the next line if asked for 1 and current is at the start of aline"
+          (\_ ->
+              [ Styled "d" Errored
+              , StyledEnter Completed
+              , Styled "e" Errored
+              , Styled "f" Errored
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "g" Errored
+              ]
+                  |> Printable.takeFirstLines 1 (Styled "c" Completed)
+                  |> Test.equal
+                         [ Styled "d" Errored
+                         , StyledEnter Completed
+                         , Styled "e" Errored
+                         , Styled "f" Errored
+                         , StyledEnter Completed
+                         ])
+    , Test.test
+          "takeFirstLines returns the rest of the current line if asked for 1 and current is just before the end of line"
+          (\_ ->
+              [ StyledEnter Completed
+              , Styled "e" Errored
+              , Styled "f" Errored
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "g" Errored
+              ]
+                  |> Printable.takeFirstLines 1 (Styled "d" Completed)
+                  |> Test.equal
+                         [ StyledEnter Completed
+                         , Styled "e" Errored
+                         , Styled "f" Errored
+                         , StyledEnter Completed
+                         ])
+    , Test.test
+          "takeFirstLines takes empty lines"
+          (\_ ->
+              [ StyledEnter Completed
+              , Styled "e" Errored
+              , Styled "f" Errored
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "g" Errored
+              ]
+                  |> Printable.takeFirstLines 2 (Styled "d" Completed)
+                  |> Test.equal
+                         [ StyledEnter Completed
+                         , Styled "e" Errored
+                         , Styled "f" Errored
                          , StyledEnter Completed
                          , UnstyledEmptyLine
                          ])
     , Test.test
-          "takeFirstLines takes all the lines if requesting more than there are"
+          "takeFirstLines takes all the lines if being asked for more than there are"
           (\_ ->
-              [ Styled "a" Waiting
+              [ StyledEnter Completed
+              , Styled "e" Errored
+              , Styled "f" Errored
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "g" Errored
+              ]
+                  |> Printable.takeFirstLines 10 (Styled "d" Completed)
+                  |> Test.equal
+                         [ StyledEnter Completed
+                         , Styled "e" Errored
+                         , Styled "f" Errored
+                         , StyledEnter Completed
+                         , UnstyledEmptyLine
+                         , Styled "g" Errored
+                         ])
+    ]
+
+
+takeLastLinesTests : List Test
+takeLastLinesTests =
+    [ Test.test
+          "takeLastLines returns [] if there are no lines"
+          (\_ -> [] |> Printable.takeLastLines 3 |> Test.equal [])
+    , Test.test
+          "takeLastLines returns the current line if asked for 0 and current is at the end of a line"
+          (\_ ->
+              [ Styled "a" Errored
               , StyledEnter Completed
               , UnstyledEmptyLine
               , Styled "b" Errored
+              , Styled "c" Errored
+              , StyledEnter Completed
+              , Styled "d" Errored
+              , Styled "e" Errored
               ]
-                  |> Printable.takeFirstLines 10 (StyledEnter Completed)
+                  |> Printable.takeLastLines 0
+                  |> Test.equal [ Styled "d" Errored, Styled "e" Errored ])
+    , Test.test
+          "takeLastLines returns the current line if asked for 0 and current is just before the end of a line"
+          (\_ ->
+              [ Styled "a" Errored
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "b" Errored
+              , Styled "c" Errored
+              , StyledEnter Completed
+              , Styled "d" Errored
+              ]
+                  |> Printable.takeLastLines 0
+                  |> Test.equal [ Styled "d" Errored ])
+    , Test.test
+          "takeLastLines returns [] if asked for 0 and current is at the start of a line"
+          (\_ ->
+              [ Styled "a" Errored
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "b" Errored
+              , Styled "c" Errored
+              , StyledEnter Completed
+              ]
+                  |> Printable.takeLastLines 0
+                  |> Test.equal [])
+    , Test.test
+          "takeLastLines returns the current line and the previous one if asked for 1 and current is at the end of a line"
+          (\_ ->
+              [ Styled "a" Errored
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "b" Errored
+              , Styled "c" Errored
+              , StyledEnter Completed
+              , Styled "d" Errored
+              , Styled "e" Errored
+              ]
+                  |> Printable.takeLastLines 1
                   |> Test.equal
-                         [ Styled "a" Waiting
+                         [ Styled "b" Errored
+                         , Styled "c" Errored
+                         , StyledEnter Completed
+                         , Styled "d" Errored
+                         , Styled "e" Errored
+                         ])
+    , Test.test
+          "takeLastLines returns the current line and the previous one if asked for 1 and current is just before the end of a line"
+          (\_ ->
+              [ Styled "a" Errored
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "b" Errored
+              , Styled "c" Errored
+              , StyledEnter Completed
+              , Styled "d" Errored
+              ]
+                  |> Printable.takeLastLines 1
+                  |> Test.equal
+                         [ Styled "b" Errored
+                         , Styled "c" Errored
+                         , StyledEnter Completed
+                         , Styled "d" Errored
+                         ])
+    , Test.test
+          "takeLastLines returns the previous line if asked for 1 and current is at the start of a line"
+          (\_ ->
+              [ Styled "a" Errored
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "b" Errored
+              , Styled "c" Errored
+              , StyledEnter Completed
+              ]
+                  |> Printable.takeLastLines 1
+                  |> Test.equal
+                         [ Styled "b" Errored
+                         , Styled "c" Errored
+                         , StyledEnter Completed
+                         ])
+    , Test.test
+          "takeLastLines takes empty lines"
+          (\_ ->
+              [ Styled "a" Errored
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "b" Errored
+              , Styled "c" Errored
+              , StyledEnter Completed
+              , Styled "d" Errored
+              , Styled "e" Errored
+              ]
+                  |> Printable.takeLastLines 2
+                  |> Test.equal
+                         [ UnstyledEmptyLine
+                         , Styled "b" Errored
+                         , Styled "c" Errored
+                         , StyledEnter Completed
+                         , Styled "d" Errored
+                         , Styled "e" Errored
+                         ])
+    , Test.test
+          "takeLastLines takes all the lines if being asked for more than there are"
+          (\_ ->
+              [ Styled "a" Errored
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "b" Errored
+              , Styled "c" Errored
+              , StyledEnter Completed
+              , Styled "d" Errored
+              , Styled "e" Errored
+              ]
+                  |> Printable.takeLastLines 10
+                  |> Test.equal
+                         [ Styled "a" Errored
                          , StyledEnter Completed
                          , UnstyledEmptyLine
                          , Styled "b" Errored
+                         , Styled "c" Errored
+                         , StyledEnter Completed
+                         , Styled "d" Errored
+                         , Styled "e" Errored
                          ])
     ]

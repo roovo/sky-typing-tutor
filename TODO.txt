@@ -26,3 +26,4 @@ Desirable sky changes:
 - toFloat (having to do String.fromInt n |> String.toFloat |> Maybe.withDefault 0.0)
 - Tui - able to determine how many rows high the terminal is (and track if it changes)
 - fuzzer support in sky test
+- looks line function definitionn in let blocks are supported, but there is no checking of them
