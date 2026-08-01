@@ -1,0 +1,39 @@
+module Printable exposing (Printable(..), Style(..), fromStep, splitIntoLines)
+
+type Style
+    = Current
+    | Errored
+    | Completed
+    | Unstyled
+    | Waiting
+
+type Printable
+    = Styled String Style
+    | StyledEnter Style
+    | UnstyledEmptyLine
+    | UnstyledEnd
+
+
+fromStep : Style -> Step -> Printable
+fromStep style step =
+    case step of
+
+        End ->
+            UnstyledEnd
+
+        EnterChar ->
+            StyledEnter style
+
+        EmptyLine ->
+            UnstyledEmptyLine
+
+        Skip st ->
+            Styled st Unstyled
+
+        Typeable ch ->
+            Styled (String.fromChar ch) style
+
+
+splitIntoLines : List Printable -> List (List Preintable)
+splitIntoLines printables =
+    []

@@ -1,0 +1,84 @@
+module PrintableTests exposing (tests)
+
+import Sky.Core.Prelude exposing (..)
+import Sky.Test as Test exposing (Test)
+import Printable
+import Step
+
+
+tests : List Test
+tests =
+    fromStepTests ++ splitIntoLinesTests
+
+
+fromStepTests : List Test
+fromStepTests =
+    [ Test.test
+          "fromStep returns UnstyledEnd for Step.End"
+          (\_ ->
+              Step.initEnd |> Printable.fromStep Printable.Current
+                  |> Test.equal Printable.UnstyledEnd)
+    , Test.test
+          "fromStep returns StyledEnter for Step.EnterChar"
+          (\_ ->
+              Step.initEnterChar |> Printable.fromStep Printable.Current
+                  |> Test.equal (Printable.StyledEnter Printable.Current))
+    , Test.test
+          "fromStep returns UnstyledEmptyLine for Step.EmptyLine"
+          (\_ ->
+              Step.initEmptyLine |> Printable.fromStep Printable.Current
+                  |> Test.equal Printable.UnstyledEmptyLine)
+    , Test.test
+          "fromStep returns Styled str Unstyled for Step.Skip str"
+          (\_ ->
+              Step.initSkip "foo" |> Printable.fromStep Printable.Waiting
+                  |> Test.equal (Printable.Styled "foo" Printable.Unstyled))
+    , Test.test
+          "fromStep returns Styled str for Step.Typeable ch"
+          (\_ ->
+              Step.init 'f' |> Printable.fromStep Printable.Waiting
+                  |> Test.equal (Printable.Styled "f" Printable.Waiting))
+    ]
+
+
+splitIntoLinesTests : List Test
+splitIntoLinesTests =
+    [ Test.test
+          "splitIntoLines returns [] for an empty list of Printables"
+          (\_ -> [] |> Printable.splitIntoLines |> Test.equal [])
+    ]
+
+-- splitIntoLines : List Printable -> List Printable -> List (List Printable) -> List (List Printable)
+-- splitIntoLines printables currentLine acc =
+--     case printables of
+--
+--         [] ->
+--             case currentLine of
+--
+--                 [] ->
+--                     List.reverse acc
+--
+--                 _ ->
+--                     List.reverse (List.reverse currentLine :: acc)
+--
+--         p :: rest ->
+--             case p of
+--
+--                 StyledEnter _ ->
+--                     splitIntoLines
+--                         rest
+--                         []
+--                         (List.reverse (p :: currentLine) :: acc)
+--
+--                 UnstyledEmptyLine ->
+--                     if List.isEmpty currentLine then
+--                         splitIntoLines rest [] ([ p ] :: acc)
+--
+--                     else
+--                         splitIntoLines
+--                             rest
+--                             []
+--                             ([ p ] :: List.reverse currentLine :: acc)
+--
+--                 _ ->
+--                     splitIntoLines rest (p :: currentLine) acc
