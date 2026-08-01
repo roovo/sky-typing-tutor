@@ -38,8 +38,8 @@ splitIntoLines : List Printable -> List (List Printable)
 splitIntoLines printables =
     let
         helper : List Printable -> List Printable -> List (List Printable) -> List (List Printable)
-        helper printables lineAcc acc =
-            case printables of
+        helper ps lineAcc acc =
+            case ps of
 
                 [] ->
                     case lineAcc of

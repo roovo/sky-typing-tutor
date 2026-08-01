@@ -65,4 +65,18 @@ splitIntoLinesTests =
                          [ [ Styled "a" Waiting, StyledEnter Completed ]
                          , [ Styled "b" Errored ]
                          ])
+    , Test.test
+          "splitIntoLines splits on empty lines"
+          (\_ ->
+              [ Styled "a" Waiting
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "b" Errored
+              ]
+                  |> Printable.splitIntoLines
+                  |> Test.equal
+                         [ [ Styled "a" Waiting, StyledEnter Completed ]
+                         , [ UnstyledEmptyLine ]
+                         , [ Styled "b" Errored ]
+                         ])
     ]
