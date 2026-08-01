@@ -12,6 +12,18 @@ tests =
 toStringTests : List Test
 toStringTests =
     [ Test.test
+          "toString returns '0.0' for '0.0' with 1 dp"
+          (\_ -> 0.0 |> FE.toString 1 |> Test.equal "0.0")
+    , Test.test
+          "toString returns '1.2' for '1.244' with 1 dp"
+          (\_ -> 1.244 |> FE.toString 1 |> Test.equal "1.2")
+    , Test.test
+          "toString returns '1.3' for '1.250' with 1 dp"
+          (\_ -> 1.25 |> FE.toString 1 |> Test.equal "1.3")
+    , Test.test
+          "toString returns '1.3' for '1.255' with 1 dp"
+          (\_ -> 1.255 |> FE.toString 1 |> Test.equal "1.3")
+    , Test.test
           "toString returns '0.00' for '0.0' with 2 dp's"
           (\_ -> 0.0 |> FE.toString 2 |> Test.equal "0.00")
     , Test.test
