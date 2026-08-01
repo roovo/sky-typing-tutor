@@ -34,41 +34,39 @@ fromStep style step =
             Styled (String.fromChar ch) style
 
 
-splitIntoLines : List Printable -> List (List Preintable)
+splitIntoLines : List Printable -> List (List Printable)
 splitIntoLines printables =
-    []
+    let
+        helper : List Printable -> List Printable -> List (List Printable) -> List (List Printable)
+        helper printables lineAcc acc =
+            case printables of
 
--- splitIntoLines : List Printable -> List Printable -> List (List Printable) -> List (List Printable)
--- splitIntoLines printables currentLine acc =
---     case printables of
---
---         [] ->
---             case currentLine of
---
---                 [] ->
---                     List.reverse acc
---
---                 _ ->
---                     List.reverse (List.reverse currentLine :: acc)
---
---         p :: rest ->
---             case p of
---
---                 StyledEnter _ ->
---                     splitIntoLines
---                         rest
---                         []
---                         (List.reverse (p :: currentLine) :: acc)
---
---                 UnstyledEmptyLine ->
---                     if List.isEmpty currentLine then
---                         splitIntoLines rest [] ([ p ] :: acc)
---
---                     else
---                         splitIntoLines
---                             rest
---                             []
---                             ([ p ] :: List.reverse currentLine :: acc)
---
---                 _ ->
---                     splitIntoLines rest (p :: currentLine) acc
+                [] ->
+                    case lineAcc of
+
+                        [] ->
+                            List.reverse acc
+
+                        _ ->
+                            List.reverse (List.reverse lineAcc :: acc)
+
+                p :: rest ->
+                    case p of
+
+                        StyledEnter _ ->
+                            helper rest [] (List.reverse (p :: lineAcc) :: acc)
+
+                        UnstyledEmptyLine ->
+                            if List.isEmpty lineAcc then
+                                helper rest [] ([ p ] :: acc)
+
+                            else
+                                helper
+                                    rest
+                                    []
+                                    ([ p ] :: List.reverse lineAcc :: acc)
+
+                        _ ->
+                            helper rest (p :: lineAcc) acc
+    in
+        helper printables [] []

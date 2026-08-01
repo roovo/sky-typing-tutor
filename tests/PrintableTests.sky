@@ -2,7 +2,7 @@ module PrintableTests exposing (tests)
 
 import Sky.Core.Prelude exposing (..)
 import Sky.Test as Test exposing (Test)
-import Printable exposing (Printable(..))
+import Printable exposing (Printable(..), Style(..))
 import Step
 
 
@@ -47,6 +47,22 @@ splitIntoLinesTests =
           "splitIntoLines returns [] for an empty list of Printables"
           (\_ -> [] |> Printable.splitIntoLines |> Test.equal [])
     , Test.test
-          "splitIntoLines returns [] for an singelton [ UnstyledEnd ]"
-          (\_ -> [ UnstyledEnd ] |> Printable.splitIntoLines |> Test.equal [])
+          "splitIntoLines returns [[ UnstyledEnd]] for an singelton [ UnstyledEnd ]"
+          (\_ ->
+              [ UnstyledEnd ] |> Printable.splitIntoLines
+                  |> Test.equal [ [ UnstyledEnd ] ])
+    , Test.test
+          "splitIntoLines returns [[ 'foo' ]] for an singelton [ 'foo' ]"
+          (\_ ->
+              [ Styled "foo" Completed ] |> Printable.splitIntoLines
+                  |> Test.equal [ [ Styled "foo" Completed ] ])
+    , Test.test
+          "splitIntoLines splits on Enter characters"
+          (\_ ->
+              [ Styled "a" Waiting, StyledEnter Completed, Styled "b" Errored ]
+                  |> Printable.splitIntoLines
+                  |> Test.equal
+                         [ [ Styled "a" Waiting, StyledEnter Completed ]
+                         , [ Styled "b" Errored ]
+                         ])
     ]
