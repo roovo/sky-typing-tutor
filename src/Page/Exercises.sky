@@ -502,6 +502,7 @@ viewHints =
         , Ui.text "  l/→   - bottom"
         , Ui.text "  enter - start exercise"
         , Ui.text "  n     - new exercise (from file)"
+        , Ui.text "  d     - delete exercise"
         , Ui.text "  q     - quit"
         ]
 
