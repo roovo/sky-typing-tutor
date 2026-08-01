@@ -132,11 +132,8 @@ update toMsg msg model =
 
 handleListingKeypresses : (Msg -> parentMsg) -> KeyEvent -> Model -> ( Model, Cmd parentMsg )
 handleListingKeypresses toMsg keyEvent model =
-    if keyEvent.kind == "char" && keyEvent.value == "n" then
-        ( { model | selectedExerciseStatus = IsAdding "" }, Cmd.none )
-
-    else if keyEvent.kind == "char" && keyEvent.value == "q" then
-        update toMsg Quit model
+    if keyEvent.kind == "char" && keyEvent.value == "d" then
+        ( { model | selectedExerciseStatus = IsDeleting }, Cmd.none )
 
     else if (keyEvent.kind == "char" && keyEvent.value == "h") || keyEvent.kind
         == "left" then
@@ -160,6 +157,12 @@ handleListingKeypresses toMsg keyEvent model =
         ( { model | exercises = moveZipper Zipper.last model.exercises }
         , Cmd.none
         )
+
+    else if keyEvent.kind == "char" && keyEvent.value == "n" then
+        ( { model | selectedExerciseStatus = IsAdding "" }, Cmd.none )
+
+    else if keyEvent.kind == "char" && keyEvent.value == "q" then
+        update toMsg Quit model
 
     else if keyEvent.kind == "enter" then
         handleOpenExercise toMsg model
