@@ -5,6 +5,7 @@ import Database
 import Exercise exposing (Exercise, Style(..))
 import Float.Extra as FE
 import KeyEvent exposing (KeyEvent)
+import Printable exposing (Printable)
 import Sky.Core.Error as Error exposing (Error)
 import Sky.Core.Task as Task
 import Session
@@ -391,42 +392,42 @@ viewPrintable : Exercise.Printable -> Element msg
 viewPrintable printable =
     case printable of
 
-        Exercise.Styled ch style ->
+        Printable.Styled ch style ->
             Ui.el (styleAttrs style) (Ui.text ch)
 
-        Exercise.StyledEnter style ->
-            if style == Exercise.Current then
+        Printable.StyledEnter style ->
+            if style == Printable.Current then
                 Ui.el (styleAttrs style) (Ui.text "↵")
 
             else
                 Ui.el (styleAttrs style) (Ui.text " ")
 
-        Exercise.UnstyledEmptyLine ->
+        Printable.UnstyledEmptyLine ->
             Ui.text ""
 
-        Exercise.UnstyledEnd ->
+        Printable.UnstyledEnd ->
             Ui.text ""
 
 
-styleAttrs : Exercise.Style -> List (Ui.Attribute msg)
+styleAttrs : Printable.Style -> List (Ui.Attribute msg)
 styleAttrs style =
     case style of
 
-        Exercise.Current ->
+        Printable.Current ->
             [ Background.color (Ui.rgb 80 80 120)
             , Font.color (Ui.rgb 255 255 255)
             ]
 
-        Exercise.Completed ->
+        Printable.Completed ->
             [ Font.color (Ui.rgb 100 180 100) ]
 
-        Exercise.Errored ->
+        Printable.Errored ->
             [ Background.color (Ui.rgb 180 50 50)
             , Font.color (Ui.rgb 255 255 255)
             ]
 
-        Exercise.Waiting ->
+        Printable.Waiting ->
             [ Font.color (Ui.rgb 120 120 140) ]
 
-        Exercise.Unstyled ->
+        Printable.Unstyled ->
             []

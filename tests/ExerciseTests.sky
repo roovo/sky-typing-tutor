@@ -2,7 +2,8 @@ module ExerciseTests exposing (tests)
 
 import Sky.Core.Prelude exposing (..)
 import Sky.Test as Test exposing (Test)
-import Exercise exposing (Exercise, Printable(..), Style(..))
+import Exercise exposing (Exercise)
+import Printable exposing (Printable(..), Style(..))
 
 
 tests : List Test

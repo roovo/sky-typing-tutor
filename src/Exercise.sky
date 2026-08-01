@@ -19,6 +19,7 @@ import Sky.Core.Debug as Debug
 import Event exposing (Event)
 import ExerciseParser
 import Float.Extra as FE
+import Printable
 import Step
 import Zipper
 
@@ -31,19 +32,6 @@ type alias Exercise =
     , text : String
     , fullPath : String
     }
-
-type Style
-    = Current
-    | Errored
-    | Completed
-    | Unstyled
-    | Waiting
-
-type Printable
-    = Styled String Style
-    | StyledEnter Style
-    | UnstyledEmptyLine
-    | UnstyledEnd
 
 
 init : String -> String -> Exercise
@@ -179,7 +167,8 @@ printableLineCount exercise =
 
 printableLines : Int -> Int -> Exercise -> List (List Printable)
 printableLines linesBefore linesAfter exercise =
-    splitIntoLines (windowedPrintables linesBefore linesAfter exercise) [] []
+    Printable.splitIntoLines
+        (windowedPrintables linesBefore linesAfter exercise)
 
 
 fullPath : Exercise -> String
@@ -257,10 +246,10 @@ type Direction
 afterPrintable : Int -> Int -> Step -> Printable
 afterPrintable errorCount index step =
     if index < (errorCount - 1) then
-        toPrintable Errored step
+        Printable.fromStep Printable.Errored step
 
     else
-        toPrintable Waiting step
+        Printable.fromStep Printable.Waiting step
 
 
 backspaceChar : Char
@@ -271,10 +260,10 @@ backspaceChar =
 currentStepStyle : Int -> Style
 currentStepStyle errorCount =
     if errorCount <= 0 then
-        Current
+        Printable.Current
 
     else
-        Errored
+        Printable.Errored
 
 
 howManyCharactersSoFar : Exercise -> Int
@@ -324,42 +313,6 @@ skipOver direction steps1 =
 
         else
             newSteps
-
-
-splitIntoLines : List Printable -> List Printable -> List (List Printable) -> List (List Printable)
-splitIntoLines printables currentLine acc =
-    case printables of
-
-        [] ->
-            case currentLine of
-
-                [] ->
-                    List.reverse acc
-
-                _ ->
-                    List.reverse (List.reverse currentLine :: acc)
-
-        p :: rest ->
-            case p of
-
-                StyledEnter _ ->
-                    splitIntoLines
-                        rest
-                        []
-                        (List.reverse (p :: currentLine) :: acc)
-
-                UnstyledEmptyLine ->
-                    if List.isEmpty currentLine then
-                        splitIntoLines rest [] ([ p ] :: acc)
-
-                    else
-                        splitIntoLines
-                            rest
-                            []
-                            ([ p ] :: List.reverse currentLine :: acc)
-
-                _ ->
-                    splitIntoLines rest (p :: currentLine) acc
 
 
 takeFirstNLines : Int -> Step -> List Step -> List Step
@@ -444,26 +397,6 @@ toInitialStep zippedSteps =
             zippedSteps
 
 
-toPrintable : Style -> Step -> Printable
-toPrintable style step =
-    case step of
-
-        End ->
-            UnstyledEnd
-
-        EnterChar ->
-            StyledEnter style
-
-        EmptyLine ->
-            UnstyledEmptyLine
-
-        Skip st ->
-            Styled st Unstyled
-
-        Typeable ch ->
-            Styled (String.fromChar ch) style
-
-
 windowedPrintables : Int -> Int -> Exercise -> List Printable
 windowedPrintables linesBefore linesAfter exercise =
     let
@@ -474,9 +407,10 @@ windowedPrintables linesBefore linesAfter exercise =
                 linesAfter
                 (Zipper.current exercise.steps)
                 (Zipper.after exercise.steps)
-        beforePrintables = List.map (toPrintable Completed) windowedBefore
+        beforePrintables =
+            List.map (Printable.fromStep Printable.Completed) windowedBefore
         currentPrintable =
-            [ toPrintable
+            [ Printable.fromStep
                   (currentStepStyle exercise.errorCount)
                   (Zipper.current exercise.steps)
             ]
