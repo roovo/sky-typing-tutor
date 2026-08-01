@@ -1,13 +1,15 @@
-module Float.Extra exposing (toString)
+module Float.Extra exposing (fromInt, toString)
+
+
+fromInt : Int -> Float
+fromInt int =
+    String.fromInt int |> String.toFloat |> Maybe.withDefault 0.0
 
 
 toString : Int -> Float -> String
 toString decimalPlaces float =
     let
-        toFloat : Int -> Float
-        toFloat n =
-            String.fromInt n |> String.toFloat |> Maybe.withDefault 0.0
-        factor = Math.pow 10.0 (toFloat decimalPlaces)
+        factor = Math.pow 10.0 (fromInt decimalPlaces)
         rounded = Math.round (float * factor)
         whole = rounded // Math.round factor
         frac = Math.abs (rounded - whole * Math.round factor)

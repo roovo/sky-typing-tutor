@@ -6,7 +6,24 @@ import Float.Extra as FE
 
 tests : List Test
 tests =
-    toStringTests
+    fromIntTests ++ toStringTests
+
+
+fromIntTests : List Test
+fromIntTests =
+    [ Test.test
+          "fromInt returns '0.0' for '0'"
+          (\_ -> 0 |> FE.fromInt |> Test.equal 0.0)
+    , Test.test
+          "fromInt returns '1.0' for '1'"
+          (\_ -> 1 |> FE.fromInt |> Test.equal 1.0)
+    , Test.test
+          "fromInt returns '723.0' for '723'"
+          (\_ -> 723 |> FE.fromInt |> Test.equal 723.0)
+    , Test.test
+          "fromInt returns '-1.0' for '-1'"
+          (\_ -> -1 |> FE.fromInt |> Test.equal (-1.0))
+    ]
 
 
 toStringTests : List Test
