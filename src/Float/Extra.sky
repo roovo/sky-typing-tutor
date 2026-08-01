@@ -1,0 +1,17 @@
+module Float.Extra exposing (toString)
+
+
+toString : Int -> Float -> String
+toString decimalPlaces float =
+    let
+        rounded = Math.round (float * 100.0)
+        whole = rounded // 100
+        frac = Math.abs (rounded - whole * 100)
+        fracStr =
+            if frac < 10 then
+                "0" ++ String.fromInt frac
+
+            else
+                String.fromInt frac
+    in
+        String.fromInt whole ++ "." ++ fracStr

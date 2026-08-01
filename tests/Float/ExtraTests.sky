@@ -1,0 +1,17 @@
+module Float.ExtraTests exposing (tests)
+
+import Sky.Test as Test exposing (Test)
+import Float.Extra as FE
+
+
+tests : List Test
+tests =
+    toStringTests
+
+
+toStringTests : List Test
+toStringTests =
+    [ Test.test
+          "toString returns '0.00' for '0.0' with 2 dp's"
+          (\_ -> 0.0 |> FE.toString 2 |> Test.equal "0.00")
+    ]
