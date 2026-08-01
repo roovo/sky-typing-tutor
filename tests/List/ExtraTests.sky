@@ -7,7 +7,8 @@ import List.Extra as LE
 
 tests : List Test
 tests =
-    dropWhileTests ++ dropWhileRightTests ++ intersperseTests ++ takeWhileTests
+    dropWhileTests ++ dropWhileRightTests ++ intersperseTests ++ repeatTests
+        ++ takeWhileTests
 
 
 dropWhileTests : List Test
@@ -71,6 +72,20 @@ intersperseTests =
           (\_ ->
               LE.intersperse "." [ "a", "b", "c" ]
                   |> Test.equal [ "a", ".", "b", ".", "c" ])
+    ]
+
+
+repeatTests : List Test
+repeatTests =
+    [ Test.test
+          "repeat returns an empty array is asking for none"
+          (\_ -> LE.repeat 0 "a" |> Test.equal [])
+    , Test.test
+          "repeat returns a singleton with the element if asked for 1"
+          (\_ -> LE.repeat 1 "a" |> Test.equal [ "a" ])
+    , Test.test
+          "repeat returns an array with multiple elements if asked for 5"
+          (\_ -> LE.repeat 5 "a" |> Test.equal [ "a", "a", "a", "a", "a" ])
     ]
 
 

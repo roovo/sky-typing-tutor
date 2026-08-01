@@ -1,10 +1,34 @@
-module List.Extra exposing (dropWhile, dropWhileRight, intersperse, takeWhile)
+module List.Extra exposing (dropWhile, dropWhileRight, intersperse, repeat, takeWhile)
 
 
-{-| Places the given value between all members of the given list.
+dropWhile : (a -> Bool) -> List a -> List a
+dropWhile predicate list =
+    case list of
 
-    intersperse "on" ["turtles","turtles","turtles"] == ["turtles","on","turtles","on","turtles"]
--}
+        [] ->
+            []
+
+        x :: xs ->
+            if predicate x then
+                dropWhile predicate xs
+
+            else
+                list
+
+
+dropWhileRight : (a -> Bool) -> List a -> List a
+dropWhileRight p list =
+    List.foldr
+        (\x xs ->
+            if p x && List.isEmpty xs then
+                []
+
+            else
+                x :: xs)
+        []
+        list
+
+
 intersperse : a -> List a -> List a
 intersperse sep xs =
     case xs of
@@ -20,8 +44,20 @@ intersperse sep xs =
                 List.cons hd spersed
 
 
-{-| Take elements in order as long as the predicate evaluates to `True`
--}
+repeat : Int -> a -> List a
+repeat count item =
+    let
+        helper : List a -> Int -> a -> List a
+        helper result n value =
+            if n <= 0 then
+                result
+
+            else
+                helper (List.cons value result) (n - 1) value
+    in
+        helper [] count item
+
+
 takeWhile : (a -> Bool) -> List a -> List a
 takeWhile predicate list =
     let
@@ -39,39 +75,3 @@ takeWhile predicate list =
                         List.reverse memo
     in
         takeWhileMemo [] list
-
-
-{-| Drop elements in order as long as the predicate evaluates to `True`
--}
-dropWhile : (a -> Bool) -> List a -> List a
-dropWhile predicate list =
-    case list of
-
-        [] ->
-            []
-
-        x :: xs ->
-            if predicate x then
-                dropWhile predicate xs
-
-            else
-                list
-
-
-{-| Drop elements from the right, while predicate still holds.
-
-    dropWhileRight ((<) 5) (List.range 1 10)
-    --> [ 1, 2, 3, 4, 5 ]
-
--}
-dropWhileRight : (a -> Bool) -> List a -> List a
-dropWhileRight p list =
-    List.foldr
-        (\x xs ->
-            if p x && List.isEmpty xs then
-                []
-
-            else
-                x :: xs)
-        []
-        list
