@@ -8,7 +8,7 @@ import Step
 
 tests : List Test
 tests =
-    fromStepTests ++ splitIntoLinesTests
+    fromStepTests ++ splitIntoLinesTests ++ takeFirstLinesTests
 
 
 fromStepTests : List Test
@@ -78,5 +78,62 @@ splitIntoLinesTests =
                          [ [ Styled "a" Waiting, StyledEnter Completed ]
                          , [ UnstyledEmptyLine ]
                          , [ Styled "b" Errored ]
+                         ])
+    ]
+
+
+takeFirstLinesTests : List Test
+takeFirstLinesTests =
+    [ Test.test
+          "takeFirstLines returns [] if there are no lines"
+          (\_ ->
+              [] |> Printable.takeFirstLines 3 (StyledEnter Completed)
+                  |> Test.equal [])
+    , Test.test
+          "takeFirstLines returns [] if I am on a line end and there are lines but I have asked for none"
+          (\_ ->
+              [ Styled "a" Waiting ]
+                  |> Printable.takeFirstLines 0 (StyledEnter Completed)
+                  |> Test.equal [])
+    , Test.test
+          "takeFirstLines returns the 'current line' if I am NOT on a line end and I have asked for no lines"
+          (\_ ->
+              [ Styled "a" Waiting ]
+                  |> Printable.takeFirstLines 0 (Styled "a" Completed)
+                  |> Test.equal [ Styled "a" Waiting ])
+    , Test.test
+          "takeFirstLines does not take anything from the next line"
+          (\_ ->
+              [ Styled "a" Waiting, StyledEnter Completed, Styled "b" Errored ]
+                  |> Printable.takeFirstLines 0 (Styled "a" Completed)
+                  |> Test.equal [ Styled "a" Waiting, StyledEnter Completed ])
+    , Test.test
+          "takeFirstLines takes blank lines"
+          (\_ ->
+              [ Styled "a" Waiting
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "b" Errored
+              ]
+                  |> Printable.takeFirstLines 2 (StyledEnter Completed)
+                  |> Test.equal
+                         [ Styled "a" Waiting
+                         , StyledEnter Completed
+                         , UnstyledEmptyLine
+                         ])
+    , Test.test
+          "takeFirstLines takes all the lines if requesting more than there are"
+          (\_ ->
+              [ Styled "a" Waiting
+              , StyledEnter Completed
+              , UnstyledEmptyLine
+              , Styled "b" Errored
+              ]
+                  |> Printable.takeFirstLines 10 (StyledEnter Completed)
+                  |> Test.equal
+                         [ Styled "a" Waiting
+                         , StyledEnter Completed
+                         , UnstyledEmptyLine
+                         , Styled "b" Errored
                          ])
     ]

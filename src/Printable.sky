@@ -1,4 +1,4 @@
-module Printable exposing (Printable(..), Style(..), fromStep, splitIntoLines)
+module Printable exposing (Printable(..), Style(..), fromStep, splitIntoLines, takeFirstLines)
 
 type Style
     = Current
@@ -70,3 +70,54 @@ splitIntoLines printables =
                             helper rest (p :: lineAcc) acc
     in
         helper printables [] []
+
+
+takeFirstLines : Int -> Printable -> List Printable -> List Printable
+takeFirstLines n current printables =
+    let
+        helper : Int -> List Step -> Int -> List Step -> List Step
+        helper n printables lineCount acc =
+            case printables of
+
+                [] ->
+                    List.reverse acc
+
+                step :: rest ->
+                    if lineCount >= n then
+                        List.reverse acc
+
+                    else
+                        let
+                            newLineCount =
+                                if isNewLinePrintable step then
+                                    lineCount + 1
+
+                                else
+                                    lineCount
+                        in
+                            helper n rest newLineCount (step :: acc)
+        wantedLineCount =
+            if isNewLinePrintable current then
+                n
+
+            else
+                n + 1
+    in
+        helper wantedLineCount printables 0 []
+
+
+--
+-- PRIVATE
+--
+isNewLinePrintable : Printable -> Bool
+isNewLinePrintable step =
+    case step of
+
+        StyledEnter _ ->
+            True
+
+        UnstyledEmptyLine ->
+            True
+
+        _ ->
+            False
