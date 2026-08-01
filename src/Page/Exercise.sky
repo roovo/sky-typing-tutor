@@ -279,7 +279,11 @@ viewFooter model =
                 []
                 (Ui.text <| "Accuracy: " ++ FE.toString 2 (Exercise.accuracy ex)
                     ++ "%    wpm: "
-                    ++ FE.toString 2 (Exercise.wpm ex)))
+                    ++ FE.toString 2 (Exercise.wpm ex)
+                    ++ "    lines: "
+                    ++ String.fromInt (Exercise.currentLineIndex ex)
+                    ++ " / "
+                    ++ String.fromInt ((Exercise.printableLineCount ex) - 1)))
 
 
 viewBody : Model -> Element msg
