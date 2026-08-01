@@ -1,8 +1,3 @@
-- maintain the 20 line height for content at all times
-  - even for shorter files
-  - also when getting to the end of an exercise
-  - inputs: displayLineCount, currentLineIndex, totalLines
-    outputs: beforeCurrentLineCount, afterCurrentLineCount
 - show progress in the footer (lines and/or characters remaining - completed when finished)
 - 'pause' the exercise if there has been no input for a few seconds
 - allow exercise to be deleted
