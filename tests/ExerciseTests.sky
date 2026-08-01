@@ -2,7 +2,7 @@ module ExerciseTests exposing (tests)
 
 import Sky.Core.Prelude exposing (..)
 import Sky.Test as Test exposing (Test)
-import Exercise exposing (Exercise)
+import Exercise exposing (Exercise, Printable(..), Style(..))
 import Printable exposing (Printable(..), Style(..))
 
 
@@ -417,9 +417,34 @@ languageTests =
 printableLineCountTests : List Test
 printableLineCountTests =
     [ Test.test
-          "printableLineCount returns 0 if there is no text"
+          "printableLineCount returns 1 if there is no text"
           (\_ ->
-              exerciseWithText "" |> Exercise.printableLineCount |> Test.equal 0)
+              exerciseWithText "" |> Exercise.printableLineCount |> Test.equal 1)
+    , Test.test
+          "printableLineCount returns 1 for a single printable character"
+          (\_ ->
+              exerciseWithText "a" |> Exercise.printableLineCount
+                  |> Test.equal 1)
+    , Test.test
+          "printableLineCount returns 2 for a 2 line multiline string"
+          (\_ ->
+              exerciseWithText "a\nb" |> Exercise.printableLineCount
+                  |> Test.equal 2)
+    , Test.test
+          "printableLineCount counts empty lines"
+          (\_ ->
+              exerciseWithText "a\n\n  \nb" |> Exercise.printableLineCount
+                  |> Test.equal 4)
+    , Test.test
+          "printableLineCount ignores empty lines at the start"
+          (\_ ->
+              exerciseWithText "\n    \n\na\nb" |> Exercise.printableLineCount
+                  |> Test.equal 2)
+    , Test.test
+          "printableLineCount ignores empty lines at the end"
+          (\_ ->
+              exerciseWithText "a\nb\n    \n\n" |> Exercise.printableLineCount
+                  |> Test.equal 2)
     ]
 
 

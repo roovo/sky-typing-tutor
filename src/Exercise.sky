@@ -162,7 +162,10 @@ language exercise =
 
 printableLineCount : Exercise -> Int
 printableLineCount exercise =
-    0
+    exercise.steps |> Zipper.toList
+        |> List.map (Printable.fromStep Printable.Waiting)
+        |> Printable.splitIntoLines
+        |> List.length
 
 
 printableLines : Int -> Int -> Exercise -> List (List Printable)
