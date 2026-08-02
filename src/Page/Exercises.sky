@@ -331,8 +331,8 @@ view toMsg model =
             ( Loaded _, IsAdding path ) ->
                 [ viewHeading, viewAddExercise path "" ]
 
-            ( Loaded _, IsDeleting ) ->
-                [ viewHeading, Ui.text "Delete exercise requested" ]
+            ( Loaded zippedExercises, IsDeleting ) ->
+                [ viewHeading, viewDeleteExercise zippedExercises ]
 
             ( Loaded _, NewExerciseFailed err path ) ->
                 [ viewHeading, viewAddExercise path err ])
@@ -545,3 +545,50 @@ viewAddExercise input error =
                   [ Font.color (Ui.rgb 180 50 50) ]
                   (Ui.text ("  Error: " ++ error))
         ]
+
+
+viewDeleteExercise : Maybe (Zipper ExerciseDb) -> Element msg
+viewDeleteExercise zippedExercises =
+    case zippedExercises of
+
+        Nothing ->
+            Ui.text "No exercises found."
+
+        Just exercises ->
+            let
+                selectedExercise = Zipper.current exercises
+            in
+                Ui.column
+                    [ Ui.spacing 8 ]
+                    [ Ui.text "Deleting exercise:"
+                    , Ui.column
+                          [ Ui.spacing 0 ]
+                          [ Ui.row
+                                []
+                                [ Ui.el [] (Ui.text "    Name: ")
+                                , Ui.el
+                                      [ Font.color (Ui.rgb 142 200 168) ]
+                                      (Ui.text
+                                          (exerciseFilename selectedExercise))
+                                ]
+                          , Ui.row
+                                []
+                                [ Ui.el [] (Ui.text "    Path: ")
+                                , Ui.el
+                                      [ Font.color (Ui.rgb 142 200 168) ]
+                                      (Ui.text (selectedExercise.fullPath))
+                                ]
+                          , Ui.row
+                                []
+                                [ Ui.el [] (Ui.text "Language: ")
+                                , Ui.el
+                                      [ Font.color (Ui.rgb 142 200 168) ]
+                                      (Ui.text (selectedExercise.language))
+                                ]
+                          ]
+                    , Ui.text
+                          "Deleting this will remove all this exercise's results."
+                    , Ui.el
+                          [ Font.color (Ui.rgb 120 120 140) ]
+                          (Ui.text "  'y' to confirm · any other key to cancel")
+                    ]
