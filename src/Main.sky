@@ -20,12 +20,13 @@ import Std.Ui.Font as Font
 
 main =
     Tui.app
-        { init = init
-        , update = update
-        , view = view
-        , subscriptions = subscriptions
-        , onKey = onKey
-        }
+        (Tui.config
+            { init = init
+            , update = update
+            , view = view
+            , subscriptions = subscriptions
+            }
+            |> Tui.withOnKey onKey)
 
 
 init : () -> ( Model, Cmd Msg )
