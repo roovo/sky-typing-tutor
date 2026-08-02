@@ -53,7 +53,7 @@ type alias ExerciseDb =
 
 init : (Msg -> parentMsg) -> Session -> ( Model, Cmd parentMsg )
 init toMsg session =
-    ( { exercises = loadExercises
+    ( { exercises = loadExercises ()
       , selectedExerciseStatus = Dormant
       , session = session
       , notice = Nothing
@@ -62,8 +62,8 @@ init toMsg session =
     )
 
 
-loadExercises : Status (Maybe (Zipper ExerciseDb))
-loadExercises =
+loadExercises : () -> Status (Maybe (Zipper ExerciseDb))
+loadExercises () =
     let
         result =
             Task.run
@@ -111,7 +111,7 @@ update toMsg msg model =
     case msg of
 
         DeleteCompleted (Ok nRowsDeleted) ->
-            ( { model | exercises = loadExercises
+            ( { model | exercises = loadExercises ()
               , selectedExerciseStatus = Dormant
               , notice = Just (Success "Exercise deleted successfully.")
               }
