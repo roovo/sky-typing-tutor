@@ -314,18 +314,27 @@ view toMsg model =
         , Background.color (Ui.rgb 18 22 38)
         , Font.color (Ui.rgb 220 220 230)
         ]
-        (case model.selectedExerciseStatus of
+        (case ( model.exercises, model.selectedExerciseStatus ) of
 
-            Dormant ->
-                [ viewHeading, viewContent model, viewHints ]
+            ( LoadFailed exerciseError, _ ) ->
+                [ viewHeading, viewLoadFailed exerciseError ]
 
-            IsAdding path ->
+            ( Loading, _ ) ->
+                [ viewHeading, Ui.text "Exercises loading" ]
+
+            ( OpenFailed exerciseError zippedExercises, _ ) ->
+                [ viewHeading, viewOpenFailed exerciseError zippedExercises ]
+
+            ( Loaded zippedExercises, Dormant ) ->
+                [ viewHeading, viewExerciseTable zippedExercises, viewHints ]
+
+            ( Loaded _, IsAdding path ) ->
                 [ viewHeading, viewAddExercise path "" ]
 
-            IsDeleting ->
+            ( Loaded _, IsDeleting ) ->
                 [ viewHeading, Ui.text "Delete exercise requested" ]
 
-            NewExerciseFailed err path ->
+            ( Loaded _, NewExerciseFailed err path ) ->
                 [ viewHeading, viewAddExercise path err ])
 
 
@@ -342,29 +351,22 @@ viewHeading =
         (Ui.el [] (Ui.text "Exercises"))
 
 
-viewContent : Model -> Element msg
-viewContent model =
-    case model.exercises of
+viewLoadFailed : String -> Element msg
+viewLoadFailed exerciseError =
+    Ui.el
+        [ Font.color (Ui.rgb 180 50 50) ]
+        (Ui.text ("Error: " ++ exerciseError))
 
-        LoadFailed exerciseError ->
-            Ui.el
-                [ Font.color (Ui.rgb 180 50 50) ]
-                (Ui.text ("Error: " ++ exerciseError))
 
-        OpenFailed exerciseError zippedExercises ->
-            Ui.column
-                []
-                [ viewExerciseTable zippedExercises
-                , Ui.el
-                      [ Font.color (Ui.rgb 180 50 50) ]
-                      (Ui.text ("Error: " ++ exerciseError))
-                ]
-
-        Loading ->
-            Ui.text "Exercises loading"
-
-        Loaded zippedExercises ->
-            viewExerciseTable zippedExercises
+viewOpenFailed : String -> Maybe (Zipper ExerciseDb) -> Element msg
+viewOpenFailed exerciseError zippedExercises =
+    Ui.column
+        []
+        [ viewExerciseTable zippedExercises
+        , Ui.el
+              [ Font.color (Ui.rgb 180 50 50) ]
+              (Ui.text ("Error: " ++ exerciseError))
+        ]
 
 
 viewExerciseTable : Maybe (Zipper ExerciseDb) -> Element msg
