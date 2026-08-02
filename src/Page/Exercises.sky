@@ -48,6 +48,16 @@ type alias ExerciseDb =
 
 init : (Msg -> parentMsg) -> Session -> ( Model, Cmd parentMsg )
 init toMsg session =
+    ( { exercises = loadExercises
+      , selectedExerciseStatus = Dormant
+      , session = session
+      }
+    , Cmd.none
+    )
+
+
+loadExercises : Status (Maybe (Zipper ExerciseDb))
+loadExercises =
     let
         result =
             Task.run
@@ -55,21 +65,14 @@ init toMsg session =
                     Database.db
                     "SELECT full_path, character_count, language, accuracy AS last_accuracy, wpm AS last_wpm, datetime(MAX(completed_at), 'localtime') AS last_attempted FROM attempts GROUP BY full_path ORDER BY last_attempted DESC"
                     [])
-        exercises =
-            case result of
-
-                Ok rows ->
-                    Loaded (List.map rowToExercise rows |> Zipper.fromList)
-
-                Err e ->
-                    LoadFailed (Error.toString e)
     in
-        ( { exercises = exercises
-          , selectedExerciseStatus = Dormant
-          , session = session
-          }
-        , Cmd.none
-        )
+        case result of
+
+            Ok rows ->
+                Loaded (List.map rowToExercise rows |> Zipper.fromList)
+
+            Err e ->
+                LoadFailed (Error.toString e)
 
 
 fetchExercises : (Msg -> parentMsg) -> Session -> Cmd parentMsg
