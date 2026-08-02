@@ -328,7 +328,8 @@ handleNewExerciseKeypresses toMsg keyEvent model =
                     ""
     in
         if keyEvent.kind == "char" || keyEvent.kind == "paste" then
-            ( { model | selectedExerciseStatus = IsAdding (currentPath ++ keyEvent.value)
+            ( { model | selectedExerciseStatus =
+                  IsAdding (currentPath ++ keyEvent.value)
               }
             , Cmd.none
             )
@@ -339,7 +340,8 @@ handleNewExerciseKeypresses toMsg keyEvent model =
             )
 
         else if keyEvent.kind == "backspace" then
-            ( { model | selectedExerciseStatus = IsAdding (String.dropRight 1 currentPath)
+            ( { model | selectedExerciseStatus =
+                  IsAdding (String.dropRight 1 currentPath)
               }
             , Cmd.none
             )
@@ -390,7 +392,11 @@ view toMsg model =
                 [ viewHeading, viewOpenFailed exerciseError zippedExercises ]
 
             ( Loaded zippedExercises, Dormant ) ->
-                [ viewHeading, viewNotice model.notice, viewExerciseTable zippedExercises, viewHints ]
+                [ viewHeading
+                , viewNotice model.notice
+                , viewExerciseTable zippedExercises
+                , viewHints
+                ]
 
             ( Loaded _, IsAdding path ) ->
                 [ viewHeading, viewAddExercise path "" ]
@@ -420,14 +426,10 @@ viewNotice maybeNotice =
     case maybeNotice of
 
         Just (Success msg) ->
-            Ui.el
-                [ Font.color (Ui.rgb 80 200 120) ]
-                (Ui.text msg)
+            Ui.el [ Font.color (Ui.rgb 80 200 120) ] (Ui.text msg)
 
         Just (Failure msg) ->
-            Ui.el
-                [ Font.color (Ui.rgb 220 50 50) ]
-                (Ui.text msg)
+            Ui.el [ Font.color (Ui.rgb 220 50 50) ] (Ui.text msg)
 
         Nothing ->
             Ui.none
@@ -462,20 +464,13 @@ viewExerciseTable zippedExercises =
             let
                 allExercises = Zipper.toList exercises
                 widths = columnWidths allExercises
+                currentRow = Zipper.before exercises |> List.length
             in
                 Ui.column
                     [ Ui.spacing 0 ]
-                    (List.map
-                        (viewExerciseRow widths False)
-                        (Zipper.before exercises)
-                        ++ [ viewExerciseRow
-                                 widths
-                                 True
-                                 (Zipper.current exercises)
-                           ]
-                        ++ List.map
-                               (viewExerciseRow widths False)
-                               (Zipper.after exercises))
+                    (List.indexedMap
+                        (viewExerciseRow widths currentRow)
+                        allExercises)
 
 type alias ColumnWidths =
     { filename : Int
@@ -543,12 +538,12 @@ columnGap =
     3
 
 
-viewExerciseRow : ColumnWidths -> Bool -> ExerciseDb -> Element msg
-viewExerciseRow widths isCurrent exercise =
+viewExerciseRow : ColumnWidths -> Int -> Int -> ExerciseDb -> Element msg
+viewExerciseRow widths currentRow index exercise =
     let
         filename = exerciseFilename exercise
         cursor =
-            if isCurrent then
+            if currentRow == index then
                 "▶ "
 
             else
