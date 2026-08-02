@@ -111,18 +111,16 @@ update toMsg msg model =
     case msg of
 
         DeleteCompleted (Ok nRowsDeleted) ->
-            ( { model
-                | exercises = loadExercises
-                , selectedExerciseStatus = Dormant
-                , notice = Just (Success "Exercise deleted successfully.")
+            ( { model | exercises = loadExercises
+              , selectedExerciseStatus = Dormant
+              , notice = Just (Success "Exercise deleted successfully.")
               }
             , Cmd.none
             )
 
         DeleteCompleted (Err e) ->
-            ( { model
-                | selectedExerciseStatus = Dormant
-                , notice = Just (Failure ("Delete failed: " ++ Error.toString e))
+            ( { model | selectedExerciseStatus = Dormant
+              , notice = Just (Failure ("Delete failed: " ++ Error.toString e))
               }
             , Cmd.none
             )
@@ -136,19 +134,25 @@ update toMsg msg model =
             ( { model | exercises = LoadFailed (Error.toString e) }, Cmd.none )
 
         KeyTyped keyEvent ->
-            case model.selectedExerciseStatus of
+            let
+                clearedModel = { model | notice = Nothing }
+            in
+                case clearedModel.selectedExerciseStatus of
 
-                Dormant ->
-                    handleListingKeypresses toMsg keyEvent model
+                    Dormant ->
+                        handleListingKeypresses toMsg keyEvent clearedModel
 
-                IsAdding _ ->
-                    handleNewExerciseKeypresses toMsg keyEvent model
+                    IsAdding _ ->
+                        handleNewExerciseKeypresses toMsg keyEvent clearedModel
 
-                IsDeleting ->
-                    handleDeleteExerciseKeypresses toMsg keyEvent model
+                    IsDeleting ->
+                        handleDeleteExerciseKeypresses
+                            toMsg
+                            keyEvent
+                            clearedModel
 
-                NewExerciseFailed _ _ ->
-                    handleNewExerciseKeypresses toMsg keyEvent model
+                    NewExerciseFailed _ _ ->
+                        handleNewExerciseKeypresses toMsg keyEvent clearedModel
 
         Quit ->
             ( model, Cmd.perform (Task.succeed ()) (\_ -> toMsg Quit) )
