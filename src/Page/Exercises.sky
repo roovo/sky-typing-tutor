@@ -20,9 +20,14 @@ import Zipper
 --
 type alias Model =
     { exercises : Status (Maybe (Zipper ExerciseDb))
+    , notice : Maybe Notice
     , selectedExerciseStatus : SelectedExerciseStatus
     , session : Session
     }
+
+type Notice
+    = Success String
+    | Failure String
 
 type Status a
     = Loading
@@ -51,6 +56,7 @@ init toMsg session =
     ( { exercises = loadExercises
       , selectedExerciseStatus = Dormant
       , session = session
+      , notice = Nothing
       }
     , Cmd.none
     )
@@ -105,9 +111,8 @@ update toMsg msg model =
     case msg of
 
         DeleteCompleted (Ok nRowsDeleted) ->
-            ( { model
-                | exercises = loadExercises
-                , selectedExerciseStatus = Dormant
+            ( { model | exercises = loadExercises
+              , selectedExerciseStatus = Dormant
               }
             , Cmd.none
             )
