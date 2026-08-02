@@ -389,12 +389,14 @@ view toMsg model =
                 [ viewHeading, Ui.text "Exercises loading" ]
 
             ( OpenFailed exerciseError zippedExercises, _ ) ->
-                [ viewHeading, viewOpenFailed exerciseError zippedExercises ]
+                [ viewHeading
+                , viewOpenFailed model.session exerciseError zippedExercises
+                ]
 
             ( Loaded zippedExercises, Dormant ) ->
                 [ viewHeading
                 , viewNotice model.notice
-                , viewExerciseTable zippedExercises
+                , viewExerciseTable model.session zippedExercises
                 , viewHints
                 ]
 
@@ -442,19 +444,19 @@ viewLoadFailed exerciseError =
         (Ui.text ("Error: " ++ exerciseError))
 
 
-viewOpenFailed : String -> Maybe (Zipper ExerciseDb) -> Element msg
-viewOpenFailed exerciseError zippedExercises =
+viewOpenFailed : Session -> String -> Maybe (Zipper ExerciseDb) -> Element msg
+viewOpenFailed session exerciseError zippedExercises =
     Ui.column
         []
-        [ viewExerciseTable zippedExercises
+        [ viewExerciseTable session zippedExercises
         , Ui.el
               [ Font.color (Ui.rgb 180 50 50) ]
               (Ui.text ("Error: " ++ exerciseError))
         ]
 
 
-viewExerciseTable : Maybe (Zipper ExerciseDb) -> Element msg
-viewExerciseTable zippedExercises =
+viewExerciseTable : Session -> Maybe (Zipper ExerciseDb) -> Element msg
+viewExerciseTable session zippedExercises =
     case zippedExercises of
 
         Nothing ->
