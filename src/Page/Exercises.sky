@@ -90,7 +90,8 @@ rowToExercise row =
 -- UPDATE
 --
 type Msg
-    = CompletedExercisesFetch (Result Error (List ExerciseDb))
+    = DeleteCompleted (Result Error Int)
+    | FetchCompleted (Result Error (List ExerciseDb))
     | KeyTyped KeyEvent
     | Quit
     | StartExercise String String
@@ -100,12 +101,18 @@ update : (Msg -> parentMsg) -> Msg -> Model -> ( Model, Cmd parentMsg )
 update toMsg msg model =
     case msg of
 
-        CompletedExercisesFetch (Ok exercises) ->
+        DeleteCompleted (Ok nRowsDeleted) ->
+            ( model, Cmd.none )
+
+        DeleteCompleted (Err e) ->
+            ( model, Cmd.none )
+
+        FetchCompleted (Ok exercises) ->
             ( { model | exercises = Loaded (Zipper.fromList exercises) }
             , Cmd.none
             )
 
-        CompletedExercisesFetch (Err e) ->
+        FetchCompleted (Err e) ->
             ( { model | exercises = LoadFailed (Error.toString e) }, Cmd.none )
 
         KeyTyped keyEvent ->
@@ -251,7 +258,31 @@ moveZipper fn status =
 handleDeleteExerciseKeypresses : (Msg -> parentMsg) -> KeyEvent -> Model -> ( Model, Cmd parentMsg )
 handleDeleteExerciseKeypresses toMsg keyEvent model =
     if keyEvent.kind == "char" && keyEvent.value == "y" then
-        ( model, Cmd.none )
+        case model.exercises of
+
+            Loaded maybeExercises ->
+                case maybeExercises of
+
+                    Just exercises ->
+                        let
+                            path = (Zipper.current exercises).fullPath
+                            deleteTask =
+                                Db.exec
+                                    Database.db
+                                    "DELETE FROM attempts WHERE full_path = ?"
+                                    [ path ]
+                        in
+                            ( model
+                            , Cmd.perform
+                                  deleteTask
+                                  (\result -> toMsg (DeleteCompleted result))
+                            )
+
+                    Nothing ->
+                        ( model, Cmd.none )
+
+            _ ->
+                ( model, Cmd.none )
 
     else
         ( { model | selectedExerciseStatus = Dormant }, Cmd.none )
