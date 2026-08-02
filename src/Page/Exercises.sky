@@ -118,7 +118,7 @@ update toMsg msg model =
                     handleNewExerciseKeypresses toMsg keyEvent model
 
                 IsDeleting ->
-                    ( model, Cmd.none )
+                    handleDeleteExerciseKeypresses toMsg keyEvent model
 
                 NewExerciseFailed _ _ ->
                     handleNewExerciseKeypresses toMsg keyEvent model
@@ -246,6 +246,15 @@ moveZipper fn status =
 
         _ ->
             status
+
+
+handleDeleteExerciseKeypresses : (Msg -> parentMsg) -> KeyEvent -> Model -> ( Model, Cmd parentMsg )
+handleDeleteExerciseKeypresses toMsg keyEvent model =
+    if keyEvent.kind == "char" && keyEvent.value == "y" then
+        ( model, Cmd.none )
+
+    else
+        ( { model | selectedExerciseStatus = Dormant }, Cmd.none )
 
 
 handleNewExerciseKeypresses : (Msg -> parentMsg) -> KeyEvent -> Model -> ( Model, Cmd parentMsg )
