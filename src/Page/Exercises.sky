@@ -1,6 +1,7 @@
 module Page.Exercises exposing (Model, Msg(..), init, update, view)
 
 import Database
+import Session
 import Sky.Core.Error as Error exposing (Error)
 import Sky.Core.File as File
 import Sky.Core.Process as Process
@@ -13,6 +14,7 @@ import Std.Ui exposing (Element)
 import Std.Ui.Background as Background
 import Std.Ui.Border as Border
 import Std.Ui.Font as Font
+import TuiElements
 import Zipper
 
 --
@@ -372,6 +374,11 @@ handleNewExerciseKeypresses toMsg keyEvent model =
 --
 -- VIEW
 --
+headerFooterPaddingLines : Int
+headerFooterPaddingLines =
+    10
+
+
 view : (Msg -> parentMsg) -> Model -> Element parentMsg
 view toMsg model =
     Ui.column
@@ -467,6 +474,14 @@ viewExerciseTable session zippedExercises =
                 allExercises = Zipper.toList exercises
                 widths = columnWidths allExercises
                 currentRow = Zipper.before exercises |> List.length
+                windowLineCount =
+                    (Session.terminalLineHeight session)
+                        - headerFooterPaddingLines
+                windowNumbers =
+                    TuiElements.windowedZipper
+                        windowLineCount
+                        currentRow
+                        (List.length allExercises)
             in
                 Ui.column
                     [ Ui.spacing 0 ]
