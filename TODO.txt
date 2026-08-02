@@ -1,4 +1,3 @@
-- add windowing for the Exercise list on Page.Exercises
 - store events in attempts
 - do some other analysis: e.g. character most mistyped, slowest to type, isues with specific character combinations
 - add an attempts page
@@ -6,7 +5,7 @@
 - track lines or typeable lines during exercise
 - have some way of tracking with keyboard is being used
 - have a way to adjust the window size
-- generate drills based on performance e
+- generate drills based on performance
 - config file to hold targetWpm, language mappings, and default terminal height
 
 

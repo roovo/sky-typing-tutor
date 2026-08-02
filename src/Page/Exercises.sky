@@ -1,6 +1,7 @@
 module Page.Exercises exposing (Model, Msg(..), init, update, view)
 
 import Database
+import List.Extra as LE
 import Session
 import Sky.Core.Error as Error exposing (Error)
 import Sky.Core.File as File
@@ -376,7 +377,7 @@ handleNewExerciseKeypresses toMsg keyEvent model =
 --
 headerFooterPaddingLines : Int
 headerFooterPaddingLines =
-    10
+    22
 
 
 view : (Msg -> parentMsg) -> Model -> Element parentMsg
@@ -482,12 +483,21 @@ viewExerciseTable session zippedExercises =
                         windowLineCount
                         currentRow
                         (List.length allExercises)
+                windowedExercises =
+                    LE.applyWindow
+                        windowNumbers.beforeCurrentLineCount
+                        currentRow
+                        windowNumbers.afterCurrentLineCount
+                        allExercises
             in
                 Ui.column
                     [ Ui.spacing 0 ]
-                    (List.indexedMap
-                        (viewExerciseRow widths currentRow)
-                        allExercises)
+                    ((List.indexedMap
+                        (viewExerciseRow
+                            widths
+                            windowNumbers.beforeCurrentLineCount)
+                        windowedExercises)
+                        ++ viewBlankRows windowNumbers.blankLineCount)
 
 type alias ColumnWidths =
     { filename : Int
@@ -553,6 +563,11 @@ formatFloat2dp f =
 columnGap : Int
 columnGap =
     3
+
+
+viewBlankRows : Int -> List (Element msg)
+viewBlankRows count =
+    LE.repeat count (Ui.row [] [ Ui.text "" ])
 
 
 viewExerciseRow : ColumnWidths -> Int -> Int -> ExerciseDb -> Element msg
