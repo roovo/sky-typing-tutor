@@ -105,10 +105,15 @@ update toMsg msg model =
     case msg of
 
         DeleteCompleted (Ok nRowsDeleted) ->
-            ( model, Cmd.none )
+            ( { model
+                | exercises = loadExercises
+                , selectedExerciseStatus = Dormant
+              }
+            , Cmd.none
+            )
 
         DeleteCompleted (Err e) ->
-            ( model, Cmd.none )
+            ( { model | selectedExerciseStatus = Dormant }, Cmd.none )
 
         FetchCompleted (Ok exercises) ->
             ( { model | exercises = Loaded (Zipper.fromList exercises) }
