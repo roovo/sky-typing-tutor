@@ -1,4 +1,3 @@
-- allow exercise to be deleted
 - update to latest version of sky (breaking changes)
 - add windowing for the Exercise list on Page.Exercises
 - do some other analysis: e.g. character most mistyped, slowest to type, isues with specific character combinations
