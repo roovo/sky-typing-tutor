@@ -7,8 +7,67 @@ import List.Extra as LE
 
 tests : List Test
 tests =
-    dropWhileTests ++ dropWhileRightTests ++ intersperseTests ++ repeatTests
+    applyWindowTests ++ dropRightTests ++ dropWhileTests ++ dropWhileRightTests
+        ++ intersperseTests
+        ++ repeatTests
         ++ takeWhileTests
+
+
+applyWindowTests : List Test
+applyWindowTests =
+    [ Test.test
+          "applyWindow does nothing to an empty list"
+          (\_ -> [] |> LE.applyWindow 999 3 999 |> Test.equal [])
+    , Test.test
+          "applyWindow does nothing if the before and after are beyond the list bounds"
+          (\_ ->
+              List.range 0 9 |> LE.applyWindow 999 3 999
+                  |> Test.equal [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ])
+    , Test.test
+          "applyWindow can truncate the start of the list"
+          (\_ ->
+              List.range 0 9 |> LE.applyWindow 2 4 999
+                  |> Test.equal [ 2, 3, 4, 5, 6, 7, 8, 9 ])
+    , Test.test
+          "applyWindow can truncate the end of the list"
+          (\_ ->
+              List.range 0 9 |> LE.applyWindow 999 4 3
+                  |> Test.equal [ 0, 1, 2, 3, 4, 5, 6, 7 ])
+    , Test.test
+          "applyWindow can truncate both ends of the list"
+          (\_ ->
+              List.range 0 9 |> LE.applyWindow 1 4 4
+                  |> Test.equal [ 3, 4, 5, 6, 7, 8 ])
+    , Test.test
+          "applyWindow returns a singleton of the current element if before and after are zero"
+          (\_ -> List.range 0 9 |> LE.applyWindow 0 4 0 |> Test.equal [ 4 ])
+    ]
+
+
+dropRightTests : List Test
+dropRightTests =
+    [ Test.test
+          "dropRight does nothing to an empty list"
+          (\_ -> [] |> LE.dropRight 27 |> Test.equal [])
+    , Test.test
+          "dropRight empties a list if asked to drop more elements than there are"
+          (\_ -> List.range 1 10 |> LE.dropRight 27 |> Test.equal [])
+    , Test.test
+          "dropRight does nothing to the list if not asked to drop any elements"
+          (\_ ->
+              List.range 1 10 |> LE.dropRight 0
+                  |> Test.equal [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ])
+    , Test.test
+          "dropRight drops the last element of the list if asked to drop a single element"
+          (\_ ->
+              List.range 1 10 |> LE.dropRight 1
+                  |> Test.equal [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ])
+    , Test.test
+          "dropRight drops the last 3 elements of a list"
+          (\_ ->
+              List.range 1 10 |> LE.dropRight 3
+                  |> Test.equal [ 1, 2, 3, 4, 5, 6, 7 ])
+    ]
 
 
 dropWhileTests : List Test

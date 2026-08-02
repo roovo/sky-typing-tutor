@@ -1,4 +1,23 @@
-module List.Extra exposing (dropWhile, dropWhileRight, intersperse, repeat, takeWhile)
+module List.Extra exposing
+    ( applyWindow
+    , dropRight
+    , dropWhile
+    , dropWhileRight
+    , intersperse
+    , repeat
+    , takeWhile
+    )
+
+
+applyWindow : Int -> Int -> Int -> List a -> List a
+applyWindow beforeCount currentIndex afterCount list =
+    list |> List.drop (currentIndex - beforeCount)
+        |> dropRight ((List.length list) - (currentIndex + afterCount) - 1)
+
+
+dropRight : Int -> List a -> List a
+dropRight n list =
+    List.reverse list |> List.drop n |> List.reverse
 
 
 dropWhile : (a -> Bool) -> List a -> List a
