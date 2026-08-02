@@ -390,7 +390,7 @@ view toMsg model =
                 [ viewHeading, viewOpenFailed exerciseError zippedExercises ]
 
             ( Loaded zippedExercises, Dormant ) ->
-                [ viewHeading, viewExerciseTable zippedExercises, viewHints ]
+                [ viewHeading, viewNotice model.notice, viewExerciseTable zippedExercises, viewHints ]
 
             ( Loaded _, IsAdding path ) ->
                 [ viewHeading, viewAddExercise path "" ]
@@ -413,6 +413,24 @@ viewHeading =
         , Border.rounded 4
         ]
         (Ui.el [] (Ui.text "Exercises"))
+
+
+viewNotice : Maybe Notice -> Element msg
+viewNotice maybeNotice =
+    case maybeNotice of
+
+        Just (Success msg) ->
+            Ui.el
+                [ Font.color (Ui.rgb 80 200 120) ]
+                (Ui.text msg)
+
+        Just (Failure msg) ->
+            Ui.el
+                [ Font.color (Ui.rgb 220 50 50) ]
+                (Ui.text msg)
+
+        Nothing ->
+            Ui.none
 
 
 viewLoadFailed : String -> Element msg
