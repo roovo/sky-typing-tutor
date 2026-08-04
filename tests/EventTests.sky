@@ -1,5 +1,6 @@
 module EventTests exposing (tests)
 
+import Sky.Core.Json.Encode as JE
 import Sky.Core.Prelude exposing (..)
 import Sky.Test as Test exposing (Test)
 import Event exposing (Event)
@@ -7,7 +8,32 @@ import Event exposing (Event)
 
 tests : List Test
 tests =
-    howManyTypedTests ++ timeTakenTests
+    toJsonTests ++ howManyTypedTests ++ timeTakenTests
+
+
+toJsonTests : List Test
+toJsonTests =
+    [ Test.test
+          "toJson encodes a regular character"
+          (\_ ->
+              Event 'a' 123 |> Event.toJson |> JE.encode 0
+                  |> Test.equal "{\"char\":97,\"timeTaken\":123}")
+    , Test.test
+          "toJson encodes a space character"
+          (\_ ->
+              Event ' ' 222 |> Event.toJson |> JE.encode 0
+                  |> Test.equal "{\"char\":32,\"timeTaken\":222}")
+    , Test.test
+          "toJson encodes a backspace character"
+          (\_ ->
+              Event backspaceChar 0 |> Event.toJson |> JE.encode 0
+                  |> Test.equal "{\"char\":8,\"timeTaken\":0}")
+    , Test.test
+          "toJson encodes an enter character"
+          (\_ ->
+              Event enterChar 0 |> Event.toJson |> JE.encode 0
+                  |> Test.equal "{\"char\":13,\"timeTaken\":0}")
+    ]
 
 
 howManyTypedTests : List Test

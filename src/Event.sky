@@ -1,4 +1,6 @@
-module Event exposing (Event, howManyTyped, timeTaken)
+module Event exposing (Event, howManyTyped, timeTaken, toJson)
+
+import Sky.Core.Json.Encode as JE
 
 type alias Event =
     { char : Char
@@ -15,6 +17,14 @@ timeTaken : List Event -> Int
 timeTaken events =
     events |> List.filter (\e -> e.timeTaken < 3000)
         |> List.foldl (\e acc -> e.timeTaken + acc) 0
+
+
+toJson : Event -> JE.Value
+toJson event =
+    JE.object
+        [ ( "char", JE.int (Char.toCode event.char) )
+        , ( "timeTaken", JE.int event.timeTaken )
+        ]
 
 
 --
