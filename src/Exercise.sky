@@ -5,6 +5,7 @@ module Exercise exposing
     , accuracy
     , consume
     , currentLineIndex
+    , eventsAsJson
     , init
     , isComplete
     , language
@@ -16,6 +17,7 @@ module Exercise exposing
     )
 
 import Sky.Core.Debug as Debug
+import Sky.Core.Json.Encode as JE
 import Event exposing (Event)
 import ExerciseParser
 import Float.Extra as FE
@@ -82,6 +84,11 @@ currentLineIndex exercise =
                     False
     in
         Zipper.before exercise.steps |> List.filter newLineSteps |> List.length
+
+
+eventsAsJson : Exercise -> JE.Value
+eventsAsJson exercise =
+    exercise.events |> List.reverse |> JE.list Event.toJson
 
 
 isComplete : Exercise -> Bool

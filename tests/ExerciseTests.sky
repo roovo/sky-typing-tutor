@@ -1,5 +1,6 @@
 module ExerciseTests exposing (tests)
 
+import Sky.Core.Json.Encode as JE
 import Sky.Core.Prelude exposing (..)
 import Sky.Test as Test exposing (Test)
 import Exercise exposing (Exercise, Printable(..), Style(..))
@@ -8,7 +9,8 @@ import Printable exposing (Printable(..), Style(..))
 
 tests : List Test
 tests =
-    accuracyTests ++ consumeTests ++ currentLineIndexTests ++ isCompleteTests
+    accuracyTests ++ consumeTests ++ currentLineIndexTests ++ eventsAsJsonTests
+        ++ isCompleteTests
         ++ languageTests
         ++ printableLineCountTests
         ++ printableLinesTests
@@ -237,6 +239,41 @@ currentLineIndexTests =
                   |> Exercise.consume enterChar 0
                   |> Exercise.currentLineIndex
                   |> Test.equal 5)
+    ]
+
+
+eventsAsJsonTests : List Test
+eventsAsJsonTests =
+    [ Test.test
+          "eventsAsJson returns '[]' for an exercise with no events"
+          (\_ ->
+              exerciseWithText "" |> Exercise.eventsAsJson |> JE.encode 0
+                  |> Test.equal "[]")
+    , Test.test
+          "eventsAsJson converts a single event"
+          (\_ ->
+              exerciseWithText "a" |> Exercise.consume 'a' 672
+                  |> Exercise.eventsAsJson
+                  |> JE.encode 0
+                  |> Test.equal "[{\"char\":97,\"timeTaken\":672}]")
+    , Test.test
+          "eventsAsJson converts a multiple events including a backspace"
+          (\_ ->
+              exerciseWithText "a" |> Exercise.consume 'b' 672
+                  |> Exercise.consume backspaceChar 111
+                  |> Exercise.eventsAsJson
+                  |> JE.encode 0
+                  |> Test.equal
+                         "[{\"char\":98,\"timeTaken\":672},{\"char\":8,\"timeTaken\":111}]")
+    , Test.test
+          "eventsAsJson converts a multiple events including an enter"
+          (\_ ->
+              exerciseWithText "a" |> Exercise.consume 'b' 672
+                  |> Exercise.consume enterChar 97
+                  |> Exercise.eventsAsJson
+                  |> JE.encode 0
+                  |> Test.equal
+                         "[{\"char\":98,\"timeTaken\":672},{\"char\":13,\"timeTaken\":97}]")
     ]
 
 
