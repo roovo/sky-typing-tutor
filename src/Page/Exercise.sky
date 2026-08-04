@@ -8,6 +8,7 @@ import KeyEvent exposing (KeyEvent)
 import List.Extra as LE
 import Printable exposing (Printable)
 import Sky.Core.Error as Error exposing (Error)
+import Sky.Core.Json.Encode as JE
 import Sky.Core.Task as Task
 import Session
 import Sky.Core.Prelude exposing (..)
@@ -202,7 +203,7 @@ saveResult exercise =
         , String.fromFloat (Exercise.accuracy exercise)
         , String.fromFloat (Exercise.wpm exercise)
         , String.fromInt (Exercise.typeableCharacterCount exercise)
-        , "[]"
+        , JE.encode 0 (Exercise.eventsAsJson exercise)
         ]
 
 

@@ -1,4 +1,3 @@
-- store events in attempts
 - do some other analysis: e.g. character most mistyped, slowest to type, isues with specific character combinations
 - add an attempts page
 - did I make this slower when I move to windowing being done on Typeables instead of Steps (commit 0b35871)
