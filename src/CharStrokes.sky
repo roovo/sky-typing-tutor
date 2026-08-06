@@ -1,0 +1,6 @@
+module CharStrokes exposing (fromEventList)
+
+
+fromEventList : List Event -> List CharStrokes
+fromEventList events =
+    []
