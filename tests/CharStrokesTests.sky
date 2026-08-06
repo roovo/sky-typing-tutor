@@ -102,6 +102,43 @@ fromExerciseDataTests =
                                ]
                            }
                          ])
+    , Test.test
+          "fromEventList returns a list of CharStrokes for multiple corrections to a single character"
+          (\_ ->
+              [ Event 'a' 11
+              , Event 'c' 22
+              , Event 'd' 33
+              , Event backspaceChar 44
+              , Event 'b' 55
+              , Event backspaceChar 66
+              , Event backspaceChar 77
+              , Event 'b' 88
+              , Event 'c' 99
+              , Event 'd' 100
+              ]
+                  |> CharStrokes.fromEventList
+                  |> Test.equal
+                         [ { target = 'a'
+                           , events = [ { char = 'a', timeTaken = 11 } ]
+                           }
+                         , { target = 'b'
+                           , events =
+                               [ { char = 'b', timeTaken = 88 }
+                               , { char = backspaceChar, timeTaken = 77 }
+                               , { char = backspaceChar, timeTaken = 66 }
+                               , { char = 'b', timeTaken = 55 }
+                               , { char = backspaceChar, timeTaken = 44 }
+                               , { char = 'd', timeTaken = 33 }
+                               , { char = 'c', timeTaken = 22 }
+                               ]
+                           }
+                         , { target = 'c'
+                           , events = [ { char = 'c', timeTaken = 99 } ]
+                           }
+                         , { target = 'd'
+                           , events = [ { char = 'd', timeTaken = 100 } ]
+                           }
+                         ])
     ]
     -- WHAT HAPPENS IF YOU BACKSPACE PAST THE EXERCISE START
     -- EITHER AT THE START OF THE EXERCISE OR AFTER STARTING
