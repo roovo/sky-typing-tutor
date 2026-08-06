@@ -24,4 +24,28 @@ fromExerciseDataTests =
                            , events = [ { char = 'a', timeTaken = 123 } ]
                            }
                          ])
+    , Test.test
+          "fromEventList returns a list of CharStrokes if there is a list of events with no backspaces"
+          (\_ ->
+              [ Event 'a' 123, Event ' ' 99, Event enterChar 33 ]
+                  |> CharStrokes.fromEventList
+                  |> Test.equal
+                         [ { target = 'a'
+                           , events = [ { char = 'a', timeTaken = 123 } ]
+                           }
+                         , { target = ' '
+                           , events = [ { char = ' ', timeTaken = 99 } ]
+                           }
+                         , { target = enterChar
+                           , events = [ { char = enterChar, timeTaken = 33 } ]
+                           }
+                         ])
     ]
+
+
+--
+-- HELPERS
+--
+enterChar : Char
+enterChar =
+    Char.fromCode 13
