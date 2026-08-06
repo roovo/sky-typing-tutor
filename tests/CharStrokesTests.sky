@@ -51,12 +51,34 @@ fromExerciseDataTests =
                            }
                          , { target = badckspaceChar
                            , events =
-                               [ { char = ' ', timeTaken = 99 }
+                               [ { char = badckspaceChar, timeTaken = 33 }
+                               , { char = ' ', timeTaken = 99 }
+                               ]
+                           }
+                         ])
+    , Test.test
+          "fromEventList returns a list of CharStrokes if there is a single successful correction"
+          (\_ ->
+              [ Event 'a' 123
+              , Event ' ' 99
+              , Event badckspaceChar 33
+              , Event 'b' 44
+              ]
+                  |> CharStrokes.fromEventList
+                  |> Test.equal
+                         [ { target = 'a'
+                           , events = [ { char = 'a', timeTaken = 123 } ]
+                           }
+                         , { target = 'b'
+                           , events =
+                               [ { char = 'b', timeTaken = 44 }
                                , { char = badckspaceChar, timeTaken = 33 }
+                               , { char = ' ', timeTaken = 99 }
                                ]
                            }
                          ])
     ]
+    -- NEED TO STRIP LEADING BACKSPACES FROM THE EXERCISE
 
 
 --

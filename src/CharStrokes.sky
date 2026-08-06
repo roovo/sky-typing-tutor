@@ -18,10 +18,17 @@ fromEventList events =
                     (CharStrokes event.char [ event ]) :: acc
 
                 ( 8, h :: t ) ->
-                    (addChar event h) :: t
+                    (addEvent event h) :: t
 
-                ( charCode, _ ) ->
+                ( charCode, [] ) ->
                     (CharStrokes (Char.fromCode charCode) [ event ]) :: acc
+
+                ( charCode, h :: t ) ->
+                    if h.target == backspaceChar then
+                        (addEvent event h) :: t
+
+                    else
+                        (CharStrokes (Char.fromCode charCode) [ event ]) :: acc
     in
         List.foldl helper [] events |> List.reverse
 
@@ -29,6 +36,11 @@ fromEventList events =
 --
 -- PRIVATE
 --'
-addChar : Event -> CharStrokes -> CharStrokes
-addChar event charStrokes =
-    CharStrokes event.char (charStrokes.events ++ [ event ])
+addEvent : Event -> CharStrokes -> CharStrokes
+addEvent event charStrokes =
+    CharStrokes event.char (event :: charStrokes.events)
+
+
+backspaceChar : Char
+backspaceChar =
+    Char.fromCode 8
