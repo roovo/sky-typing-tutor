@@ -10,4 +10,25 @@ type alias CharStrokes =
 
 fromEventList : List Event -> List CharStrokes
 fromEventList events =
-    List.map (\e -> CharStrokes e.char [ e ]) events
+    let
+        helper event acc =
+            case ( Char.toCode event.char, acc ) of
+
+                ( 8, [] ) ->
+                    (CharStrokes event.char [ event ]) :: acc
+
+                ( 8, h :: t ) ->
+                    (addChar event h) :: t
+
+                ( charCode, _ ) ->
+                    (CharStrokes (Char.fromCode charCode) [ event ]) :: acc
+    in
+        List.foldl helper [] events |> List.reverse
+
+
+--
+-- PRIVATE
+--'
+addChar : Event -> CharStrokes -> CharStrokes
+addChar event charStrokes =
+    CharStrokes event.char (charStrokes.events ++ [ event ])

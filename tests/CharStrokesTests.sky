@@ -40,12 +40,33 @@ fromExerciseDataTests =
                            , events = [ { char = enterChar, timeTaken = 33 } ]
                            }
                          ])
+    , Test.test
+          "fromEventList returns a list of CharStrokes if there is a backspace on the end"
+          (\_ ->
+              [ Event 'a' 123, Event ' ' 99, Event badckspaceChar 33 ]
+                  |> CharStrokes.fromEventList
+                  |> Test.equal
+                         [ { target = 'a'
+                           , events = [ { char = 'a', timeTaken = 123 } ]
+                           }
+                         , { target = badckspaceChar
+                           , events =
+                               [ { char = ' ', timeTaken = 99 }
+                               , { char = badckspaceChar, timeTaken = 33 }
+                               ]
+                           }
+                         ])
     ]
 
 
 --
 -- HELPERS
 --
+badckspaceChar : Char
+badckspaceChar =
+    Char.fromCode 8
+
+
 enterChar : Char
 enterChar =
     Char.fromCode 13
