@@ -1,6 +1,7 @@
 module CharStrokesTests exposing (tests)
 
 import CharStrokes
+import Event exposing (Event)
 import Sky.Test as Test exposing (Test)
 
 
@@ -14,4 +15,13 @@ fromExerciseDataTests =
     [ Test.test
           "fromEventList returns [] if there are no Events"
           (\_ -> [] |> CharStrokes.fromEventList |> Test.equal [])
+    , Test.test
+          "fromEventList returns a single CharStroke if there is a single event"
+          (\_ ->
+              [ Event 'a' 123 ] |> CharStrokes.fromEventList
+                  |> Test.equal
+                         [ { target = 'a'
+                           , events = [ { char = 'a', timeTaken = 123 } ]
+                           }
+                         ])
     ]

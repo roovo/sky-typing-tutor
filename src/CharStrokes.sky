@@ -1,6 +1,13 @@
 module CharStrokes exposing (fromEventList)
 
+import Event exposing (Event)
+
+type alias CharStrokes =
+    { target : Char
+    , events : List Event
+    }
+
 
 fromEventList : List Event -> List CharStrokes
 fromEventList events =
-    []
+    List.map (\e -> CharStrokes e.char [ e ]) events
