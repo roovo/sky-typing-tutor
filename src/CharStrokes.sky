@@ -18,7 +18,11 @@ fromEventList events =
                     (CharStrokes event.char [ event ]) :: acc
 
                 ( 8, h :: t ) ->
-                    (addEvent event h) :: t
+                    if h.target == backspaceChar then
+                        foldBack event h t
+
+                    else
+                        (addEvent event h) :: t
 
                 ( charCode, [] ) ->
                     (CharStrokes (Char.fromCode charCode) [ event ]) :: acc
@@ -44,3 +48,17 @@ addEvent event charStrokes =
 backspaceChar : Char
 backspaceChar =
     Char.fromCode 8
+
+
+foldBack : Event -> CharStrokes -> List CharStrokes -> List CharStrokes
+foldBack event head tail =
+    case tail of
+
+        [] ->
+            (addEvent event head) :: tail
+
+        h :: t ->
+            let
+                newHead = { head | events = head.events ++ h.events }
+            in
+                (addEvent event newHead) :: t

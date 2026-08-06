@@ -43,15 +43,15 @@ fromExerciseDataTests =
     , Test.test
           "fromEventList returns a list of CharStrokes if there is a backspace on the end"
           (\_ ->
-              [ Event 'a' 123, Event ' ' 99, Event badckspaceChar 33 ]
+              [ Event 'a' 123, Event ' ' 99, Event backspaceChar 33 ]
                   |> CharStrokes.fromEventList
                   |> Test.equal
                          [ { target = 'a'
                            , events = [ { char = 'a', timeTaken = 123 } ]
                            }
-                         , { target = badckspaceChar
+                         , { target = backspaceChar
                            , events =
-                               [ { char = badckspaceChar, timeTaken = 33 }
+                               [ { char = backspaceChar, timeTaken = 33 }
                                , { char = ' ', timeTaken = 99 }
                                ]
                            }
@@ -61,7 +61,7 @@ fromExerciseDataTests =
           (\_ ->
               [ Event 'a' 123
               , Event ' ' 99
-              , Event badckspaceChar 33
+              , Event backspaceChar 33
               , Event 'b' 44
               ]
                   |> CharStrokes.fromEventList
@@ -72,20 +72,46 @@ fromExerciseDataTests =
                          , { target = 'b'
                            , events =
                                [ { char = 'b', timeTaken = 44 }
-                               , { char = badckspaceChar, timeTaken = 33 }
+                               , { char = backspaceChar, timeTaken = 33 }
                                , { char = ' ', timeTaken = 99 }
                                ]
                            }
                          ])
+    , Test.test
+          "fromEventList returns a list of CharStrokes if there is a successful 2-character correction"
+          (\_ ->
+              [ Event 'a' 11
+              , Event 'c' 22
+              , Event 'd' 33
+              , Event backspaceChar 44
+              , Event backspaceChar 55
+              , Event 'b' 66
+              ]
+                  |> CharStrokes.fromEventList
+                  |> Test.equal
+                         [ { target = 'a'
+                           , events = [ { char = 'a', timeTaken = 11 } ]
+                           }
+                         , { target = 'b'
+                           , events =
+                               [ { char = 'b', timeTaken = 66 }
+                               , { char = backspaceChar, timeTaken = 55 }
+                               , { char = backspaceChar, timeTaken = 44 }
+                               , { char = 'd', timeTaken = 33 }
+                               , { char = 'c', timeTaken = 22 }
+                               ]
+                           }
+                         ])
     ]
-    -- NEED TO STRIP LEADING BACKSPACES FROM THE EXERCISE
+    -- WHAT HAPPENS IF YOU BACKSPACE PAST THE EXERCISE START
+    -- EITHER AT THE START OF THE EXERCISE OR AFTER STARTING
 
 
 --
 -- HELPERS
 --
-badckspaceChar : Char
-badckspaceChar =
+backspaceChar : Char
+backspaceChar =
     Char.fromCode 8
 
 
