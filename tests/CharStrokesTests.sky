@@ -1,13 +1,81 @@
 module CharStrokesTests exposing (tests)
 
-import CharStrokes
+import CharStrokes exposing (CharStrokes)
 import Event exposing (Event)
 import Sky.Test as Test exposing (Test)
 
 
 tests : List Test
 tests =
-    fromExerciseDataTests
+    errorRateTests ++ fromExerciseDataTests
+
+
+errorRateTests : List Test
+errorRateTests =
+    [ Test.test
+          "errorRate returns 0.0 if there are no CharStrokes"
+          (\_ -> [] |> CharStrokes.errorRate |> Test.equal 0.0)
+    , Test.test
+          "errorRate returns 0.0 if there is a single perfectly typed character"
+          (\_ ->
+              [ CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ] ]
+                  |> CharStrokes.errorRate
+                  |> Test.equal 0.0)
+    , Test.test
+          "errorRate returns 0.0 if there multiple perfectly typed characters"
+          (\_ ->
+              [ CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              ]
+                  |> CharStrokes.errorRate
+                  |> Test.equal 0.0)
+    , Test.test
+          "errorRate returns 1.0 if all the characters were mistyped"
+          (\_ ->
+              [ CharStrokes
+                    'a'
+                    [ { char = 'a', timeTaken = 11 }
+                    , { char = 'a', timeTaken = 11 }
+                    ]
+              , CharStrokes
+                    'a'
+                    [ { char = 'a', timeTaken = 11 }
+                    , { char = 'a', timeTaken = 11 }
+                    ]
+              , CharStrokes
+                    'a'
+                    [ { char = 'a', timeTaken = 11 }
+                    , { char = 'a', timeTaken = 11 }
+                    ]
+              , CharStrokes
+                    'a'
+                    [ { char = 'a', timeTaken = 11 }
+                    , { char = 'a', timeTaken = 11 }
+                    ]
+              ]
+                  |> CharStrokes.errorRate
+                  |> Test.equal 1.0)
+    , Test.test
+          "errorRate returns 0.5 if half the characters were mistyped"
+          (\_ ->
+              [ CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes
+                    'a'
+                    [ { char = 'a', timeTaken = 11 }
+                    , { char = 'a', timeTaken = 11 }
+                    ]
+              , CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes
+                    'a'
+                    [ { char = 'a', timeTaken = 11 }
+                    , { char = 'a', timeTaken = 11 }
+                    ]
+              ]
+                  |> CharStrokes.errorRate
+                  |> Test.equal 0.5)
+    ]
 
 
 fromExerciseDataTests : List Test

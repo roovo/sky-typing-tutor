@@ -1,6 +1,7 @@
-module CharStrokes exposing (CharStrokes, fromEventList)
+module CharStrokes exposing (CharStrokes, fromEventList, errorRate)
 
 import Event exposing (Event)
+import Float.Extra as FE
 
 type alias CharStrokes =
     { target : Char
@@ -8,6 +9,9 @@ type alias CharStrokes =
     }
 
 
+--
+-- CONSTRUCTION
+--
 fromEventList : List Event -> List CharStrokes
 fromEventList events =
     let
@@ -35,6 +39,25 @@ fromEventList events =
                         (CharStrokes (Char.fromCode charCode) [ event ]) :: acc
     in
         List.foldl helper [] events |> List.reverse
+
+
+--
+-- INFO
+--
+errorRate : List CharStrokes -> Float
+errorRate charStrokes =
+    let
+        overallCount = charStrokes |> List.length |> FE.fromInt
+        erroredCount =
+            charStrokes |> List.filter (\cs -> (List.length cs.events) > 1)
+                |> List.length
+                |> FE.fromInt
+    in
+        if overallCount == 0.0 then
+            0.0
+
+        else
+            erroredCount / overallCount
 
 
 --
