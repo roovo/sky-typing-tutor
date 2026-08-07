@@ -1,4 +1,6 @@
 - do some other analysis: e.g. character most mistyped, slowest to type, isues with specific character combinations
+  - should "fromEventList returns a list of CharStrokes when backspacing past the mistake" list the mistakes
+    under 'b' rather than 'a'
 - add an attempts page
 - did I make this slower when I move to windowing being done on Typeables instead of Steps (commit 0b35871)
 - factor out database stuff (look at new sky database stuff too)

@@ -139,6 +139,31 @@ fromExerciseDataTests =
                            , events = [ { char = 'd', timeTaken = 100 } ]
                            }
                          ])
+    , Test.test
+          "fromEventList returns a list of CharStrokes when backspacing past the mistake"
+          (\_ ->
+              [ Event 'a' 11
+              , Event 'c' 22
+              , Event backspaceChar 33
+              , Event backspaceChar 44
+              , Event 'a' 55
+              , Event 'b' 66
+              ]
+                  |> CharStrokes.fromEventList
+                  |> Test.equal
+                         [ { target = 'a'
+                           , events =
+                               [ { char = 'a', timeTaken = 55 }
+                               , { char = backspaceChar, timeTaken = 44 }
+                               , { char = backspaceChar, timeTaken = 33 }
+                               , { char = 'c', timeTaken = 22 }
+                               , { char = 'a', timeTaken = 11 }
+                               ]
+                           }
+                         , { target = 'b'
+                           , events = [ { char = 'b', timeTaken = 66 } ]
+                           }
+                         ])
     ]
     -- WHAT HAPPENS IF YOU BACKSPACE PAST THE EXERCISE START
     -- EITHER AT THE START OF THE EXERCISE OR AFTER STARTING
