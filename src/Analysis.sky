@@ -1,6 +1,11 @@
-module Analysis exposing (overallAssessment)
+module Analysis exposing (characterErrors, overallAssessment)
 
 import Exercise
+
+
+characterErrors : List CharStrokes -> List CharacterError
+characterErrors charStrokes =
+    []
 
 
 overallAssessment : Float -> Exercise -> String

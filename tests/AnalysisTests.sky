@@ -8,7 +8,15 @@ import Exercise
 
 tests : List Test
 tests =
-    overallAssessmentTests
+    characterErrorsTests ++ overallAssessmentTests
+
+
+characterErrorsTests : List Test
+characterErrorsTests =
+    [ Test.test
+          "characterErrors returns [] if there are no SharStrokes"
+          (\_ -> [] |> Analysis.characterErrors |> Test.equal [])
+    ]
 
 
 overallAssessmentTests : List Test
