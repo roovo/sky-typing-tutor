@@ -1,4 +1,4 @@
-module CharStrokes exposing (fromEventList)
+module CharStrokes exposing (CharStrokes, fromEventList)
 
 import Event exposing (Event)
 

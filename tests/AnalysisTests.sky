@@ -1,5 +1,6 @@
 module AnalysisTests exposing (tests)
 
+import CharStrokes exposing (CharStrokes)
 import Sky.Core.Prelude exposing (..)
 import Sky.Test as Test exposing (Test)
 import Analysis
@@ -14,8 +15,26 @@ tests =
 characterErrorsTests : List Test
 characterErrorsTests =
     [ Test.test
-          "characterErrors returns [] if there are no SharStrokes"
+          "characterErrors returns [] if there are no CharStrokes"
           (\_ -> [] |> Analysis.characterErrors |> Test.equal [])
+    , Test.test
+          "characterErrors returns [] if there were no mistakes in the exercise"
+          (\_ ->
+              [ CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'b' [ { char = 'b', timeTaken = 11 } ]
+              , CharStrokes 'b' [ { char = 'b', timeTaken = 11 } ]
+              , CharStrokes 'b' [ { char = 'b', timeTaken = 11 } ]
+              , CharStrokes 'b' [ { char = 'b', timeTaken = 11 } ]
+              , CharStrokes 'c' [ { char = 'c', timeTaken = 11 } ]
+              , CharStrokes 'c' [ { char = 'c', timeTaken = 11 } ]
+              , CharStrokes 'c' [ { char = 'c', timeTaken = 11 } ]
+              , CharStrokes 'c' [ { char = 'c', timeTaken = 11 } ]
+              ]
+                  |> Analysis.characterErrors
+                  |> Test.equal [])
     ]
 
 
