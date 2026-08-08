@@ -302,22 +302,43 @@ groupByCharTests =
                                  ]
                                )
                              ]))
+    , Test.test
+          "groupByChar returns the CharStrokes if the input contains only Charstrokes for different characters"
+          (\_ ->
+              [ CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'b' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'c' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'd' [ { char = 'a', timeTaken = 11 } ]
+              ]
+                  |> CharStrokes.groupByChar
+                  |> Test.equal
+                         (Dict.fromList
+                             [ ( 'a'
+                               , [ CharStrokes
+                                       'a'
+                                       [ { char = 'a', timeTaken = 11 } ]
+                                 ]
+                               )
+                             , ( 'b'
+                               , [ CharStrokes
+                                       'b'
+                                       [ { char = 'a', timeTaken = 11 } ]
+                                 ]
+                               )
+                             , ( 'c'
+                               , [ CharStrokes
+                                       'c'
+                                       [ { char = 'a', timeTaken = 11 } ]
+                                 ]
+                               )
+                             , ( 'd'
+                               , [ CharStrokes
+                                       'd'
+                                       [ { char = 'a', timeTaken = 11 } ]
+                                 ]
+                               )
+                             ]))
     ]
-    -- , Test.test
-    --       "groupByChar returns the CharStrokes if the input contains only Charstrokes for different characters"
-    --       (\_ ->
-    --           [ CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
-    --           , CharStrokes 'b' [ { char = 'a', timeTaken = 11 } ]
-    --           , CharStrokes 'c' [ { char = 'a', timeTaken = 11 } ]
-    --           , CharStrokes 'd' [ { char = 'a', timeTaken = 11 } ]
-    --           ]
-    --               |> CharStrokes.groupByChar
-    --               |> Test.equal
-    --                      [ CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
-    --                      , CharStrokes 'b' [ { char = 'a', timeTaken = 11 } ]
-    --                      , CharStrokes 'c' [ { char = 'a', timeTaken = 11 } ]
-    --                      , CharStrokes 'd' [ { char = 'a', timeTaken = 11 } ]
-    --                      ])
     -- , Test.test
     --       "groupByChar groups CharStrokes for the same character"
     --       (\_ ->
