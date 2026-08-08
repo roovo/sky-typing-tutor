@@ -35,6 +35,29 @@ characterErrorsTests =
               ]
                   |> Analysis.characterErrors
                   |> Test.equal [])
+    , Test.test
+          "characterErrors returns [] if there was only one mistake in the exercise"
+          (\_ ->
+              [ CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes
+                    'a'
+                    [ { char = 'a', timeTaken = 11 }
+                    , { char = backspaceChar, timeTaken = 11 }
+                    , { char = 'x', timeTaken = 11 }
+                    ]
+              , CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'b' [ { char = 'b', timeTaken = 11 } ]
+              , CharStrokes 'b' [ { char = 'b', timeTaken = 11 } ]
+              , CharStrokes 'b' [ { char = 'b', timeTaken = 11 } ]
+              , CharStrokes 'b' [ { char = 'b', timeTaken = 11 } ]
+              , CharStrokes 'c' [ { char = 'c', timeTaken = 11 } ]
+              , CharStrokes 'c' [ { char = 'c', timeTaken = 11 } ]
+              , CharStrokes 'c' [ { char = 'c', timeTaken = 11 } ]
+              , CharStrokes 'c' [ { char = 'c', timeTaken = 11 } ]
+              ]
+                  |> Analysis.characterErrors
+                  |> Test.equal [])
     ]
 
 
@@ -70,6 +93,11 @@ overallAssessmentTests =
 --
 -- HELPERS
 --
+backspaceChar : Char
+backspaceChar =
+    Char.fromCode 8
+
+
 betterAccuracyExercise : Exercise
 betterAccuracyExercise =
     Exercise.init "" "1234567890" |> Exercise.consume '1' 0

@@ -1,11 +1,24 @@
 module Analysis exposing (characterErrors, overallAssessment)
 
+import CharStrokes
 import Exercise
 
 
-characterErrors : List CharStrokes -> List CharacterError
+---
+-- CONSTANTS
+--
+errorRateFactor : Float
+errorRateFactor =
+    1.5
+
+
+characterErrors : List CharStrokes -> List Char
 characterErrors charStrokes =
-    []
+    let
+        overallErrorRate = charStrokes |> CharStrokes.errorRate
+        errorRateThreshold = overallErrorRate * errorRateFactor
+    in
+        []
 
 
 overallAssessment : Float -> Exercise -> String
