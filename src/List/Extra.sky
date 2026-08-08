@@ -86,6 +86,9 @@ intersperse sep xs =
                 List.cons hd spersed
 
 
+-- WORKAROUND: Tuple destructuring in lambda params causes codegen error
+-- (see TUPLE_BUG_REPORT.md Bug 1). When fixed, rewrite as:
+--     step x ( trues, falses ) = ...
 partition : (a -> Bool) -> List a -> ( List a, List a )
 partition pred list =
     let

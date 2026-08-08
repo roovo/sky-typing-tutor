@@ -205,6 +205,12 @@ handleListingKeypresses toMsg keyEvent model =
         ( model, Cmd.none )
 
 
+-- WORKAROUND: Nested pattern match on user-defined ADT wrapping Maybe causes
+-- codegen error (see bug-report-nested-pattern.md). When fixed, rewrite as:
+--     case model.exercises of
+--         Loaded (Just exercises) -> ...
+--         Loaded Nothing -> ...
+--         _ -> ...
 handleOpenExercise : (Msg -> parentMsg) -> Model -> ( Model, Cmd parentMsg )
 handleOpenExercise toMsg model =
     case model.exercises of
@@ -256,6 +262,8 @@ readExerciseFile path =
             Err (Error.toString e)
 
 
+-- WORKAROUND: Nested pattern match on user-defined ADT wrapping Maybe
+-- (see bug-report-nested-pattern.md).
 moveZipper : (Zipper ExerciseDb -> Zipper ExerciseDb) -> Status (Maybe (Zipper ExerciseDb)) -> Status (Maybe (Zipper ExerciseDb))
 moveZipper fn status =
     case status of
@@ -282,6 +290,8 @@ moveZipper fn status =
             status
 
 
+-- WORKAROUND: Nested pattern match on user-defined ADT wrapping Maybe
+-- (see bug-report-nested-pattern.md).
 handleDeleteExerciseKeypresses : (Msg -> parentMsg) -> KeyEvent -> Model -> ( Model, Cmd parentMsg )
 handleDeleteExerciseKeypresses toMsg keyEvent model =
     if keyEvent.kind == "char" && keyEvent.value == "y" then
