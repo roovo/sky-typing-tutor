@@ -75,44 +75,45 @@ errorRate charStrokes =
 --             charStrokes |> LE.gatherWith (\a b -> a.target == b.target)
 --                 |> List.foldl helper []
 --                 |> List.reverse
-groupByChar : List CharStrokes -> List CharStrokes
+groupByChar : List CharStrokes -> Dict Char (List CharStrokes)
 groupByChar charStrokes =
-    let
-        insertOrAppend cs dict =
-            let
-                key = Char.toCode cs.target
-            in
-                case Dict.get key dict of
-
-                    Nothing ->
-                        Dict.insert key cs dict
-
-                    Just existing ->
-                        Dict.insert
-                            key
-                            { existing | events = existing.events ++ cs.events }
-                            dict
-        dict = List.foldl insertOrAppend Dict.empty charStrokes
-        firstOccurrence =
-            List.foldl
-                (\cs acc ->
-                    let
-                        key = Char.toCode cs.target
-                    in
-                        case Dict.get key acc of
-
-                            Nothing ->
-                                Dict.insert key (Dict.size acc) acc
-
-                            Just _ ->
-                                acc)
-                Dict.empty
-                charStrokes
-        orderOf cs =
-            Dict.get (Char.toCode cs.target) firstOccurrence
-                |> Maybe.withDefault 0
-    in
-        Dict.values dict |> List.sortBy orderOf
+    Dict.empty
+    -- let
+    --     insertOrAppend cs dict =
+    --         let
+    --             key = Char.toCode cs.target
+    --         in
+    --             case Dict.get key dict of
+    --
+    --                 Nothing ->
+    --                     Dict.insert key cs dict
+    --
+    --                 Just existing ->
+    --                     Dict.insert
+    --                         key
+    --                         { existing | events = existing.events ++ cs.events }
+    --                         dict
+    --     dict = List.foldl insertOrAppend Dict.empty charStrokes
+    --     firstOccurrence =
+    --         List.foldl
+    --             (\cs acc ->
+    --                 let
+    --                     key = Char.toCode cs.target
+    --                 in
+    --                     case Dict.get key acc of
+    --
+    --                         Nothing ->
+    --                             Dict.insert key (Dict.size acc) acc
+    --
+    --                         Just _ ->
+    --                             acc)
+    --             Dict.empty
+    --             charStrokes
+    --     orderOf cs =
+    --         Dict.get (Char.toCode cs.target) firstOccurrence
+    --             |> Maybe.withDefault 0
+    -- in
+    --     Dict.values dict |> List.sortBy orderOf
 
 
 --
