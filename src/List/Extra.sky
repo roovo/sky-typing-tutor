@@ -3,6 +3,7 @@ module List.Extra exposing
     , dropRight
     , dropWhile
     , dropWhileRight
+    , gatherWith
     , intersperse
     , partition
     , repeat
@@ -47,6 +48,26 @@ dropWhileRight p list =
                 x :: xs)
         []
         list
+
+
+gatherWith : (a -> a -> Bool) -> List a -> List ( a, List a )
+gatherWith testFn list =
+    let
+        helper : List a -> List ( a, List a ) -> List ( a, List a )
+        helper scattered gathered =
+            case scattered of
+
+                [] ->
+                    List.reverse gathered
+
+                toGather :: population ->
+                    let
+                        ( gathering, remaining ) =
+                            partition (testFn toGather) population
+                    in
+                        helper remaining (( toGather, gathering ) :: gathered)
+    in
+        helper list []
 
 
 intersperse : a -> List a -> List a

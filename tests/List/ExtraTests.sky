@@ -8,6 +8,7 @@ import List.Extra as LE
 tests : List Test
 tests =
     applyWindowTests ++ dropRightTests ++ dropWhileTests ++ dropWhileRightTests
+        ++ gatherWithTests
         ++ intersperseTests
         ++ partitionTests
         ++ repeatTests
@@ -116,6 +117,19 @@ dropWhileRightTests =
           (\_ ->
               [ 1, 2, 3, 1, 2, 3 ] |> LE.dropWhileRight (\n -> n > 1)
                   |> Test.equal [ 1, 2, 3, 1 ])
+    ]
+
+
+gatherWithTests : List Test
+gatherWithTests =
+    [ Test.test
+          "gatherWith gathers an empty list into an empty list"
+          (\_ -> [] |> LE.gatherWith (\a b -> a == b) |> Test.equal [])
+    , Test.test
+          "gatherWith gathers elements using the function"
+          (\_ ->
+              [ 1, 2, 1, 3, 2 ] |> LE.gatherWith (\a b -> a == b)
+                  |> Test.equal [ ( 1, [ 1 ] ), ( 2, [ 2 ] ), ( 3, [] ) ])
     ]
 
 
