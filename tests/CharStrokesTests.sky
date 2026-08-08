@@ -7,7 +7,7 @@ import Sky.Test as Test exposing (Test)
 
 tests : List Test
 tests =
-    errorRateTests ++ fromExerciseDataTests
+    errorRateTests ++ fromExerciseDataTests ++ groupByCharTests
 
 
 errorRateTests : List Test
@@ -281,8 +281,36 @@ fromExerciseDataTests =
                            }
                          ])
     ]
-    -- WHAT HAPPENS IF YOU BACKSPACE PAST THE EXERCISE START
-    -- EITHER AT THE START OF THE EXERCISE OR AFTER STARTING
+
+
+groupByCharTests : List Test
+groupByCharTests =
+    [ Test.test
+          "groupByChar returns [] if there are no CharStrokes"
+          (\_ -> [] |> CharStrokes.groupByChar |> Test.equal [])
+    , Test.test
+          "groupByChar returns the CharStrokes if the input is a singleton"
+          (\_ ->
+              [ CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ] ]
+                  |> CharStrokes.groupByChar
+                  |> Test.equal
+                         [ CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ] ])
+    , Test.test
+          "groupByChar returns the CharStrokes if the input contains only Charstrokes for different characters"
+          (\_ ->
+              [ CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'b' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'c' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'd' [ { char = 'a', timeTaken = 11 } ]
+              ]
+                  |> CharStrokes.groupByChar
+                  |> Test.equal
+                         [ CharStrokes 'a' [ { char = 'a', timeTaken = 11 } ]
+                         , CharStrokes 'b' [ { char = 'a', timeTaken = 11 } ]
+                         , CharStrokes 'c' [ { char = 'a', timeTaken = 11 } ]
+                         , CharStrokes 'd' [ { char = 'a', timeTaken = 11 } ]
+                         ])
+    ]
 
 
 --

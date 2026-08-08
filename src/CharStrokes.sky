@@ -1,4 +1,4 @@
-module CharStrokes exposing (CharStrokes, fromEventList, errorRate)
+module CharStrokes exposing (CharStrokes, errorRate, fromEventList, groupByChar)
 
 import Event exposing (Event)
 import Float.Extra as FE
@@ -58,6 +58,14 @@ errorRate charStrokes =
 
         else
             erroredCount / overallCount
+
+
+--
+-- MANIPULATION
+--
+groupByChar : List CharStrokes -> List CharStrokes
+groupByChar charStrokes =
+    charStrokes
 
 
 --
