@@ -1,0 +1,32 @@
+module Dict.ExtraTests exposing (tests)
+
+import Sky.Test as Test exposing (Test)
+import Dict.Extra as DE
+
+
+tests : List Test
+tests =
+    filterTests
+
+
+filterTests : List Test
+filterTests =
+    [ Test.test
+          "filter returns an empty Dict if the filter function is always False"
+          (\_ ->
+              Dict.fromList [ ( "a", 1 ), ( "b", 2 ) ]
+                  |> DE.filter (\k v -> False)
+                  |> Test.equal Dict.empty)
+    , Test.test
+          "filter returns the full Dict if the filter function is always True"
+          (\_ ->
+              Dict.fromList [ ( "a", 1 ), ( "b", 2 ) ]
+                  |> DE.filter (\k v -> True)
+                  |> Test.equal (Dict.fromList [ ( "a", 1 ), ( "b", 2 ) ]))
+    , Test.test
+          "filter returns a filtered Dict if the filter function lets some entries through"
+          (\_ ->
+              Dict.fromList [ ( "a", 1 ), ( "b", 2 ) ]
+                  |> DE.filter (\k v -> k == "a")
+                  |> Test.equal (Dict.fromList [ ( "a", 1 ) ]))
+    ]

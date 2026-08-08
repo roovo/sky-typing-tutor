@@ -1,0 +1,15 @@
+module Dict.Extra exposing (filter)
+
+
+-- Note: Dict keys arrive as String at runtime regardless of declared type.
+-- Do not annotate this function - see known Dict key limitation.
+filter isGood dict =
+    Dict.foldl
+        (\k v d ->
+            if isGood k v then
+                Dict.insert k v d
+
+            else
+                d)
+        Dict.empty
+        dict
