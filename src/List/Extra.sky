@@ -4,6 +4,7 @@ module List.Extra exposing
     , dropWhile
     , dropWhileRight
     , intersperse
+    , partition
     , repeat
     , takeWhile
     )
@@ -61,6 +62,19 @@ intersperse sep xs =
                 spersed = List.foldr step [] tl
             in
                 List.cons hd spersed
+
+
+partition : (a -> Bool) -> List a -> ( List a, List a )
+partition pred list =
+    let
+        step x acc =
+            if pred x then
+                ( List.cons x (fst acc), snd acc )
+
+            else
+                ( fst acc, List.cons x (snd acc) )
+    in
+        List.foldr step ( [], [] ) list
 
 
 repeat : Int -> a -> List a

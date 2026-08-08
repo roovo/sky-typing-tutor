@@ -9,6 +9,7 @@ tests : List Test
 tests =
     applyWindowTests ++ dropRightTests ++ dropWhileTests ++ dropWhileRightTests
         ++ intersperseTests
+        ++ partitionTests
         ++ repeatTests
         ++ takeWhileTests
 
@@ -131,6 +132,29 @@ intersperseTests =
           (\_ ->
               LE.intersperse "." [ "a", "b", "c" ]
                   |> Test.equal [ "a", ".", "b", ".", "c" ])
+    ]
+
+
+partitionTests : List Test
+partitionTests =
+    [ Test.test
+          "partition returns a tuple with 2 empty arrays if the input is an empty array"
+          (\_ -> [] |> LE.partition (always True) |> Test.equal ( [], [] ))
+    , Test.test
+          "partition returns an everything on the left if always True"
+          (\_ ->
+              [ 1, 2, 3, 4 ] |> LE.partition (always True)
+                  |> Test.equal ( [ 1, 2, 3, 4 ], [] ))
+    , Test.test
+          "partition returns an everything on the right if always False"
+          (\_ ->
+              [ 1, 2, 3, 4 ] |> LE.partition (always False)
+                  |> Test.equal ( [], [ 1, 2, 3, 4 ] ))
+    , Test.test
+          "partition partitions based on the predicate function"
+          (\_ ->
+              [ 1, 2, 3, 4 ] |> LE.partition (\n -> modBy 2 n == 0)
+                  |> Test.equal ( [ 2, 4 ], [ 1, 3 ] ))
     ]
 
 
