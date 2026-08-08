@@ -62,8 +62,9 @@ gatherWith testFn list =
 
                 toGather :: population ->
                     let
-                        ( gathering, remaining ) =
-                            partition (testFn toGather) population
+                        partitioned = partition (testFn toGather) population
+                        gathering = fst partitioned
+                        remaining = snd partitioned
                     in
                         helper remaining (( toGather, gathering ) :: gathered)
     in
