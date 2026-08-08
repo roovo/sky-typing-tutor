@@ -67,9 +67,16 @@ errorRate charStrokes =
 groupByChar : List CharStrokes -> Dict Char (List CharStrokes)
 groupByChar charStrokes =
     let
-        helper cs acc = Dict.insert cs.target [ cs ] acc
+        insertOrAppend cs acc =
+            case Dict.get cs.target acc of
+
+                Just existing ->
+                    Dict.insert cs.target (existing ++ [ cs ]) acc
+
+                Nothing ->
+                    Dict.insert cs.target [ cs ] acc
     in
-        List.foldl helper Dict.empty charStrokes
+        List.foldl insertOrAppend Dict.empty charStrokes
 
 
 --

@@ -338,42 +338,63 @@ groupByCharTests =
                                  ]
                                )
                              ]))
+    , Test.test
+          "groupByChar groups CharStrokes for the same character"
+          (\_ ->
+              [ CharStrokes
+                    'a'
+                    [ { char = 'a', timeTaken = 11 }
+                    , { char = 'b', timeTaken = 11 }
+                    ]
+              , CharStrokes 'b' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes 'c' [ { char = 'a', timeTaken = 11 } ]
+              , CharStrokes
+                    'a'
+                    [ { char = 'c', timeTaken = 11 }
+                    , { char = 'd', timeTaken = 11 }
+                    ]
+              , CharStrokes 'c' [ { char = 'b', timeTaken = 11 } ]
+              , CharStrokes 'd' [ { char = 'b', timeTaken = 11 } ]
+              ]
+                  |> CharStrokes.groupByChar
+                  |> Test.equal
+                         (Dict.fromList
+                             [ ( 'a'
+                               , [ CharStrokes
+                                       'a'
+                                       [ { char = 'a', timeTaken = 11 }
+                                       , { char = 'b', timeTaken = 11 }
+                                       ]
+                                 , CharStrokes
+                                       'a'
+                                       [ { char = 'c', timeTaken = 11 }
+                                       , { char = 'd', timeTaken = 11 }
+                                       ]
+                                 ]
+                               )
+                             , ( 'b'
+                               , [ CharStrokes
+                                       'b'
+                                       [ { char = 'a', timeTaken = 11 } ]
+                                 ]
+                               )
+                             , ( 'c'
+                               , [ CharStrokes
+                                       'c'
+                                       [ { char = 'a', timeTaken = 11 } ]
+                                 , CharStrokes
+                                       'c'
+                                       [ { char = 'b', timeTaken = 11 } ]
+                                 ]
+                               )
+                             , ( 'd'
+                               , [ CharStrokes
+                                       'd'
+                                       [ { char = 'b', timeTaken = 11 } ]
+                                 ]
+                               )
+                             ]))
     ]
-    -- , Test.test
-    --       "groupByChar groups CharStrokes for the same character"
-    --       (\_ ->
-    --           [ CharStrokes
-    --                 'a'
-    --                 [ { char = 'a', timeTaken = 11 }
-    --                 , { char = 'b', timeTaken = 11 }
-    --                 ]
-    --           , CharStrokes 'b' [ { char = 'a', timeTaken = 11 } ]
-    --           , CharStrokes 'c' [ { char = 'a', timeTaken = 11 } ]
-    --           , CharStrokes
-    --                 'a'
-    --                 [ { char = 'c', timeTaken = 11 }
-    --                 , { char = 'd', timeTaken = 11 }
-    --                 ]
-    --           , CharStrokes 'c' [ { char = 'b', timeTaken = 11 } ]
-    --           , CharStrokes 'd' [ { char = 'b', timeTaken = 11 } ]
-    --           ]
-    --               |> CharStrokes.groupByChar
-    --               |> Test.equal
-    --                      [ CharStrokes
-    --                            'a'
-    --                            [ { char = 'a', timeTaken = 11 }
-    --                            , { char = 'b', timeTaken = 11 }
-    --                            , { char = 'c', timeTaken = 11 }
-    --                            , { char = 'd', timeTaken = 11 }
-    --                            ]
-    --                      , CharStrokes 'b' [ { char = 'a', timeTaken = 11 } ]
-    --                      , CharStrokes
-    --                            'c'
-    --                            [ { char = 'a', timeTaken = 11 }
-    --                            , { char = 'b', timeTaken = 11 }
-    --                            ]
-    --                      , CharStrokes 'd' [ { char = 'b', timeTaken = 11 } ]
-    --                      ])
 
 
 --
